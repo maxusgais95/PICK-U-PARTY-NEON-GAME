@@ -199,7 +199,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
-      {/* Header Container: Top-aligned at 57.5% */}
+      {/* Header Container: Subtitle bottom edge rests at 57.5% */}
       <div className="absolute top-[57.5%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
         {/* Title Logo (x1.2 scale) */}
         <div
@@ -223,9 +223,9 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </p>
       </div>
 
-      {/* Game Cards Container: Bottom-aligned at 27.5% */}
+      {/* Game Cards Container: Aligned 3% below the subtitle anchor (57.5% + 3% = 60.5%) */}
       <div 
-        className="absolute bottom-[27.5%] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
+        className="absolute top-[60.5%] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
         onTouchStart={(e) => handleTouchStart(e.touches[0].clientX)}
         onTouchMove={(e) => handleTouchMove(e.touches[0].clientX)}
         onTouchEnd={handleTouchEnd}
