@@ -21,20 +21,36 @@ interface LandingHubProps {
   onOpenVersionNotes?: () => void;
 }
 
+interface GameCard {
+  id: string;
+  title: string;
+  subtitle: string;
+  buttonText: string;
+  image: string;
+  badge?: string;
+  borderColor: string;
+  shadowColor: string;
+  btnGradient: string;
+  titleGradient: string;
+  subGradient: string;
+  badgeGradient: string;
+  onClick: (e: React.MouseEvent) => void;
+}
+
 export const LandingHub: React.FC<LandingHubProps> = ({
   onSelectRoulette,
   onSelectBottle,
   onOpenVersionNotes,
 }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Drag tracking state (works for both Touch & Mouse)
-  const isDragging = useRef(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Touch/Drag physics refs
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
   const startX = useRef(0);
-  const scrollLeft = useRef(0);
-  const hasDraggedFar = useRef(false);
+  const currentX = useRef(0);
+  const isDragging = useRef(false);
 
   const handleTitleClick = () => {
     SoundEngine.playButtonClick();
@@ -51,84 +67,134 @@ export const LandingHub: React.FC<LandingHubProps> = ({
     }, 3000);
   };
 
-  // Sync scroll position with active dot index
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const container = scrollRef.current;
-    const index = Math.round(container.scrollLeft / (container.clientWidth * 0.75));
-    if (index !== activeIndex && index >= 0 && index < 3) {
-      setActiveIndex(index);
-    }
+  // Card definitions
+  const cards: GameCard[] = [
+    {
+      id: 'roulette',
+      title: 'FINGER ROULETTE',
+      subtitle: 'Place your finger and have fun',
+      buttonText: 'PLAY PICKER',
+      image: chibiFingersImg,
+      badge: 'Popular',
+      borderColor: 'border-cyan-400',
+      shadowColor: 'shadow-[0_0_22px_rgba(6,182,212,0.4)]',
+      btnGradient: 'linear-gradient(90deg, #00e5ff 0%, #06b6d4 30%, #a855f7 70%, #d946ef 100%)',
+      titleGradient: 'from-cyan-200 via-sky-300 to-fuchsia-300',
+      subGradient: 'from-cyan-100 via-white to-sky-200',
+      badgeGradient: 'linear-gradient(90deg, #06b6d4 0%, #38bdf8 50%, #00e5ff 100%)',
+      onClick: () => {
+        SoundEngine.playButtonClick();
+        Haptics.buttonClick();
+        onSelectRoulette();
+      },
+    },
+    {
+      id: 'bottle',
+      title: 'SPIN THE BOTTLE',
+      subtitle: 'Flick or tap to spin the bottle',
+      buttonText: 'SPIN BOTTLE',
+      image: chibiBottleImg,
+      borderColor: 'border-pink-500',
+      shadowColor: 'shadow-[0_0_22px_rgba(236,72,153,0.4)]',
+      btnGradient: 'linear-gradient(90deg, #9333ea 0%, #a855f7 35%, #ec4899 75%, #f43f5e 100%)',
+      titleGradient: 'from-pink-200 via-rose-300 to-purple-300',
+      subGradient: 'from-pink-100 via-white to-purple-200',
+      badgeGradient: '',
+      onClick: () => {
+        SoundEngine.playButtonClick();
+        Haptics.buttonClick();
+        onSelectBottle();
+      },
+    },
+    {
+      id: 'kaboom',
+      title: 'KABOOM',
+      subtitle: "Avoid the bomb and don't get exploded",
+      buttonText: "LET'S GO",
+      image: chibiBombImg,
+      badge: 'Coming Soon',
+      borderColor: 'border-orange-500',
+      shadowColor: 'shadow-[0_0_22px_rgba(249,115,22,0.4)]',
+      btnGradient: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ff5500 100%)',
+      titleGradient: 'from-amber-200 via-orange-300 to-red-400',
+      subGradient: 'from-amber-100 via-white to-orange-200',
+      badgeGradient: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ea580c 100%)',
+      onClick: handleKaboomClick,
+    },
+  ];
+
+  // Helper for infinite circular index wrapping
+  const getWrappedIndex = (index: number) => {
+    const total = cards.length;
+    return ((index % total) + total) % total;
   };
 
-  const scrollToIndex = (index: number) => {
-    if (!scrollRef.current) return;
-    SoundEngine.playButtonClick();
-    Haptics.buttonClick();
-    scrollRef.current.scrollTo({
-      left: (scrollRef.current.clientWidth * 0.75) * index,
-      behavior: 'smooth',
-    });
-    setActiveIndex(index);
-  };
-
-  // --- Touch & Mouse Unified Drag Handlers ---
-  const handleStart = (clientX: number) => {
-    if (!scrollRef.current) return;
+  // --- Infinite Drag Gesture Handlers ---
+  const handleTouchStart = (clientX: number) => {
     isDragging.current = true;
-    hasDraggedFar.current = false;
-    startX.current = clientX - scrollRef.current.offsetLeft;
-    scrollLeft.current = scrollRef.current.scrollLeft;
+    startX.current = clientX;
+    currentX.current = clientX;
+    setIsSwiping(true);
   };
 
-  const handleMove = (clientX: number) => {
-    if (!isDragging.current || !scrollRef.current) return;
-    const x = clientX - scrollRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.2;
-    
-    if (Math.abs(walk) > 8) {
-      hasDraggedFar.current = true;
-    }
-    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  const handleTouchMove = (clientX: number) => {
+    if (!isDragging.current) return;
+    currentX.current = clientX;
+    const deltaX = clientX - startX.current;
+    setDragOffset(deltaX);
   };
 
-  const handleEnd = () => {
+  const handleTouchEnd = () => {
+    if (!isDragging.current) return;
     isDragging.current = false;
+    setIsSwiping(false);
+
+    const deltaX = currentX.current - startX.current;
+    const threshold = 60; // minimum swipe distance to snap to next/prev card
+
+    if (deltaX < -threshold) {
+      // Swiped Left -> Next Card
+      SoundEngine.playButtonClick();
+      Haptics.buttonClick();
+      setCurrentIndex((prev) => getWrappedIndex(prev + 1));
+    } else if (deltaX > threshold) {
+      // Swiped Right -> Previous Card
+      SoundEngine.playButtonClick();
+      Haptics.buttonClick();
+      setCurrentIndex((prev) => getWrappedIndex(prev - 1));
+    }
+    setDragOffset(0);
   };
 
-  // Prevent accidental tap when user intends to swipe
-  const handleCardClick = (e: React.MouseEvent, callback: () => void) => {
-    if (hasDraggedFar.current) {
-      e.stopPropagation();
-      return;
-    }
+  const handleDotClick = (targetIndex: number) => {
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
-    callback();
+    setCurrentIndex(targetIndex);
   };
 
   return (
-    <div className="relative w-full h-full max-w-md mx-auto flex flex-col items-center justify-between pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-3 overflow-hidden select-none">
+    <div className="relative w-full h-full max-w-md mx-auto flex flex-col items-center justify-start pt-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] pb-2 overflow-hidden select-none">
       <style>{`
         @keyframes subtleScaleBounce {
-          0%, 100% {
-            transform: scale(1.02);
-          }
-          50% {
-            transform: scale(0.98);
-          }
+          0%, 100% { transform: scale(1.02); }
+          50% { transform: scale(0.98); }
         }
         .animate-subtle-bounce {
           animation: subtleScaleBounce 2.5s ease-in-out infinite;
         }
-        .snap-custom {
-          scroll-snap-type: x mandatory;
-          scroll-snap-stop: normal;
-          -webkit-overflow-scrolling: touch;
-        }
       `}</style>
 
-      {/* Toast notification */}
+      {/* Darkened/Blurred Overlay for lower section depth */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none z-0 backdrop-blur-[4px]"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.9) 100%)',
+          maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)',
+        }}
+      />
+
+      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-12 z-50 animate-bounce">
           <div className="px-4 py-2 rounded-full bg-orange-600/90 text-white font-bold text-xs shadow-[0_0_20px_rgba(249,115,22,0.6)] border border-orange-300/80 backdrop-blur-md flex items-center gap-2">
@@ -137,218 +203,137 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
-      {/* Top Spacer */}
-      <div className="flex-1 min-h-[10px]" />
-
-      {/* Header Title */}
-      <div className="text-center flex flex-col items-center select-none relative z-20 shrink-0 w-full px-4 mb-2">
+      {/* Raised Top Layout Position */}
+      <div className="w-full flex flex-col items-center z-20 shrink-0 px-4 mt-2 mb-2">
         <div
           onClick={handleTitleClick}
-          className="relative w-full max-w-[340px] sm:max-w-[400px] flex items-center justify-center cursor-pointer group"
+          className="relative w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center cursor-pointer group"
           title="PICK'U PARTY"
         >
           <div className="relative w-full flex items-center justify-center animate-title-sweep-pulse">
             <img
               src={getAssetUrl(pickuPartyLogo)}
               alt="PICK'U PARTY"
-              className="w-full h-auto max-h-[72px] sm:max-h-[86px] object-contain select-none pointer-events-none"
+              className="w-full h-auto max-h-[66px] sm:max-h-[78px] object-contain select-none pointer-events-none"
               style={{ mixBlendMode: 'screen' }}
             />
           </div>
         </div>
 
-        <p className="text-[13px] sm:text-[15px] font-semibold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mt-2 mb-0">
+        <p className="text-[12px] sm:text-[14px] font-semibold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mt-1 mb-0">
           Swipe to select a game mode
         </p>
       </div>
 
-      {/* Main Touch/Swipe Carousel Section */}
-      <div className="w-full flex flex-col items-center shrink-0 mb-auto">
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          // Touch Events
-          onTouchStart={(e) => handleStart(e.touches[0].clientX)}
-          onTouchMove={(e) => handleMove(e.touches[0].clientX)}
-          onTouchEnd={handleEnd}
-          // Mouse Events
-          onMouseDown={(e) => handleStart(e.clientX)}
-          onMouseMove={(e) => handleMove(e.clientX)}
-          onMouseUp={handleEnd}
-          onMouseLeave={handleEnd}
-          className="w-full flex overflow-x-auto snap-custom no-scrollbar px-[8vw] py-6 gap-4 touch-pan-x cursor-grab active:cursor-grabbing"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {/* Card 1: FINGER ROULETTE */}
-          <div className="w-[84vw] max-w-[350px] shrink-0 snap-center">
-            <div
-              onClick={(e) => handleCardClick(e, onSelectRoulette)}
-              className={`relative rounded-[22px] p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-cyan-400 shadow-[0_0_22px_rgba(6,182,212,0.4)] flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full aspect-video transition-all duration-300 ${
-                activeIndex === 0 ? 'scale-100 animate-subtle-bounce' : 'scale-95 opacity-70'
-              }`}
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-20">
+      {/* Infinite Carousel Area */}
+      <div 
+        className="w-full flex flex-col items-center z-20 my-auto py-2 touch-pan-y"
+        onTouchStart={(e) => handleTouchStart(e.touches[0].clientX)}
+        onTouchMove={(e) => handleTouchMove(e.touches[0].clientX)}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={(e) => handleTouchStart(e.clientX)}
+        onMouseMove={(e) => handleTouchMove(e.clientX)}
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
+      >
+        <div className="relative w-full h-[180px] sm:h-[200px] flex items-center justify-center overflow-hidden">
+          {[-1, 0, 1].map((offset) => {
+            const cardIndex = getWrappedIndex(currentIndex + offset);
+            const card = cards[cardIndex];
+            const isCenter = offset === 0;
+
+            // Compute continuous horizontal position shift based on drag physics
+            const cardWidth = 310;
+            const translateX = offset * cardWidth + dragOffset;
+
+            return (
+              <div
+                key={`${card.id}-${offset}`}
+                className={`absolute w-[80vw] max-w-[310px] aspect-video transition-transform ${
+                  isSwiping ? 'duration-0' : 'duration-300 ease-out'
+                }`}
+                style={{
+                  transform: `translateX(${translateX}px) scale(${
+                    isCenter ? (Math.abs(dragOffset) > 20 ? 0.98 : 1) : 0.88
+                  })`,
+                  opacity: isCenter ? 1 : 0.45,
+                  zIndex: isCenter ? 30 : 10,
+                }}
+              >
                 <div
-                  className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-black tracking-widest text-[8.5px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-white/50"
-                  style={{
-                    background: 'linear-gradient(90deg, #06b6d4 0%, #38bdf8 50%, #00e5ff 100%)',
-                    color: '#ffffff',
+                  onClick={(e) => {
+                    if (Math.abs(dragOffset) < 10 && isCenter) {
+                      card.onClick(e);
+                    }
                   }}
+                  className={`relative rounded-[22px] p-3 bg-black/50 backdrop-blur-[4px] border-[1.5px] ${card.borderColor} ${card.shadowColor} flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full h-full transition-all duration-300 ${
+                    isCenter && !isSwiping ? 'animate-subtle-bounce' : ''
+                  }`}
                 >
-                  Popular
+                  {/* Ribbon Badge */}
+                  {card.badge && (
+                    <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-20">
+                      <div
+                        className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-black tracking-widest text-[8px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-white/50"
+                        style={{
+                          background: card.badgeGradient,
+                          color: '#ffffff',
+                        }}
+                      >
+                        {card.badge}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Card Background Image */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                    <img
+                      src={getAssetUrl(card.image)}
+                      alt={card.title}
+                      className="w-full h-full object-cover object-top select-none"
+                    />
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(to bottom, transparent 35%, rgba(0,0,0,0.85) 100%)',
+                      }}
+                    />
+                  </div>
+
+                  {/* Card Actions */}
+                  <div className="relative z-10 flex flex-col items-center w-full mt-auto">
+                    <h2 className={`text-xs sm:text-sm font-black tracking-wider uppercase bg-gradient-to-r ${card.titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight`}>
+                      {card.title}
+                    </h2>
+                    <p className={`text-[10px] sm:text-[11px] font-bold tracking-normal bg-gradient-to-r ${card.subGradient} bg-clip-text text-transparent mt-0.5 mb-1.5 leading-tight`}>
+                      {card.subtitle}
+                    </p>
+                    <button
+                      type="button"
+                      className="relative w-full h-7 sm:h-8 rounded-full flex items-center justify-center shadow-[0_3px_14px_rgba(0,0,0,0.4)] border-[1.2px] border-white/70"
+                      style={{ background: card.btnGradient }}
+                    >
+                      <span className="relative z-20 text-[9.5px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                        {card.buttonText}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-                <img
-                  src={getAssetUrl(chibiFingersImg)}
-                  alt="Chibi Fingers Game"
-                  className="w-full h-full object-cover object-top select-none"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)',
-                  }}
-                />
-              </div>
-
-              <div className="relative z-10 flex flex-col items-center w-full mt-auto">
-                <h2 className="text-sm sm:text-base font-black tracking-wider uppercase bg-gradient-to-r from-cyan-200 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight">
-                  FINGER ROULETTE
-                </h2>
-                <p className="text-[11px] sm:text-xs font-bold tracking-normal bg-gradient-to-r from-cyan-100 via-white to-sky-200 bg-clip-text text-transparent mt-0.5 mb-1.5 leading-tight">
-                  Place your finger and have fun
-                </p>
-                <button
-                  type="button"
-                  onClick={(e) => handleCardClick(e, onSelectRoulette)}
-                  className="relative w-full h-8 sm:h-9 rounded-full flex items-center justify-center shadow-[0_3px_16px_rgba(6,182,212,0.45)] border-[1.2px] border-white/70"
-                  style={{
-                    background: 'linear-gradient(90deg, #00e5ff 0%, #06b6d4 30%, #a855f7 70%, #d946ef 100%)',
-                  }}
-                >
-                  <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                    PLAY PICKER
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: SPIN THE BOTTLE */}
-          <div className="w-[84vw] max-w-[350px] shrink-0 snap-center">
-            <div
-              onClick={(e) => handleCardClick(e, onSelectBottle)}
-              className={`relative rounded-[22px] p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-pink-500 shadow-[0_0_22px_rgba(236,72,153,0.4)] flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full aspect-video transition-all duration-300 ${
-                activeIndex === 1 ? 'scale-100 animate-subtle-bounce' : 'scale-95 opacity-70'
-              }`}
-            >
-              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-                <img
-                  src={getAssetUrl(chibiBottleImg)}
-                  alt="Chibi Spinning Bottle"
-                  className="w-full h-full object-cover object-top select-none"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)',
-                  }}
-                />
-              </div>
-
-              <div className="relative z-10 flex flex-col items-center w-full mt-auto">
-                <h2 className="text-sm sm:text-base font-black tracking-wider uppercase bg-gradient-to-r from-pink-200 via-rose-300 to-purple-300 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight">
-                  SPIN THE BOTTLE
-                </h2>
-                <p className="text-[11px] sm:text-xs font-bold tracking-normal bg-gradient-to-r from-pink-100 via-white to-purple-200 bg-clip-text text-transparent mt-0.5 mb-1.5 leading-tight">
-                  Flick or tap to spin the bottle
-                </p>
-                <button
-                  type="button"
-                  onClick={(e) => handleCardClick(e, onSelectBottle)}
-                  className="relative w-full h-8 sm:h-9 rounded-full flex items-center justify-center shadow-[0_3px_16px_rgba(236,72,153,0.45)] border-[1.2px] border-white/70"
-                  style={{
-                    background: 'linear-gradient(90deg, #9333ea 0%, #a855f7 35%, #ec4899 75%, #f43f5e 100%)',
-                  }}
-                >
-                  <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                    SPIN BOTTLE
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: KABOOM */}
-          <div className="w-[84vw] max-w-[350px] shrink-0 snap-center">
-            <div
-              onClick={(e) => handleCardClick(e, () => handleKaboomClick(e))}
-              className={`relative rounded-[22px] p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-orange-500 shadow-[0_0_22px_rgba(249,115,22,0.4)] flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full aspect-video transition-all duration-300 ${
-                activeIndex === 2 ? 'scale-100 animate-subtle-bounce' : 'scale-95 opacity-70'
-              }`}
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-20">
-                <div
-                  className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-black tracking-wider text-[8px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-amber-200/40"
-                  style={{
-                    background: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ea580c 100%)',
-                    color: '#ffffff',
-                  }}
-                >
-                  Coming Soon
-                </div>
-              </div>
-
-              <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-                <img
-                  src={getAssetUrl(chibiBombImg)}
-                  alt="Chibi Bomb Game"
-                  className="w-full h-full object-cover object-top select-none"
-                />
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)',
-                  }}
-                />
-              </div>
-
-              <div className="relative z-10 flex flex-col items-center w-full mt-auto">
-                <h2 className="text-sm sm:text-base font-black tracking-wider uppercase bg-gradient-to-r from-amber-200 via-orange-300 to-red-400 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight">
-                  KABOOM
-                </h2>
-                <p className="text-[11px] sm:text-xs font-bold tracking-normal bg-gradient-to-r from-amber-100 via-white to-orange-200 bg-clip-text text-transparent mt-0.5 mb-1.5 leading-tight">
-                  Avoid the bomb and don't get exploded
-                </p>
-                <button
-                  type="button"
-                  onClick={(e) => handleCardClick(e, () => handleKaboomClick(e))}
-                  className="relative w-full h-8 sm:h-9 rounded-full flex items-center justify-center shadow-[0_3px_16px_rgba(249,115,22,0.45)] border-[1.2px] border-white/70"
-                  style={{
-                    background: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ff5500 100%)',
-                  }}
-                >
-                  <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                    LET'S GO
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* Swipe Indicator Dots */}
-        <div className="flex items-center gap-2 mt-1 z-20">
-          {[0, 1, 2].map((i) => (
+        {/* Dynamic Pagination Indicator Dots */}
+        <div className="flex items-center gap-2 mt-3 z-20">
+          {cards.map((_, i) => (
             <button
               key={i}
-              onClick={() => scrollToIndex(i)}
-              className={`h-2.5 rounded-full transition-all duration-300 ${
-                activeIndex === i
-                  ? 'w-7 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]'
-                  : 'w-2.5 bg-white/30 hover:bg-white/50'
+              onClick={() => handleDotClick(i)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentIndex === i
+                  ? 'w-6 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]'
+                  : 'w-2 bg-white/30 hover:bg-white/50'
               }`}
               aria-label={`Go to slide ${i + 1}`}
             />
@@ -356,8 +341,8 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       </div>
 
-      {/* Footer Version Notes */}
-      <div className="shrink-0 mt-auto mb-1 flex flex-col items-center gap-1 select-none z-20">
+      {/* Footer Version Notes & PWA Button */}
+      <div className="shrink-0 mt-auto mb-2 flex flex-col items-center gap-1 select-none z-20">
         <PWAInstallButton variant="pill" />
         <button
           type="button"
@@ -366,7 +351,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             Haptics.buttonClick();
             if (onOpenVersionNotes) onOpenVersionNotes();
           }}
-          className="text-[10px] sm:text-[11px] text-gray-400/80 hover:text-white transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5"
+          className="text-[10px] sm:text-[11px] text-gray-300/80 hover:text-white transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
         >
           Version notes: v1.3.001
         </button>
