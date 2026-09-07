@@ -44,7 +44,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full max-w-md mx-auto flex flex-col items-center px-4 pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] pb-2 overflow-y-auto no-scrollbar select-none">
+    <div className="relative w-full h-full max-w-md mx-auto flex flex-col items-center px-4 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] pb-2 overflow-y-auto no-scrollbar select-none">
       {/* Toast notification for Kaboom or actions */}
       {toastMessage && (
         <div className="fixed top-16 z-50 animate-bounce">
@@ -54,14 +54,13 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
-      {/* Header Title: PICK'U PARTY */}
-      <div className="text-center mt-1 mb-0 flex flex-col items-center select-none relative z-20 shrink-0 w-full px-2">
+      {/* Header Title & Description: Shifted slightly down with mt-6 sm:mt-8 */}
+      <div className="text-center mt-6 sm:mt-8 mb-0 flex flex-col items-center select-none relative z-20 shrink-0 w-full px-2">
         <div
           onClick={handleTitleClick}
           className="relative w-full max-w-[370px] sm:max-w-[430px] md:max-w-[470px] flex items-center justify-center cursor-pointer group"
           title="PICK'U PARTY"
         >
-          {/* Logo container */}
           <div className="relative w-full flex items-center justify-center animate-title-sweep-pulse">
             <img
               src={getAssetUrl(pickuPartyLogo)}
@@ -97,14 +96,14 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           </div>
         </div>
 
-        {/* Subtitle */}
-        <p className="text-[12.5px] sm:text-[14.5px] md:text-base font-semibold tracking-normal sm:tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] drop-shadow-[0_0_10px_rgba(0,0,0,0.8)] mt-1 mb-0 select-none">
+        {/* Subtitle / Description */}
+        <p className="text-[12.5px] sm:text-[14.5px] md:text-base font-semibold tracking-normal sm:tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] drop-shadow-[0_0_10px_rgba(0,0,0,0.8)] mt-1.5 mb-0 select-none">
           Select a game mode and have fun with your friends
         </p>
       </div>
 
-      {/* Main Game Mode Cards: Scaled 1.2x & Aligned to Bottom */}
-      <div className="w-full max-w-sm sm:max-w-md flex flex-col gap-2.5 sm:gap-3.5 mt-auto mb-3 shrink-0 scale-[1.2] transform origin-bottom transform-gpu">
+      {/* Main Game Mode Cards Container: Aligned to Bottom */}
+      <div className="w-full max-w-sm sm:max-w-md flex flex-col gap-2.5 sm:gap-3.5 mt-auto mb-2 shrink-0">
         {/* Card 1: FINGER ROULETTE */}
         <div
           onClick={() => {
@@ -112,7 +111,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             Haptics.buttonClick();
             onSelectRoulette();
           }}
-          className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.4),inset_0_0_10px_rgba(6,182,212,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-cyan-300 overflow-hidden w-full aspect-[2.35/1] xs:aspect-[2.1/1] sm:aspect-[16/9]"
+          className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-cyan-400 shadow-[0_0_18px_rgba(6,182,212,0.4),inset_0_0_10px_rgba(6,182,212,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-cyan-300 overflow-hidden w-full aspect-[1.95/1] xs:aspect-[1.75/1] sm:aspect-[13.3/9]"
         >
           {/* Top-Right Diagonal Ribbon: Popular */}
           <div className="absolute top-0 right-0 w-24 h-24 sm:w-28 sm:h-28 overflow-hidden pointer-events-none z-20">
@@ -210,7 +209,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             Haptics.buttonClick();
             onSelectBottle();
           }}
-          className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-pink-500 shadow-[0_0_18px_rgba(236,72,153,0.4),inset_0_0_10px_rgba(236,72,153,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-pink-400 overflow-hidden w-full aspect-[2.35/1] xs:aspect-[2.1/1] sm:aspect-[16/9]"
+          className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-pink-500 shadow-[0_0_18px_rgba(236,72,153,0.4),inset_0_0_10px_rgba(236,72,153,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-pink-400 overflow-hidden w-full aspect-[1.95/1] xs:aspect-[1.75/1] sm:aspect-[13.3/9]"
         >
           <div
             className="absolute inset-0 pointer-events-none overflow-hidden z-0"
@@ -290,7 +289,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         {/* Card 3: KABOOM */}
         <div
           onClick={handleKaboomClick}
-          className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-orange-500 shadow-[0_0_18px_rgba(249,115,22,0.4),inset_0_0_10px_rgba(249,115,22,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-orange-400 overflow-hidden w-full aspect-[2.35/1] xs:aspect-[2.1/1] sm:aspect-[16/9]"
+          className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-orange-500 shadow-[0_0_18px_rgba(249,115,22,0.4),inset_0_0_10px_rgba(249,115,22,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-orange-400 overflow-hidden w-full aspect-[1.95/1] xs:aspect-[1.75/1] sm:aspect-[13.3/9]"
         >
           <div className="absolute top-0 right-0 w-24 h-24 sm:w-28 sm:h-28 overflow-hidden pointer-events-none z-20">
             <div
@@ -377,7 +376,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       </div>
 
       {/* Footer Version Notes: v1.3.001 & PWA Pill */}
-      <div className="shrink-0 mt-0 mb-1 flex flex-col items-center gap-1 select-none z-20">
+      <div className="shrink-0 mt-0 mb-0.5 flex flex-col items-center gap-1 select-none z-20">
         <PWAInstallButton variant="pill" />
         <button
           type="button"
