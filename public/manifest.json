@@ -1,14 +1,15 @@
-{
-  "id": "/",
-  "name": "PICK'U PARTY",
-  "short_name": "PICK'U",
-  "description": "Multiplayer Finger Roulette, Team Splitter, and Swipe Bottle Spin for Mobile Parties",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#030712",
-  "theme_color": "#030712",
+manifest: {
+  id: '/PICK-U-PARTY-NEON-GAME/',
+  name: "PICK'U PARTY",
+  short_name: "PICK'U",
+  description: 'Multiplayer Finger Roulette, Team Splitter, and Swipe Bottle Spin for Mobile Parties',
+  theme_color: '#030712',
+  background_color: '#030712',
+  display: 'standalone',
+  orientation: 'portrait',
+  start_url: '/PICK-U-PARTY-NEON-GAME/',
+  scope: '/PICK-U-PARTY-NEON-GAME/',
+
   "icons": [
     {
       "src": "/icon-192.png",
