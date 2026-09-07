@@ -96,6 +96,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
     isDragging.current = false;
   };
 
+  // Prevent accidental tap when user intends to swipe
   const handleCardClick = (e: React.MouseEvent, callback: () => void) => {
     if (hasDraggedFar.current) {
       e.stopPropagation();
@@ -126,16 +127,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           -webkit-overflow-scrolling: touch;
         }
       `}</style>
-
-      {/* Darkened and Blurred Bottom Overlay */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 h-3/5 pointer-events-none z-0 backdrop-blur-[6px]"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.85) 100%)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 30%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 30%)',
-        }}
-      />
 
       {/* Toast notification */}
       {toastMessage && (
@@ -172,13 +163,15 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       </div>
 
       {/* Main Touch/Swipe Carousel Section */}
-      <div className="w-full flex flex-col items-center shrink-0 mb-auto relative z-10">
+      <div className="w-full flex flex-col items-center shrink-0 mb-auto">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
+          // Touch Events
           onTouchStart={(e) => handleStart(e.touches[0].clientX)}
           onTouchMove={(e) => handleMove(e.touches[0].clientX)}
           onTouchEnd={handleEnd}
+          // Mouse Events
           onMouseDown={(e) => handleStart(e.clientX)}
           onMouseMove={(e) => handleMove(e.clientX)}
           onMouseUp={handleEnd}
