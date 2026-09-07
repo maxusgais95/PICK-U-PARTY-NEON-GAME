@@ -182,7 +182,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         }
       `}</style>
 
-      {/* Dim Overlay Only (Blur Removed) */}
+      {/* Dim Overlay Only (No Blur) */}
       <div 
         className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none z-0"
         style={{
@@ -199,9 +199,9 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
-      {/* Header Container: Positioned strictly at ~2/3 down (top: 66.6%) */}
-      <div className="absolute top-[66.6%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
-        {/* Title Logo scaled x1.2 */}
+      {/* Header Container: Top-aligned at 57.5% */}
+      <div className="absolute top-[57.5%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
+        {/* Title Logo (x1.2 scale) */}
         <div
           onClick={handleTitleClick}
           className="relative w-full max-w-[384px] sm:max-w-[432px] flex items-center justify-center cursor-pointer group mb-1"
@@ -217,15 +217,15 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           </div>
         </div>
 
-        {/* Subtitle centered at 2/3 line */}
+        {/* Subtitle */}
         <p className="text-[13px] sm:text-[15px] font-semibold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] my-0">
           Swipe to select a game mode
         </p>
       </div>
 
-      {/* Game Cards Container: Placed directly below the 2/3 line */}
+      {/* Game Cards Container: Bottom-aligned at 27.5% */}
       <div 
-        className="absolute top-[calc(66.6%+12px)] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
+        className="absolute bottom-[27.5%] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
         onTouchStart={(e) => handleTouchStart(e.touches[0].clientX)}
         onTouchMove={(e) => handleTouchMove(e.touches[0].clientX)}
         onTouchEnd={handleTouchEnd}
