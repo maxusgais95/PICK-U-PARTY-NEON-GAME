@@ -1,0 +1,6 @@
+{
+  "name": "PICK'U PARTY",
+  "description": "A high-energy mobile party game hub featuring multi-touch Finger Roulette, Team Division, Turn Order, and interactive Swipe-to-Spin Bottle with custom sprite uploads, rich procedural audio, and neon physics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
