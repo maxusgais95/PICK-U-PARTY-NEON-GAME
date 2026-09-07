@@ -44,7 +44,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full max-w-md mx-auto flex flex-col justify-between items-center px-4 pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] pb-[max(0.6rem,env(safe-area-inset-bottom))] overflow-y-auto no-scrollbar select-none">
+    <div className="relative w-full h-full max-w-md mx-auto flex flex-col items-center px-4 pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] pb-2 overflow-y-auto no-scrollbar select-none">
       {/* Toast notification for Kaboom or actions */}
       {toastMessage && (
         <div className="fixed top-16 z-50 animate-bounce">
@@ -54,16 +54,15 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
-      {/* Header Title: PICK'U PARTY (Crisp, screen-blend logo with occasional light sweep + follow-up pulse) */}
-      <div className="text-center mt-[1.5vh] sm:mt-[2.2vh] mb-0 flex flex-col items-center select-none relative z-20 shrink-0 w-full px-2">
+      {/* Header Title: PICK'U PARTY */}
+      <div className="text-center mt-1 mb-0 flex flex-col items-center select-none relative z-20 shrink-0 w-full px-2">
         <div
           onClick={handleTitleClick}
           className="relative w-full max-w-[370px] sm:max-w-[430px] md:max-w-[470px] flex items-center justify-center cursor-pointer group"
           title="PICK'U PARTY"
         >
-          {/* Logo container with follow-up pulse right after the sweep */}
+          {/* Logo container */}
           <div className="relative w-full flex items-center justify-center animate-title-sweep-pulse">
-            {/* Official PICK'U PARTY Logo */}
             <img
               src={getAssetUrl(pickuPartyLogo)}
               alt="PICK'U PARTY"
@@ -73,7 +72,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               }}
             />
 
-            {/* Light Sweep Layer: Masked strictly to the logo silhouette */}
             <div
               className="absolute inset-0 pointer-events-none overflow-hidden"
               style={{
@@ -105,8 +103,8 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </p>
       </div>
 
-      {/* Main Game Mode Cards: 16:9 Ratio at Max Screen Size, Responsively Reduced Height on Smaller Screens */}
-      <div className="w-full max-w-sm sm:max-w-md flex flex-col gap-2.5 sm:gap-3.5 my-auto shrink-0">
+      {/* Main Game Mode Cards: Scaled 1.2x & Aligned to Bottom */}
+      <div className="w-full max-w-sm sm:max-w-md flex flex-col gap-2.5 sm:gap-3.5 mt-auto mb-3 shrink-0 scale-[1.2] transform origin-bottom transform-gpu">
         {/* Card 1: FINGER ROULETTE */}
         <div
           onClick={() => {
@@ -130,7 +128,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             </div>
           </div>
 
-          {/* Thematic Background Image: Pinned to Top, Crystal Clear at Top, Gradually Fades & Dims at Bottom (~30%) */}
           <div
             className="absolute inset-0 pointer-events-none overflow-hidden z-0"
             style={{
@@ -143,7 +140,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               alt="Chibi Fingers Game"
               className="w-full h-full object-cover object-top select-none group-hover:scale-105 transition-transform duration-500 ease-out"
             />
-            {/* Gradual dimming overlay towards bottom (~30% brightness at bottom) */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -152,7 +148,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             />
           </div>
 
-          {/* Bottom Info: Bold Color Gradient Title & Description moved down close to button */}
           <div className="relative z-10 flex flex-col items-center w-full mt-auto">
             <h2 className="text-sm sm:text-base md:text-lg font-black tracking-wider uppercase bg-gradient-to-r from-cyan-200 via-sky-300 to-fuchsia-300 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight">
               FINGER ROULETTE
@@ -162,7 +157,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               Place your finger and have fun
             </p>
 
-            {/* 3D Glossy Capsule Button: PLAY PICKER */}
             <button
               type="button"
               onClick={(e) => {
@@ -176,7 +170,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 background: 'linear-gradient(90deg, #00e5ff 0%, #06b6d4 30%, #a855f7 70%, #d946ef 100%)',
               }}
             >
-              {/* Top Gloss Specular Sheen */}
               <div
                 className="absolute top-[1px] inset-x-2 h-[45%] rounded-[9999px_9999px_80px_80px] pointer-events-none z-10"
                 style={{
@@ -184,7 +177,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                     'linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.22) 55%, rgba(255, 255, 255, 0) 100%)',
                 }}
               />
-              {/* Bottom Glass Rim */}
               <div
                 className="absolute bottom-[1px] inset-x-3 h-[25%] rounded-[80px_80px_9999px_9999px] pointer-events-none z-10"
                 style={{
@@ -193,7 +185,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 }}
               />
 
-              {/* Occasional Taking-Turn Light Sweep (Turn 1: delay 0s) */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden z-25 rounded-full">
                 <div
                   className="absolute -inset-y-2 w-1/2 animate-button-sweep"
@@ -205,7 +196,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 />
               </div>
 
-              {/* Button Label */}
               <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 PLAY PICKER
               </span>
@@ -222,7 +212,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           }}
           className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-pink-500 shadow-[0_0_18px_rgba(236,72,153,0.4),inset_0_0_10px_rgba(236,72,153,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-pink-400 overflow-hidden w-full aspect-[2.35/1] xs:aspect-[2.1/1] sm:aspect-[16/9]"
         >
-          {/* Thematic Background Image: Pinned to Top, Crystal Clear at Top, Gradually Fades & Dims at Bottom (~30%) */}
           <div
             className="absolute inset-0 pointer-events-none overflow-hidden z-0"
             style={{
@@ -235,7 +224,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               alt="Chibi Spinning Bottle"
               className="w-full h-full object-cover object-top select-none group-hover:scale-105 transition-transform duration-500 ease-out"
             />
-            {/* Gradual dimming overlay towards bottom (~30% brightness at bottom) */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -244,7 +232,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             />
           </div>
 
-          {/* Bottom Info: Bold Color Gradient Title & Description moved down close to button */}
           <div className="relative z-10 flex flex-col items-center w-full mt-auto">
             <h2 className="text-sm sm:text-base md:text-lg font-black tracking-wider uppercase bg-gradient-to-r from-pink-200 via-rose-300 to-purple-300 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight">
               SPIN THE BOTTLE
@@ -254,7 +241,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               Flick or tap to spin the bottle
             </p>
 
-            {/* 3D Glossy Capsule Button: SPIN BOTTLE */}
             <button
               type="button"
               onClick={(e) => {
@@ -268,7 +254,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 background: 'linear-gradient(90deg, #9333ea 0%, #a855f7 35%, #ec4899 75%, #f43f5e 100%)',
               }}
             >
-              {/* Top Gloss Specular Sheen */}
               <div
                 className="absolute top-[1px] inset-x-2 h-[45%] rounded-[9999px_9999px_80px_80px] pointer-events-none z-10"
                 style={{
@@ -276,7 +261,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                     'linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.22) 55%, rgba(255, 255, 255, 0) 100%)',
                 }}
               />
-              {/* Bottom Glass Rim */}
               <div
                 className="absolute bottom-[1px] inset-x-3 h-[25%] rounded-[80px_80px_9999px_9999px] pointer-events-none z-10"
                 style={{
@@ -285,7 +269,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 }}
               />
 
-              {/* Occasional Taking-Turn Light Sweep (Turn 2: delay 1.4s) */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden z-25 rounded-full">
                 <div
                   className="absolute -inset-y-2 w-1/2 animate-button-sweep"
@@ -297,7 +280,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 />
               </div>
 
-              {/* Button Label */}
               <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 SPIN BOTTLE
               </span>
@@ -310,7 +292,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           onClick={handleKaboomClick}
           className="relative rounded-[20px] sm:rounded-[22px] p-2.5 sm:p-3.5 bg-black/40 backdrop-blur-[3px] border-[1.5px] border-orange-500 shadow-[0_0_18px_rgba(249,115,22,0.4),inset_0_0_10px_rgba(249,115,22,0.12)] flex flex-col items-center justify-end text-center cursor-pointer active:scale-[0.985] transition-all group hover:border-orange-400 overflow-hidden w-full aspect-[2.35/1] xs:aspect-[2.1/1] sm:aspect-[16/9]"
         >
-          {/* Top-Right Diagonal Ribbon: Coming Soon */}
           <div className="absolute top-0 right-0 w-24 h-24 sm:w-28 sm:h-28 overflow-hidden pointer-events-none z-20">
             <div
               className="absolute top-[18px] -right-[34px] sm:top-[20px] sm:-right-[32px] w-[124px] sm:w-[130px] transform rotate-45 py-0.5 sm:py-1 text-center font-black tracking-wider text-[8px] sm:text-[9px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-amber-200/40 select-none whitespace-nowrap"
@@ -324,7 +305,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             </div>
           </div>
 
-          {/* Thematic Background Image: Pinned to Top, Crystal Clear at Top, Gradually Fades & Dims at Bottom (~30%) */}
           <div
             className="absolute inset-0 pointer-events-none overflow-hidden z-0"
             style={{
@@ -337,7 +317,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               alt="Chibi Bomb Game"
               className="w-full h-full object-cover object-top select-none group-hover:scale-105 transition-transform duration-500 ease-out"
             />
-            {/* Gradual dimming overlay towards bottom (~30% brightness at bottom) */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -346,7 +325,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             />
           </div>
 
-          {/* Bottom Info: Bold Color Gradient Title & Description moved down close to button */}
           <div className="relative z-10 flex flex-col items-center w-full mt-auto">
             <h2 className="text-sm sm:text-base md:text-lg font-black tracking-wider uppercase bg-gradient-to-r from-amber-200 via-orange-300 to-red-400 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight">
               KABOOM
@@ -356,7 +334,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
               Avoid the bomb and don't get exploded
             </p>
 
-            {/* 3D Glossy Capsule Button: LET'S GO */}
             <button
               type="button"
               onClick={handleKaboomClick}
@@ -365,7 +342,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 background: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ff5500 100%)',
               }}
             >
-              {/* Top Gloss Specular Sheen */}
               <div
                 className="absolute top-[1px] inset-x-2 h-[45%] rounded-[9999px_9999px_80px_80px] pointer-events-none z-10"
                 style={{
@@ -373,7 +349,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                     'linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.22) 55%, rgba(255, 255, 255, 0) 100%)',
                 }}
               />
-              {/* Bottom Glass Rim */}
               <div
                 className="absolute bottom-[1px] inset-x-3 h-[25%] rounded-[80px_80px_9999px_9999px] pointer-events-none z-10"
                 style={{
@@ -382,7 +357,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 }}
               />
 
-              {/* Occasional Taking-Turn Light Sweep (Turn 3: delay 2.8s) */}
               <div className="absolute inset-0 pointer-events-none overflow-hidden z-25 rounded-full">
                 <div
                   className="absolute -inset-y-2 w-1/2 animate-button-sweep"
@@ -394,7 +368,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                 />
               </div>
 
-              {/* Button Label */}
               <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 LET'S GO
               </span>
@@ -404,7 +377,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       </div>
 
       {/* Footer Version Notes: v1.3.001 & PWA Pill */}
-      <div className="shrink-0 mt-1 mb-0.5 flex flex-col items-center gap-1.5 select-none">
+      <div className="shrink-0 mt-0 mb-1 flex flex-col items-center gap-1 select-none z-20">
         <PWAInstallButton variant="pill" />
         <button
           type="button"
