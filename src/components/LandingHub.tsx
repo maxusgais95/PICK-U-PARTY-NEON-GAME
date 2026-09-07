@@ -77,7 +77,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       image: chibiFingersImg,
       badge: 'Popular',
       borderColor: 'border-cyan-400',
-      shadowColor: 'shadow-[0_0_22px_rgba(6,182,212,0.4)]',
+      shadowColor: 'shadow-[0_0_24px_rgba(6,182,212,0.45)]',
       btnGradient: 'linear-gradient(90deg, #00e5ff 0%, #06b6d4 30%, #a855f7 70%, #d946ef 100%)',
       titleGradient: 'from-cyan-200 via-sky-300 to-fuchsia-300',
       subGradient: 'from-cyan-100 via-white to-sky-200',
@@ -95,7 +95,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       buttonText: 'SPIN BOTTLE',
       image: chibiBottleImg,
       borderColor: 'border-pink-500',
-      shadowColor: 'shadow-[0_0_22px_rgba(236,72,153,0.4)]',
+      shadowColor: 'shadow-[0_0_24px_rgba(236,72,153,0.45)]',
       btnGradient: 'linear-gradient(90deg, #9333ea 0%, #a855f7 35%, #ec4899 75%, #f43f5e 100%)',
       titleGradient: 'from-pink-200 via-rose-300 to-purple-300',
       subGradient: 'from-pink-100 via-white to-purple-200',
@@ -114,7 +114,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       image: chibiBombImg,
       badge: 'Coming Soon',
       borderColor: 'border-orange-500',
-      shadowColor: 'shadow-[0_0_22px_rgba(249,115,22,0.4)]',
+      shadowColor: 'shadow-[0_0_24px_rgba(249,115,22,0.45)]',
       btnGradient: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ff5500 100%)',
       titleGradient: 'from-amber-200 via-orange-300 to-red-400',
       subGradient: 'from-amber-100 via-white to-orange-200',
@@ -123,13 +123,13 @@ export const LandingHub: React.FC<LandingHubProps> = ({
     },
   ];
 
-  // Helper for infinite circular index wrapping
+  // Infinite circular index wrapping
   const getWrappedIndex = (index: number) => {
     const total = cards.length;
     return ((index % total) + total) % total;
   };
 
-  // --- Infinite Drag Gesture Handlers ---
+  // --- Touch & Mouse Drag Handlers ---
   const handleTouchStart = (clientX: number) => {
     isDragging.current = true;
     startX.current = clientX;
@@ -150,15 +150,13 @@ export const LandingHub: React.FC<LandingHubProps> = ({
     setIsSwiping(false);
 
     const deltaX = currentX.current - startX.current;
-    const threshold = 60; // minimum swipe distance to snap to next/prev card
+    const threshold = 60;
 
     if (deltaX < -threshold) {
-      // Swiped Left -> Next Card
       SoundEngine.playButtonClick();
       Haptics.buttonClick();
       setCurrentIndex((prev) => getWrappedIndex(prev + 1));
     } else if (deltaX > threshold) {
-      // Swiped Right -> Previous Card
       SoundEngine.playButtonClick();
       Haptics.buttonClick();
       setCurrentIndex((prev) => getWrappedIndex(prev - 1));
@@ -173,7 +171,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full max-w-md mx-auto flex flex-col items-center justify-start pt-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] pb-2 overflow-hidden select-none">
+    <div className="relative w-full h-full max-w-md mx-auto overflow-hidden select-none">
       <style>{`
         @keyframes subtleScaleBounce {
           0%, 100% { transform: scale(1.02); }
@@ -196,38 +194,40 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-12 z-50 animate-bounce">
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 animate-bounce">
           <div className="px-4 py-2 rounded-full bg-orange-600/90 text-white font-bold text-xs shadow-[0_0_20px_rgba(249,115,22,0.6)] border border-orange-300/80 backdrop-blur-md flex items-center gap-2">
             <span>{toastMessage}</span>
           </div>
         </div>
       )}
 
-      {/* Raised Top Layout Position */}
-      <div className="w-full flex flex-col items-center z-20 shrink-0 px-4 mt-2 mb-2">
+      {/* Header Container: Subtitle anchored to exact center (top: 50%) */}
+      <div className="absolute top-[48%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
+        {/* Title sitting directly above the subtitle */}
         <div
           onClick={handleTitleClick}
-          className="relative w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center cursor-pointer group"
+          className="relative w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center cursor-pointer group mb-1"
           title="PICK'U PARTY"
         >
           <div className="relative w-full flex items-center justify-center animate-title-sweep-pulse">
             <img
               src={getAssetUrl(pickuPartyLogo)}
               alt="PICK'U PARTY"
-              className="w-full h-auto max-h-[66px] sm:max-h-[78px] object-contain select-none pointer-events-none"
+              className="w-full h-auto max-h-[64px] sm:max-h-[76px] object-contain select-none pointer-events-none"
               style={{ mixBlendMode: 'screen' }}
             />
           </div>
         </div>
 
-        <p className="text-[12px] sm:text-[14px] font-semibold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mt-1 mb-0">
+        {/* Subtitle centered at top-1/2 boundary */}
+        <p className="text-[13px] sm:text-[15px] font-semibold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] my-0">
           Swipe to select a game mode
         </p>
       </div>
 
-      {/* Infinite Carousel Area */}
+      {/* Game Cards Container: Positioned 40px below screen center */}
       <div 
-        className="w-full flex flex-col items-center z-20 my-auto py-2 touch-pan-y"
+        className="absolute top-[calc(48%+40px)] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
         onTouchStart={(e) => handleTouchStart(e.touches[0].clientX)}
         onTouchMove={(e) => handleTouchMove(e.touches[0].clientX)}
         onTouchEnd={handleTouchEnd}
@@ -236,27 +236,28 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       >
-        <div className="relative w-full h-[180px] sm:h-[200px] flex items-center justify-center overflow-hidden">
+        {/* Card Carousel Stage scaled x1.2 */}
+        <div className="relative w-full h-[216px] sm:h-[240px] flex items-center justify-center overflow-hidden">
           {[-1, 0, 1].map((offset) => {
             const cardIndex = getWrappedIndex(currentIndex + offset);
             const card = cards[cardIndex];
             const isCenter = offset === 0;
 
-            // Compute continuous horizontal position shift based on drag physics
-            const cardWidth = 310;
+            // Compute horizontal displacement for x1.2 sized cards (Width 360px)
+            const cardWidth = 360;
             const translateX = offset * cardWidth + dragOffset;
 
             return (
               <div
                 key={`${card.id}-${offset}`}
-                className={`absolute w-[80vw] max-w-[310px] aspect-video transition-transform ${
+                className={`absolute w-[90vw] max-w-[372px] aspect-video transition-transform ${
                   isSwiping ? 'duration-0' : 'duration-300 ease-out'
                 }`}
                 style={{
                   transform: `translateX(${translateX}px) scale(${
-                    isCenter ? (Math.abs(dragOffset) > 20 ? 0.98 : 1) : 0.88
+                    isCenter ? (Math.abs(dragOffset) > 20 ? 0.98 : 1) : 0.85
                   })`,
-                  opacity: isCenter ? 1 : 0.45,
+                  opacity: isCenter ? 1 : 0.4,
                   zIndex: isCenter ? 30 : 10,
                 }}
               >
@@ -266,7 +267,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                       card.onClick(e);
                     }
                   }}
-                  className={`relative rounded-[22px] p-3 bg-black/50 backdrop-blur-[4px] border-[1.5px] ${card.borderColor} ${card.shadowColor} flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full h-full transition-all duration-300 ${
+                  className={`relative rounded-[24px] p-4 bg-black/50 backdrop-blur-[4px] border-[1.5px] ${card.borderColor} ${card.shadowColor} flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full h-full transition-all duration-300 ${
                     isCenter && !isSwiping ? 'animate-subtle-bounce' : ''
                   }`}
                 >
@@ -274,7 +275,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                   {card.badge && (
                     <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-20">
                       <div
-                        className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-black tracking-widest text-[8px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-white/50"
+                        className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-black tracking-widest text-[8.5px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-white/50"
                         style={{
                           background: card.badgeGradient,
                           color: '#ffffff',
@@ -302,18 +303,18 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
                   {/* Card Actions */}
                   <div className="relative z-10 flex flex-col items-center w-full mt-auto">
-                    <h2 className={`text-xs sm:text-sm font-black tracking-wider uppercase bg-gradient-to-r ${card.titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight`}>
+                    <h2 className={`text-sm sm:text-base font-black tracking-wider uppercase bg-gradient-to-r ${card.titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight`}>
                       {card.title}
                     </h2>
-                    <p className={`text-[10px] sm:text-[11px] font-bold tracking-normal bg-gradient-to-r ${card.subGradient} bg-clip-text text-transparent mt-0.5 mb-1.5 leading-tight`}>
+                    <p className={`text-[11px] sm:text-xs font-bold tracking-normal bg-gradient-to-r ${card.subGradient} bg-clip-text text-transparent mt-0.5 mb-2 leading-tight`}>
                       {card.subtitle}
                     </p>
                     <button
                       type="button"
-                      className="relative w-full h-7 sm:h-8 rounded-full flex items-center justify-center shadow-[0_3px_14px_rgba(0,0,0,0.4)] border-[1.2px] border-white/70"
+                      className="relative w-full h-8 sm:h-9 rounded-full flex items-center justify-center shadow-[0_3px_14px_rgba(0,0,0,0.4)] border-[1.2px] border-white/70"
                       style={{ background: card.btnGradient }}
                     >
-                      <span className="relative z-20 text-[9.5px] sm:text-[10px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                      <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                         {card.buttonText}
                       </span>
                     </button>
@@ -325,15 +326,15 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
 
         {/* Dynamic Pagination Indicator Dots */}
-        <div className="flex items-center gap-2 mt-3 z-20">
+        <div className="flex items-center gap-2 mt-2 z-20">
           {cards.map((_, i) => (
             <button
               key={i}
               onClick={() => handleDotClick(i)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2.5 rounded-full transition-all duration-300 ${
                 currentIndex === i
-                  ? 'w-6 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]'
-                  : 'w-2 bg-white/30 hover:bg-white/50'
+                  ? 'w-7 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]'
+                  : 'w-2.5 bg-white/30 hover:bg-white/50'
               }`}
               aria-label={`Go to slide ${i + 1}`}
             />
@@ -341,8 +342,8 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       </div>
 
-      {/* Footer Version Notes & PWA Button */}
-      <div className="shrink-0 mt-auto mb-2 flex flex-col items-center gap-1 select-none z-20">
+      {/* Footer Version Notes: Shifted up by 15px (bottom: 23px / pb-[15px]) */}
+      <div className="absolute bottom-[23px] left-0 right-0 flex flex-col items-center gap-1 select-none z-20">
         <PWAInstallButton variant="pill" />
         <button
           type="button"
