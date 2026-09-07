@@ -5,7 +5,9 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
-  const base = process.env.NODE_ENV === 'development' ? '/' : (process.env.VITE_BASE || '/PICK-U-PARTY-GAME/');
+  // Correct base path matching your actual repository name
+  const repoName = 'PICK-U-PARTY-NEON-GAME';
+  const base = process.env.NODE_ENV === 'development' ? '/' : (process.env.VITE_BASE || `/${repoName}/`);
 
   return {
     base,
@@ -24,7 +26,7 @@ export default defineConfig(() => {
           'icon.svg',
         ],
         manifest: {
-          id: '/',
+          id: `./`,
           name: "PICK'U PARTY",
           short_name: "PICK'U",
           description: 'Multiplayer Finger Roulette, Team Splitter, and Swipe Bottle Spin for Mobile Parties',
@@ -32,35 +34,35 @@ export default defineConfig(() => {
           background_color: '#030712',
           display: 'standalone',
           orientation: 'portrait',
-          start_url: '/',
-          scope: '/',
+          start_url: `./`,
+          scope: `./`,
           icons: [
             {
-              src: '/icon-192.png',
+              src: 'icon-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/icon-512.png',
+              src: 'icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/icon-maskable-512.png',
+              src: 'icon-maskable-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
             },
             {
-              src: '/apple-touch-icon.png',
+              src: 'apple-touch-icon.png',
               sizes: '180x180',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/app-icon.jpeg',
+              src: 'app-icon.jpeg',
               sizes: '1024x1024',
               type: 'image/jpeg',
               purpose: 'any',
