@@ -182,11 +182,11 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         }
       `}</style>
 
-      {/* Darkened/Blurred Overlay for lower section depth */}
+      {/* Backdrop Gradient & Blur */}
       <div 
         className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none z-0 backdrop-blur-[4px]"
         style={{
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.9) 100%)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.92) 100%)',
           maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)',
         }}
@@ -201,9 +201,9 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
-      {/* Header Container: Subtitle anchored to exact center (top: 50%) */}
-      <div className="absolute top-[48%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
-        {/* Title sitting directly above the subtitle */}
+      {/* Header Container: Positioned strictly at ~2/3 down (top: 66.6%) */}
+      <div className="absolute top-[66.6%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
+        {/* Title Logo */}
         <div
           onClick={handleTitleClick}
           className="relative w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center cursor-pointer group mb-1"
@@ -219,15 +219,15 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           </div>
         </div>
 
-        {/* Subtitle centered at top-1/2 boundary */}
+        {/* Subtitle centered at 2/3 line */}
         <p className="text-[13px] sm:text-[15px] font-semibold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] my-0">
           Swipe to select a game mode
         </p>
       </div>
 
-      {/* Game Cards Container: Positioned 40px below screen center */}
+      {/* Game Cards Container: Placed directly below the 2/3 line */}
       <div 
-        className="absolute top-[calc(48%+40px)] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
+        className="absolute top-[calc(66.6%+12px)] left-0 right-0 z-20 flex flex-col items-center touch-pan-y"
         onTouchStart={(e) => handleTouchStart(e.touches[0].clientX)}
         onTouchMove={(e) => handleTouchMove(e.touches[0].clientX)}
         onTouchEnd={handleTouchEnd}
@@ -243,7 +243,6 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             const card = cards[cardIndex];
             const isCenter = offset === 0;
 
-            // Compute horizontal displacement for x1.2 sized cards (Width 360px)
             const cardWidth = 360;
             const translateX = offset * cardWidth + dragOffset;
 
@@ -325,7 +324,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           })}
         </div>
 
-        {/* Dynamic Pagination Indicator Dots */}
+        {/* Dynamic Indicator Dots */}
         <div className="flex items-center gap-2 mt-2 z-20">
           {cards.map((_, i) => (
             <button
@@ -342,8 +341,8 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       </div>
 
-      {/* Footer Version Notes: Shifted up by 15px (bottom: 23px / pb-[15px]) */}
-      <div className="absolute bottom-[23px] left-0 right-0 flex flex-col items-center gap-1 select-none z-20">
+      {/* Footer Version Notes: Anchored cleanly at bottom */}
+      <div className="absolute bottom-[18px] left-0 right-0 flex flex-col items-center gap-1 select-none z-20">
         <PWAInstallButton variant="pill" />
         <button
           type="button"
