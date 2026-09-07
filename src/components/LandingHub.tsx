@@ -182,13 +182,11 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         }
       `}</style>
 
-      {/* Backdrop Gradient & Blur */}
+      {/* Dim Overlay Only (Blur Removed) */}
       <div 
-        className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none z-0 backdrop-blur-[4px]"
+        className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none z-0"
         style={{
           background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.92) 100%)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%)',
         }}
       />
 
@@ -203,17 +201,17 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
       {/* Header Container: Positioned strictly at ~2/3 down (top: 66.6%) */}
       <div className="absolute top-[66.6%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
-        {/* Title Logo */}
+        {/* Title Logo scaled x1.2 */}
         <div
           onClick={handleTitleClick}
-          className="relative w-full max-w-[320px] sm:max-w-[360px] flex items-center justify-center cursor-pointer group mb-1"
+          className="relative w-full max-w-[384px] sm:max-w-[432px] flex items-center justify-center cursor-pointer group mb-1"
           title="PICK'U PARTY"
         >
           <div className="relative w-full flex items-center justify-center animate-title-sweep-pulse">
             <img
               src={getAssetUrl(pickuPartyLogo)}
               alt="PICK'U PARTY"
-              className="w-full h-auto max-h-[64px] sm:max-h-[76px] object-contain select-none pointer-events-none"
+              className="w-full h-auto max-h-[77px] sm:max-h-[91px] object-contain select-none pointer-events-none"
               style={{ mixBlendMode: 'screen' }}
             />
           </div>
@@ -236,7 +234,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       >
-        {/* Card Carousel Stage scaled x1.2 */}
+        {/* Card Carousel Stage */}
         <div className="relative w-full h-[216px] sm:h-[240px] flex items-center justify-center overflow-hidden">
           {[-1, 0, 1].map((offset) => {
             const cardIndex = getWrappedIndex(currentIndex + offset);
@@ -266,7 +264,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                       card.onClick(e);
                     }
                   }}
-                  className={`relative rounded-[24px] p-4 bg-black/50 backdrop-blur-[4px] border-[1.5px] ${card.borderColor} ${card.shadowColor} flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full h-full transition-all duration-300 ${
+                  className={`relative rounded-[24px] p-4 bg-black/50 border-[1.5px] ${card.borderColor} ${card.shadowColor} flex flex-col items-center justify-end text-center cursor-pointer overflow-hidden w-full h-full transition-all duration-300 ${
                     isCenter && !isSwiping ? 'animate-subtle-bounce' : ''
                   }`}
                 >
@@ -341,7 +339,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       </div>
 
-      {/* Footer Version Notes: Anchored cleanly at bottom */}
+      {/* Footer Version Notes */}
       <div className="absolute bottom-[18px] left-0 right-0 flex flex-col items-center gap-1 select-none z-20">
         <PWAInstallButton variant="pill" />
         <button
