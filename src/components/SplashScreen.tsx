@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import pickuPartyLogo from '../assets/images/PICK\'U PARTY LOGO E01.webp';
+import pickuPartyLogo from '../assets/images/PICK\'U PARTY LOGO ART.png';
 import { preloadAllAssets } from '../lib/assetPreloader';
 import { SoundEngine } from '../lib/audio';
 import { Sparkles, Flame, Zap, CheckCircle2 } from 'lucide-react';

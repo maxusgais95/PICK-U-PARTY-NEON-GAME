@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useRef, useMemo, useState } from 'react';
-import spectrumVideo from '../assets/videos/Music Visualizer Spectrum Circle Animated.mp4';
+import spectrumVideo from '../assets/videos/Neon DJ Disc Background Animation.mp4';
 import { getAssetUrl } from '../lib/assetPreloader';
 import { ThemeId } from '../types';
 import { THEMES } from '../lib/themes';
