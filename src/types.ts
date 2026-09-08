@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type ScreenView = 'hub' | 'roulette' | 'bottle' | 'settings';
+export type ScreenView = 'hub' | 'roulette' | 'bottle' | 'kaboom' | 'settings';
 
 export type ThemeId =
   | 'cyber-neon'
@@ -107,5 +107,62 @@ export interface AppSettings {
 export interface AppStats {
   totalRouletteRounds: number;
   totalBottleSpins: number;
+  totalKaboomRounds?: number;
   lastPlayedAt: number;
 }
+
+// ============================================================================
+// KABOOM Mode Types
+// ============================================================================
+
+export type KaboomGridDimension = 2 | 3 | 4 | 5 | 6;
+
+export type KaboomTileType = 'safe' | 'bonus' | 'bomb';
+
+export type KaboomCommandCategory = 'dare' | 'privilege' | 'tactical' | 'party';
+
+export interface KaboomCommand {
+  id: string;
+  title: string;
+  category: KaboomCommandCategory;
+  description: string;
+  icon: string;
+  tag: string;
+}
+
+export interface KaboomTile {
+  id: number;
+  row: number;
+  col: number;
+  type: KaboomTileType;
+  revealed: boolean;
+  isDetonated?: boolean;
+  isDefused?: boolean;
+  bonusCommand?: KaboomCommand;
+  revealedByPlayerIndex?: number;
+}
+
+export interface KaboomGridConfig {
+  dimension: KaboomGridDimension;
+  title: string;
+  tagline: string;
+  difficulty: string;
+  totalTiles: number;
+  bombs: number;
+  bonusCountMin: number;
+  bonusCountMax: number;
+  bonusProbabilityText: string;
+  description: string;
+  accentColor: string;
+  badge?: string;
+}
+
+export interface KaboomLogEntry {
+  id: string;
+  timestamp: number;
+  type: 'round_start' | 'safe' | 'bonus' | 'bomb';
+  playerIndex: number;
+  playerName: string;
+  text: string;
+}
+

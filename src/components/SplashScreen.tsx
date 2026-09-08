@@ -3,47 +3,84 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import pickuPartyLogo from '../assets/images/PICK\'U PARTY LOGO ART.png';
-import { preloadAllAssets } from '../lib/assetPreloader';
-import { SoundEngine } from '../lib/audio';
-import { Sparkles, Flame, Zap, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import pickuPartyLogo from '../assets/images/PICKU_PARTY_LOGO_ART.webp';
+import splashBgVideo from '../assets/videos/Chibi Party Splash Screen Background Animation.mp4';
+import { preloadAllAssets, getAssetUrl } from '../lib/assetPreloader';
+import { SoundEngine, Haptics } from '../lib/audio';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 
 interface SplashScreenProps {
   onComplete: () => void;
+  onOpenVersionNotes?: () => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
+const LOADING_STAGES = [
+  { targetProgress: 18, text: 'Initializing WebAudio & Cyber Neon Synthesizer...' },
+  { targetProgress: 38, text: 'Decoding Chibi Party Animation & 60FPS Video Tracks...' },
+  { targetProgress: 58, text: 'Buffering Finger Roulette & Bottle Physics Shaders...' },
+  { targetProgress: 78, text: 'Compiling Offline Service Worker & Zero-Latency Cache...' },
+  { targetProgress: 92, text: 'Calibrating Multi-Touch Sensors & Ambient Neon Bleed...' },
+  { targetProgress: 100, text: 'All Systems Primed! Welcome to PICK\'U PARTY...' },
+];
+
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVersionNotes }) => {
   const [progress, setProgress] = useState<number>(0);
   const [statusText, setStatusText] = useState<string>('Initializing game engine & storage...');
   const [isReady, setIsReady] = useState<boolean>(false);
   const [isLaunching, setIsLaunching] = useState<boolean>(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    let assetsLoaded = false;
+    const startTime = Date.now();
+    const MIN_SPLASH_DURATION = 7200; // Guaranteed ~7.2 seconds duration (in the 5-10s range)
 
-    async function startBuffering() {
-      await preloadAllAssets((percent, text) => {
-        if (!mounted) return;
-        setProgress(percent);
-        setStatusText(text);
-      });
+    // Preload actual assets in background
+    preloadAllAssets(() => {
+      // Background preload progress
+    }).then(() => {
+      assetsLoaded = true;
+    });
 
+    // Paced progress animation timer
+    const interval = setInterval(() => {
       if (!mounted) return;
-      setIsReady(true);
-      SoundEngine.playButtonClick();
+      const elapsed = Date.now() - startTime;
+      const ratio = Math.min(elapsed / MIN_SPLASH_DURATION, 1);
 
-      // Launch automatically after a brief pause so player sees 100% completion
-      window.setTimeout(() => {
-        if (!mounted) return;
-        handleLaunch();
-      }, 700);
-    }
+      // Eased progress calculation
+      const currentPct = Math.min(100, Math.round(ratio * 100));
+      setProgress(currentPct);
 
-    startBuffering();
+      // Select dynamic stage text
+      for (const stage of LOADING_STAGES) {
+        if (currentPct <= stage.targetProgress) {
+          setStatusText(stage.text);
+          break;
+        }
+      }
+
+      // Check for completion
+      if (ratio >= 1 && (assetsLoaded || elapsed >= MIN_SPLASH_DURATION + 1000)) {
+        clearInterval(interval);
+        setProgress(100);
+        setStatusText('Ready! Launching PICK\'U PARTY suite...');
+        setIsReady(true);
+        SoundEngine.playButtonClick();
+
+        // Brief hold at 100% so player sees full bar
+        setTimeout(() => {
+          if (!mounted) return;
+          handleLaunch();
+        }, 900);
+      }
+    }, 50);
 
     return () => {
       mounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -67,162 +104,126 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           : 'scale-100 opacity-100'
       }`}
       style={{
-        background: 'radial-gradient(ellipse at 50% 35%, #180d38 0%, #080415 60%, #020108 100%)',
+        background: 'radial-gradient(ellipse 85% 65% at 50% 22%, #220e48 0%, #0f0525 45%, #050212 75%, #020108 100%)',
       }}
     >
-      {/* Dynamic Ambient Background Glow Elements */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Rotating Cyan / Magenta background aura */}
-        <div
-          className="absolute -top-1/4 -left-1/4 w-[150vw] h-[150vw] rounded-full opacity-20 pointer-events-none animate-ambient-bleed"
-          style={{
-            background:
-              'conic-gradient(from 0deg, #00f0ff 0deg, #ec4899 120deg, #a855f7 240deg, #00f0ff 360deg)',
-            filter: 'blur(70px)',
-          }}
+      {/* Background Animated Video Layer with Crystal Clear Highlight Opening */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <video
+          ref={videoRef}
+          src={getAssetUrl(splashBgVideo)}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover object-center opacity-95 animate-bg-zoom-out"
         />
-        {/* Grid dots */}
+
+        {/* Cinematic Vignette: Crystal clear at highlight center, smoothly shading peripheral edges and bottom */}
         <div
-          className="absolute inset-0 opacity-15 pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage:
-              'radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
+            background: `
+              radial-gradient(ellipse 85% 58% at 50% 28%, transparent 45%, rgba(4, 2, 16, 0.45) 75%, #020108 100%),
+              linear-gradient(to bottom, transparent 0%, transparent 32%, rgba(2, 1, 8, 0.45) 58%, rgba(2, 1, 8, 0.92) 80%, #020108 100%)
+            `,
           }}
         />
       </div>
 
-      {/* Top 2/3 of the Vertical Screen: Pop Up Big Title Logo & Game Modes Intro */}
-      <div className="relative z-10 w-full max-w-md px-6 pt-10 sm:pt-14 flex flex-col items-center text-center">
-        {/* Big Pop-Up Title Logo */}
-        <div className="relative flex flex-col items-center animate-title-popup">
-          {/* Pulsing Backlight */}
-          <div className="absolute inset-0 -inset-x-8 bg-cyan-500/25 rounded-full blur-2xl animate-pulse pointer-events-none" />
+      {/* Top Spacer to position logo center at approximately 40% from top */}
+      <div className="w-full h-[14vh] sm:h-[18vh] shrink-0 pointer-events-none" />
 
-          <div className="relative group overflow-hidden rounded-2xl py-2 px-3">
-            <img
-              src={pickuPartyLogo}
-              alt="PICK'U PARTY"
-              className="w-56 sm:w-72 h-auto object-contain drop-shadow-[0_0_25px_rgba(0,240,255,0.7)] drop-shadow-[0_0_45px_rgba(236,72,153,0.4)] transform active:scale-95 transition-transform"
-            />
-            {/* Occasional Specular Light Sweep */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="absolute -inset-y-4 w-1/2 animate-title-sweep bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-25deg] blur-[1px]" />
-            </div>
-          </div>
+      {/* Middle Content Section: Logo, Description & Progress Bar */}
+      <div className="relative z-10 w-full max-w-md px-6 flex flex-col items-center text-center">
+        {/* Logo Bounce Pop Up with Continuous Neon Pulse Animation */}
+        <div className="relative flex flex-col items-center animate-logo-bounce">
+          {/* Ambient Contour Glow */}
+          <div className="absolute inset-0 bg-cyan-500/25 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
-          {/* Game Tagline */}
-          <div className="mt-2.5 flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-cyan-400/30 shadow-[0_0_12px_rgba(6,182,212,0.25)]">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span className="text-[10px] sm:text-[11px] font-black tracking-widest text-cyan-300 uppercase">
-              The Ultimate Multiplayer Cyber Party Suite
+          {/* Clean RGBA Transparent Logo with Continuous Breathing Neon Pulse */}
+          <img
+            src={pickuPartyLogo}
+            alt="PICK'U PARTY"
+            className="relative z-10 w-64 sm:w-80 h-auto object-contain animate-logo-pulse"
+          />
+        </div>
+
+        {/* Game Text Description under the logo */}
+        <div className="mt-3.5 sm:mt-4.5 max-w-[360px] px-3 animate-desc-popup">
+          <p className="text-xs sm:text-[13px] text-gray-200/90 font-medium leading-relaxed tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+            The ultimate mobile party game hub! Test your luck in Finger Roulette, dodge penalties in Spin the Bottle, and risk it all in explosive KABOOM. Level up game night!
+          </p>
+        </div>
+
+        {/* Follow by Progress Bar & Loading Descriptions Pop Up */}
+        <div className="mt-5 sm:mt-6 w-full max-w-sm px-2 animate-progress-popup flex flex-col items-center">
+          {/* Progress Info Header */}
+          <div className="w-full flex items-center justify-between mb-2 text-xs">
+            <span className="font-extrabold uppercase tracking-wider text-gray-300 flex items-center gap-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {isReady ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-emerald-300">MEDIA BUFFERED IN RAM</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>BUFFERING GAME MEDIA</span>
+                </>
+              )}
+            </span>
+            <span className="font-mono font-black text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
+              {progress}%
             </span>
           </div>
 
-          <p className="mt-2 text-xs sm:text-[13px] text-gray-300/90 max-w-[320px] font-medium leading-relaxed">
-            Multiplayer touch roulette, physics bottle spins & intense party showdowns with real-time neon FX.
-          </p>
-        </div>
-
-        {/* Game Modes Introduction Cards */}
-        <div className="mt-5 w-full space-y-2 text-left animate-fadeIn">
-          {/* Finger Roulette Card */}
-          <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-black/40 backdrop-blur-md border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.4)]">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-white tracking-wide">FINGER ROULETTE</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">POPULAR</span>
-              </div>
-              <p className="text-[10.5px] text-gray-300/80 leading-tight mt-0.5 truncate">
-                Place fingers, dynamic video countdown & shockwave elimination.
-              </p>
+          {/* Gradient Progress Bar (Blue, Cyan, Magenta, Purple, Orange) */}
+          <div className="relative w-full h-3 bg-black/70 rounded-full p-0.5 border border-white/25 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
+              style={{
+                width: `${progress}%`,
+                background:
+                  'linear-gradient(90deg, #0066ff 0%, #00f0ff 25%, #ec4899 50%, #a855f7 75%, #f97316 100%)',
+                boxShadow:
+                  '0 0 16px rgba(0, 240, 255, 0.7), 0 0 24px rgba(236, 72, 153, 0.5)',
+              }}
+            >
+              {/* Animated Specular Bar Shimmer */}
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent animate-laser-scan-left opacity-75" />
             </div>
           </div>
 
-          {/* Spin the Bottle Card */}
-          <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-black/40 backdrop-blur-md border border-fuchsia-500/30 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(236,72,153,0.4)]">
-              <Flame className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-white tracking-wide">SPIN THE BOTTLE</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-400/30">INTERACTIVE</span>
-              </div>
-              <p className="text-[10.5px] text-gray-300/80 leading-tight mt-0.5 truncate">
-                Authentic physics, neon bottle skins & orbiting light table.
-              </p>
-            </div>
-          </div>
-
-          {/* Kaboom Party Card */}
-          <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-black/40 backdrop-blur-md border border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] opacity-85">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(249,115,22,0.4)]">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-white tracking-wide">KABOOM PARTY</span>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-400/30">COMING SOON</span>
-              </div>
-              <p className="text-[10.5px] text-gray-300/80 leading-tight mt-0.5 truncate">
-                Pass the ticking bomb before detonation in high-tension chaos.
-              </p>
-            </div>
+          {/* Dynamic Loading / Buffering Description Under Progress Bar */}
+          <div className="mt-2.5 w-full text-center min-h-[36px] flex flex-col items-center justify-center">
+            <p className="text-[11px] sm:text-xs font-mono font-medium text-cyan-200/90 tracking-wide truncate max-w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              {statusText}
+            </p>
+            <p className="text-[9.5px] text-gray-400/80 tracking-wider uppercase mt-0.5">
+              {isReady
+                ? 'Tap anywhere to launch immediately'
+                : 'Zero-latency in-memory blob cache active'}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Bottom Section: Gradient Progress Bar & Dynamic Buffering Descriptions */}
-      <div className="relative z-10 w-full max-w-sm px-6 pb-8 sm:pb-12 flex flex-col items-center">
-        {/* Progress Info Header */}
-        <div className="w-full flex items-center justify-between mb-2 text-xs">
-          <span className="font-extrabold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-            {isReady ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-300">MEDIA BUFFERED IN RAM</span>
-              </>
-            ) : (
-              'BUFFERING GAME MEDIA'
-            )}
-          </span>
-          <span className="font-mono font-black text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
-            {progress}%
-          </span>
-        </div>
-
-        {/* Gradient Progress Bar (Blue, Cyan, Magenta, Purple, Orange) */}
-        <div className="relative w-full h-3 bg-black/60 rounded-full p-0.5 border border-white/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)] overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-300 ease-out relative overflow-hidden"
-            style={{
-              width: `${progress}%`,
-              background:
-                'linear-gradient(90deg, #0066ff 0%, #00f0ff 25%, #ec4899 50%, #a855f7 75%, #f97316 100%)',
-              boxShadow:
-                '0 0 16px rgba(0, 240, 255, 0.7), 0 0 24px rgba(236, 72, 153, 0.5)',
-            }}
-          >
-            {/* Animated Specular Bar Shimmer */}
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent animate-laser-scan-left opacity-75" />
-          </div>
-        </div>
-
-        {/* Dynamic Loading / Buffering Description Under Progress Bar */}
-        <div className="mt-3 w-full text-center min-h-[38px] flex flex-col items-center justify-center">
-          <p className="text-[11px] sm:text-xs font-mono font-medium text-cyan-200/90 tracking-wide truncate max-w-full">
-            {statusText}
-          </p>
-          <p className="text-[9.5px] text-gray-400/80 tracking-wider uppercase mt-0.5">
-            {isReady
-              ? 'Tap anywhere to launch immediately'
-              : 'Zero-latency in-memory blob cache active'}
-          </p>
-        </div>
+      {/* Version Notes at the Bottom of the Screen */}
+      <div className="relative z-10 w-full pb-5 sm:pb-7 flex flex-col items-center animate-version-fadein">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            SoundEngine.playButtonClick();
+            Haptics.buttonClick();
+            if (onOpenVersionNotes) onOpenVersionNotes();
+          }}
+          className="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/40 text-[11px] font-mono font-bold tracking-wider text-gray-400 hover:text-cyan-300 transition-all cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.6)] flex items-center gap-1.5 focus:outline-none"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span>Version notes: v1.4.001</span>
+        </button>
       </div>
     </div>
   );

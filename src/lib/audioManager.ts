@@ -680,6 +680,124 @@ export class AudioManager {
       } catch (e) {}
     }
   }
+
+  // =========================================================================
+  // 10. Kaboom: Safe Ball Pop (Bubble burst + crystal glass chime)
+  // =========================================================================
+  public static playSafePop() {
+    Haptics.safePop();
+    if (!this.soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      // Frequency dive bubble pop
+      const popOsc = ctx.createOscillator();
+      const popGain = ctx.createGain();
+      popOsc.type = 'sine';
+      popOsc.frequency.setValueAtTime(640, now);
+      popOsc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
+      popGain.gain.setValueAtTime(0.22 * this.masterVolume, now);
+      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+      popOsc.connect(popGain);
+      popGain.connect(ctx.destination);
+      popOsc.start(now);
+      popOsc.stop(now + 0.05);
+
+      // Uplifting harmonic crystal chime
+      const chimeOsc = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chimeOsc.type = 'triangle';
+      chimeOsc.frequency.setValueAtTime(987.77, now + 0.02); // B5
+      chimeOsc.frequency.exponentialRampToValueAtTime(1318.51, now + 0.16); // E6
+      chimeGain.gain.setValueAtTime(0.001, now + 0.02);
+      chimeGain.gain.linearRampToValueAtTime(0.18 * this.masterVolume, now + 0.04);
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chimeOsc.start(now + 0.02);
+      chimeOsc.stop(now + 0.35);
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // 11. Kaboom: Command Bonus Fanfare (High-energy celebratory brass arpeggio)
+  // =========================================================================
+  public static playBonusFanfare() {
+    Haptics.bonusClaim();
+    if (!this.soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      // Ascending triumphant arpeggio: C5 -> E5 -> G5 -> C6 -> E6
+      const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.065);
+        gain.gain.setValueAtTime(0.001, now + idx * 0.065);
+        gain.gain.linearRampToValueAtTime(0.24 * this.masterVolume, now + idx * 0.065 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.065 + 0.42);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.065);
+        osc.stop(now + idx * 0.065 + 0.45);
+      });
+    } catch (e) {}
+  }
+
+  // =========================================================================
+  // 12. Kaboom: Bomb Explosion (Sub-bass detonation rumble + noise blast)
+  // =========================================================================
+  public static playBombExplosion() {
+    Haptics.bombExplosion();
+    if (!this.soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      // 1. Heavy sub-bass earthquake drop
+      const subOsc = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(160, now);
+      subOsc.frequency.exponentialRampToValueAtTime(26, now + 0.9);
+      subGain.gain.setValueAtTime(0.9 * this.masterVolume, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      subOsc.connect(subGain);
+      subGain.connect(ctx.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 1.25);
+
+      // 2. Filtered noise explosion blast
+      const bufferSize = Math.floor(ctx.sampleRate * 0.9);
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(850, now);
+      filter.frequency.exponentialRampToValueAtTime(70, now + 0.85);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.75 * this.masterVolume, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+
+      noiseSource.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      noiseSource.start(now);
+      noiseSource.stop(now + 0.9);
+    } catch (e) {}
+  }
 }
 
 /**

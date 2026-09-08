@@ -30,7 +30,6 @@ import { saveCustomSprite, deleteCustomSprite, saveStats } from '../lib/db';
 import { processSpriteImage } from '../lib/imageProcessing';
 import { BOTTLE_SKINS } from '../lib/bottleSkins';
 import { useTransparentImage } from '../lib/bottleAlphaCache';
-import { PWAInstallButton } from './PWAInstallButton';
 
 const BottlePresetThumbnail: React.FC<{ image: string; alt: string }> = ({ image, alt }) => {
   const transparentSrc = useTransparentImage(image);
@@ -359,22 +358,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   </div>
                 )}
-              </div>
-
-              {/* Add to Home Screen & PWA Section */}
-              <div className="p-3.5 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <div>
-                    <div className="text-xs font-extrabold uppercase tracking-wide text-white">
-                      Home Screen & PWA
-                    </div>
-                    <div className="text-[11px] text-gray-400">Install for full-screen party mode with offline play</div>
-                  </div>
-                </div>
-                <div className="pt-1">
-                  <PWAInstallButton className="w-full" />
-                </div>
               </div>
             </div>
           )}

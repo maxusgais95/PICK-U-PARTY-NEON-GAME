@@ -6,14 +6,16 @@
 // Asset Imports
 import neonPartyVideo from '../assets/videos/Chibi DJ Neon Party Animation.mp4';
 import rouletteBgVideo from '../assets/videos/Finger Roulette Background Animation.mp4';
-import spectrumVideo from '../assets/videos/Music Visualizer Spectrum Circle Animated.mp4';
+import spectrumVideo from '../assets/videos/Neon DJ Disc Background Animation.mp4';
+import splashBgVideo from '../assets/videos/Chibi Party Splash Screen Background Animation.mp4';
 
 import rouletteBgImage from '../assets/images/Finger Roulette Background.webp';
 import chibiFingersGame from '../assets/images/Chibi Fingers Game.webp';
 import chibiSpinningBottle from '../assets/images/Chibi Spinning Bottle.webp';
 import chibiBombGame from '../assets/images/Chibi Bomb Game.webp';
-import pickuPartyLogo from '../assets/images/PICK\'U PARTY LOGO E01.webp';
-import pickuPartyIcon from '../assets/images/PICK\'U PARTY APP ICON.webp';
+import pickuPartyLogo from '../assets/images/PICKU_PARTY_LOGO_E01.webp';
+import pickuPartyLogoArt from '../assets/images/PICKU_PARTY_LOGO_ART.webp';
+import pickuPartyIcon from '../assets/images/PICKU_PARTY_APP_ICON.webp';
 import btl001 from '../assets/images/Btl_E_001.webp';
 import btl002 from '../assets/images/Btl_E_002.webp';
 import btl003 from '../assets/images/Btl_E_003.webp';
@@ -44,19 +46,31 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     name: 'Party DJ Animation',
     url: neonPartyVideo,
     type: 'video',
-    description: 'Buffering Chibi DJ Neon Party Video (1/3)...',
+    description: 'Buffering Chibi DJ Neon Party Video (1/4)...',
   },
   {
     name: 'Roulette Countdown Video',
     url: rouletteBgVideo,
     type: 'video',
-    description: 'Buffering Finger Roulette Dynamic Animation (2/3)...',
+    description: 'Buffering Finger Roulette Dynamic Animation (2/4)...',
   },
   {
-    name: 'Spectrum Visualizer Video',
+    name: 'Neon DJ Disc Video',
     url: spectrumVideo,
     type: 'video',
-    description: 'Buffering Music Visualizer Spectrum Video (3/3)...',
+    description: 'Buffering Neon DJ Disc Video (3/4)...',
+  },
+  {
+    name: 'Splash Screen Video',
+    url: splashBgVideo,
+    type: 'video',
+    description: 'Buffering Chibi Party Splash Video Animation (4/4)...',
+  },
+  {
+    name: 'Picku Party Logo Art',
+    url: pickuPartyLogoArt,
+    type: 'image',
+    description: 'Decoding Cyber Hologram Logo Art...',
   },
   {
     name: 'Roulette Background Image',

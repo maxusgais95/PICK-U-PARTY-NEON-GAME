@@ -5,7 +5,6 @@
 
 import React from 'react';
 import { Sparkles, X, Smartphone, Maximize2, Palette, Flame, Image as ImageIcon } from 'lucide-react';
-import pickuPartyIcon from '../assets/images/PICK\'U PARTY APP ICON.webp';
 import { SoundEngine, Haptics } from '../lib/audio';
 
 interface VersionNotesModalProps {
@@ -17,7 +16,7 @@ export const VersionNotesModal: React.FC<VersionNotesModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fadeIn">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl animate-fadeIn">
       <div
         className="relative w-full max-w-sm rounded-[28px] bg-slate-950/90 border border-purple-500/40 p-5 shadow-[0_0_40px_rgba(168,85,247,0.35)] flex flex-col text-white"
         onClick={(e) => e.stopPropagation()}
@@ -26,7 +25,7 @@ export const VersionNotesModal: React.FC<VersionNotesModalProps> = ({ isOpen, on
         <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <img
-              src={pickuPartyIcon}
+              src="/apple-touch-icon.png"
               alt="PICK'U PARTY Icon"
               className="w-7 h-7 rounded-lg object-cover border border-cyan-400/40 shadow-[0_0_10px_rgba(6,182,212,0.4)]"
             />
@@ -48,18 +47,44 @@ export const VersionNotesModal: React.FC<VersionNotesModalProps> = ({ isOpen, on
 
         {/* Badge & Version */}
         <div className="mt-4 flex items-center justify-between">
-          <span className="px-3 py-1 rounded-full text-xs font-black tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_10px_rgba(6,182,212,0.3)]">
-            v1.3.001
+          <span className="px-3 py-1 rounded-full text-xs font-black tracking-wider bg-orange-500/20 text-orange-300 border border-orange-400/40 shadow-[0_0_10px_rgba(249,115,22,0.3)]">
+            v1.4.001
           </span>
           <span className="text-[11px] text-gray-400 font-medium">Latest Release</span>
         </div>
 
         {/* Change List */}
         <div className="mt-4 space-y-2.5 text-xs text-gray-200 max-h-[300px] overflow-y-auto pr-1">
+          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-orange-500/10 border border-orange-400/30">
+            <Flame className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-white">KABOOM Elimination Game Mode Live!</p>
+              <p className="text-[11px] text-gray-400">
+                Turn-based party elimination game featuring 5 grid sizes (2×2 to 6×6), 3D tactile sphere buttons, lethal hidden bomb, secret command bonuses, party dares, tactical radar scans, immunity shields, 60fps canvas particle explosions, and post-round stats.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-400/30">
+            <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-white">Pure RGBA Splash Logo & Cinematic Launch</p>
+              <p className="text-[11px] text-gray-400">Removed rectangular container and sweep overlays from the splash screen for a pure, seamless RGBA transparent logo graphic. Features slow video zoom-out, spring bounce pop-up at 40% height, and staged telemetry.</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
+            <Flame className="w-4 h-4 text-fuchsia-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-white">Removed Add to Home Controls</p>
+              <p className="text-[11px] text-gray-400">Cleaned up UI by removing the Add to Home buttons and toggles across Header, Landing Hub, and Settings modal.</p>
+            </div>
+          </div>
+
           <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white/5 border border-white/10">
             <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-white">Full Offline & Add to Home Screen (PWA)</p>
+              <p className="font-bold text-white">Full Offline & Native Install</p>
               <p className="text-[11px] text-gray-400">Install directly onto your iOS or Android home screen with custom party launcher icons. Workbox service worker precaching guarantees 100% offline gameplay anywhere without internet.</p>
             </div>
           </div>

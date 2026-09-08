@@ -138,4 +138,28 @@ export class Haptics {
   public static buttonClick() {
     this.vibrate(14);
   }
+
+  /**
+   * 10. Kaboom: Safe Ball Pop
+   * Snappy 20ms tactile confirmation
+   */
+  public static safePop() {
+    this.vibrate(20);
+  }
+
+  /**
+   * 11. Kaboom: Command Bonus Revealed
+   * Ascending celebratory shimmer pulse
+   */
+  public static bonusClaim() {
+    this.vibrate([25, 30, 45, 30, 80]);
+  }
+
+  /**
+   * 12. Kaboom: Lethal Bomb Explosion
+   * Violent progressive double detonation rumble
+   */
+  public static bombExplosion() {
+    this.vibrate([40, 20, 80, 30, 160, 40, 300]);
+  }
 }

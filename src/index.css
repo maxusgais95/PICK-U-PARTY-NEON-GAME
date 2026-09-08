@@ -954,6 +954,119 @@
   }
 }
 
+@keyframes logoBouncePopUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) translateY(50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18) translateY(-12px);
+  }
+  70% {
+    transform: scale(0.92) translateY(5px);
+  }
+  85% {
+    transform: scale(1.04) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes descPopUp {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes progressPopUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.92);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes versionFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bgSlowZoomOut {
+  0% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1.02);
+  }
+}
+
+.animate-bg-zoom-out {
+  animation: bgSlowZoomOut 8s cubic-bezier(0.12, 0.88, 0.32, 1) forwards;
+  transform-origin: 50% 30%;
+  will-change: transform;
+}
+
+.animate-logo-bounce {
+  animation: logoBouncePopUp 0.95s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  will-change: transform, opacity;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.75)) drop-shadow(0 0 40px rgba(236, 72, 153, 0.45));
+  }
+  50% {
+    transform: scale(1.055);
+    filter: drop-shadow(0 0 32px rgba(0, 240, 255, 0.95)) drop-shadow(0 0 60px rgba(236, 72, 153, 0.7));
+  }
+}
+
+.animate-logo-pulse {
+  animation: logoPulse 2.4s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.animate-desc-popup {
+  animation: descPopUp 0.8s 0.3s cubic-bezier(0.25, 1.25, 0.5, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-progress-popup {
+  animation: progressPopUp 0.85s 0.6s cubic-bezier(0.25, 1.25, 0.5, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-version-fadein {
+  animation: versionFadeIn 0.8s 0.85s ease-out both;
+  will-change: transform, opacity;
+}
+
 @keyframes splashZoomOut {
   0% {
     opacity: 1;
@@ -976,4 +1089,88 @@
   animation: splashZoomOut 0.55s ease-in forwards;
   will-change: transform, opacity, filter;
 }
+
+/* ==========================================================================
+   KABOOM Mode Custom Animations
+   ========================================================================== */
+
+@keyframes screenShake {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  10% { transform: translate3d(-8px, -6px, 0) rotate(-1.5deg); }
+  20% { transform: translate3d(8px, 6px, 0) rotate(2deg); }
+  30% { transform: translate3d(-10px, 4px, 0) rotate(-1.8deg); }
+  40% { transform: translate3d(9px, -4px, 0) rotate(1.5deg); }
+  50% { transform: translate3d(-6px, 6px, 0) rotate(-1deg); }
+  60% { transform: translate3d(6px, -5px, 0) rotate(1deg); }
+  70% { transform: translate3d(-4px, 3px, 0) rotate(-0.5deg); }
+  80% { transform: translate3d(4px, -2px, 0) rotate(0.5deg); }
+  90% { transform: translate3d(-1px, 1px, 0) rotate(0deg); }
+}
+
+.animate-screen-shake {
+  animation: screenShake 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  will-change: transform;
+}
+
+@keyframes bonusBounce {
+  0% { transform: scale(0.3) rotate(-12deg); opacity: 0; }
+  50% { transform: scale(1.35) rotate(6deg); opacity: 1; }
+  75% { transform: scale(0.92) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-bonus-bounce {
+  animation: bonusBounce 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes ballPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.32); }
+  100% { transform: scale(1); }
+}
+
+.animate-ball-pop {
+  animation: ballPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  will-change: transform;
+}
+
+@keyframes explosionFlash {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+.animate-explosion-flash {
+  animation: explosionFlash 0.75s ease-out forwards;
+  will-change: opacity;
+}
+
+.font-lilita {
+  font-family: 'Lilita One', 'Fredoka', 'Righteous', cursive, sans-serif;
+}
+
+.font-fredoka {
+  font-family: 'Fredoka', 'Lilita One', cursive, sans-serif;
+}
+
+.text-shadow-3d-orange {
+  text-shadow:
+    0 2px 0 #9a3412,
+    0 4px 0 #7c2d12,
+    0 6px 14px rgba(0, 0, 0, 0.85);
+}
+
+.text-shadow-label {
+  text-shadow:
+    0 1px 0 #7c2d12,
+    0 2px 0 #431407,
+    0 3px 6px rgba(0, 0, 0, 0.95);
+}
+
+.text-shadow-dimension {
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.4),
+    0 4px 10px rgba(0, 0, 0, 0.85);
+}
+
 

@@ -22,6 +22,7 @@ import { VersionNotesModal } from './components/VersionNotesModal';
 import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { KaboomGame } from './components/kaboom/KaboomGame';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState<boolean>(true);
@@ -252,6 +253,7 @@ export default function App() {
             settings={settings}
             onSelectRoulette={() => setCurrentView('roulette')}
             onSelectBottle={() => setCurrentView('bottle')}
+            onSelectKaboom={() => setCurrentView('kaboom')}
             onUpdateSettings={handleUpdateSettings}
             onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
           />
@@ -279,6 +281,13 @@ export default function App() {
             }}
           />
         )}
+
+        {currentView === 'kaboom' && (
+          <KaboomGame
+            settings={settings}
+            onBackToMenu={() => setCurrentView('hub')}
+          />
+        )}
       </div>
 
       {/* Settings & Custom Sprite Upload Modal */}
@@ -296,7 +305,7 @@ export default function App() {
         onRefreshStats={refreshStats}
       />
 
-      {/* Version Notes Modal (v1.2.089) */}
+      {/* Version Notes Modal (v1.3.002) */}
       <VersionNotesModal
         isOpen={isVersionNotesOpen}
         onClose={() => setIsVersionNotesOpen(false)}
@@ -310,7 +319,10 @@ export default function App() {
 
       {/* Launch Splash Screen & In-Memory Asset Preloader Modal */}
       {showSplash && (
-        <SplashScreen onComplete={() => setShowSplash(false)} />
+        <SplashScreen
+          onComplete={() => setShowSplash(false)}
+          onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
+        />
       )}
     </main>
   );

@@ -4,19 +4,19 @@
  */
 
 import React, { useState, useRef } from 'react';
-import pickuPartyLogo from '../assets/images/PICK\'U PARTY LOGO E01.webp';
+import pickuPartyLogo from '../assets/images/PICKU_PARTY_LOGO_E01.webp';
 import chibiFingersImg from '../assets/images/Chibi Fingers Game.webp';
 import chibiBottleImg from '../assets/images/Chibi Spinning Bottle.webp';
 import chibiBombImg from '../assets/images/Chibi Bomb Game.webp';
 import { getAssetUrl } from '../lib/assetPreloader';
 import { AppSettings } from '../types';
 import { SoundEngine, Haptics } from '../lib/audio';
-import { PWAInstallButton } from './PWAInstallButton';
 
 interface LandingHubProps {
   settings: AppSettings;
   onSelectRoulette: () => void;
   onSelectBottle: () => void;
+  onSelectKaboom?: () => void;
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
   onOpenVersionNotes?: () => void;
 }
@@ -40,6 +40,7 @@ interface GameCard {
 export const LandingHub: React.FC<LandingHubProps> = ({
   onSelectRoulette,
   onSelectBottle,
+  onSelectKaboom,
   onOpenVersionNotes,
 }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -112,14 +113,23 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       subtitle: "Avoid the bomb and don't get exploded",
       buttonText: "LET'S GO",
       image: chibiBombImg,
-      badge: 'Coming Soon',
+      badge: 'NEW MODE',
       borderColor: 'border-orange-500',
       shadowColor: 'shadow-[0_0_24px_rgba(249,115,22,0.45)]',
       btnGradient: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ff5500 100%)',
       titleGradient: 'from-amber-200 via-orange-300 to-red-400',
       subGradient: 'from-amber-100 via-white to-orange-200',
       badgeGradient: 'linear-gradient(90deg, #ef4444 0%, #f97316 50%, #ea580c 100%)',
-      onClick: handleKaboomClick,
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        SoundEngine.playButtonClick();
+        Haptics.buttonClick();
+        if (onSelectKaboom) {
+          onSelectKaboom();
+        } else {
+          handleKaboomClick(e);
+        }
+      },
     },
   ];
 
@@ -340,8 +350,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       </div>
 
       {/* Footer Version Notes */}
-      <div className="absolute bottom-[18px] left-0 right-0 flex flex-col items-center gap-1 select-none z-20">
-        <PWAInstallButton variant="pill" />
+      <div className="absolute bottom-[18px] left-0 right-0 flex flex-col items-center select-none z-20">
         <button
           type="button"
           onClick={() => {
@@ -351,7 +360,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           }}
           className="text-[10px] sm:text-[11px] text-gray-300/80 hover:text-white transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
         >
-          Version notes: v1.3.001
+          Version notes: v1.4.001
         </button>
       </div>
     </div>

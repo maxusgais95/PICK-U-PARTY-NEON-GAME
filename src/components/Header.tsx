@@ -9,7 +9,6 @@ import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import { AppSettings, ScreenView } from '../types';
 import { THEMES } from '../lib/themes';
 import { SoundEngine, Haptics } from '../lib/audio';
-import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   currentView: ScreenView;
@@ -211,9 +210,6 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
         )}
-
-        {/* Add to Home Screen / Install Button on Hub */}
-        {currentView === 'hub' && <PWAInstallButton variant="header" />}
 
         {/* Settings Gear Button */}
         <button
