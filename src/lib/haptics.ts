@@ -162,4 +162,12 @@ export class Haptics {
   public static bombExplosion() {
     this.vibrate([40, 20, 80, 30, 160, 40, 300]);
   }
+
+  /**
+   * 13. Quest / Store / Reward Success
+   * Crisp celebratory tactile ripple
+   */
+  public static touchSuccess() {
+    this.vibrate([20, 25, 40, 25, 70]);
+  }
 }

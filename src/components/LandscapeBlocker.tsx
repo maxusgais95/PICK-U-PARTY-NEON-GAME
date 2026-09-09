@@ -68,13 +68,13 @@ export const LandscapeBlocker: React.FC = () => {
       </div>
 
       {/* Tag */}
-      <span className="px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-[0.2em] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(0,240,255,0.4)] mb-3">
+      <span className="font-header px-3.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(0,240,255,0.4)] mb-3">
         Portrait Mode Only
       </span>
 
       {/* Heading */}
       <h2
-        className="text-xl sm:text-2xl font-black uppercase tracking-wider text-center my-1"
+        className="font-header text-xl sm:text-2xl font-bold uppercase tracking-wider text-center my-1"
         style={{
           background: 'linear-gradient(180deg, #ffffff 0%, #7dd3fc 40%, #00e5ff 100%)',
           WebkitBackgroundClip: 'text',
@@ -86,7 +86,7 @@ export const LandscapeBlocker: React.FC = () => {
       </h2>
 
       {/* Subtitle */}
-      <p className="text-xs sm:text-sm text-gray-300 text-center max-w-xs mt-1.5 mb-0 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+      <p className="font-body text-xs sm:text-sm text-gray-300 text-center max-w-xs mt-1.5 mb-0 leading-relaxed drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
         PICK'U PARTY is designed exclusively for vertical portrait mode. Turn your phone upright to continue playing!
       </p>
     </div>

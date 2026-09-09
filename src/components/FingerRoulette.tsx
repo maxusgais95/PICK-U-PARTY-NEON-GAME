@@ -427,11 +427,11 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
         <div className="absolute top-[max(4.6rem,calc(env(safe-area-inset-top)+4.2rem))] left-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none select-none animate-fadeIn">
           <div className="px-4 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-rose-500/80 shadow-[0_0_24px_rgba(244,63,94,0.5)] flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-            <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
+            <span className="font-header text-xs sm:text-sm font-bold uppercase tracking-wider text-white">
               {settings.targetCount > 1 ? `${settings.targetCount} Losers Picked!` : 'Loser Picked!'}
             </span>
           </div>
-          <span className="text-[11px] font-bold text-gray-200/90 mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+          <span className="font-subbody text-[11px] font-semibold text-gray-200/90 mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
             {isResultLocked ? 'Revealing outcome...' : 'Tap anywhere to play again'}
           </span>
         </div>
@@ -452,7 +452,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
           {/* Row 1: Players */}
           <div className="flex items-center justify-between gap-2.5">
             <span
-              className="text-[10px] font-black uppercase tracking-wider pl-1 flex items-center gap-1 transition-colors duration-300 select-none"
+              className="font-header text-[10px] font-bold uppercase tracking-wider pl-1 flex items-center gap-1 transition-colors duration-300 select-none"
               style={{
                 color: currentTheme.secondary,
                 filter: `drop-shadow(0 0 6px ${currentTheme.secondary}88)`,
@@ -474,7 +474,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
                       onUpdateSettings({ minPlayers: cnt, targetCount: newTarget });
                       resetRound();
                     }}
-                    className="pill-count-btn w-8 h-7 text-[11px] font-black transition-all duration-300"
+                    className="pill-count-btn font-header w-8 h-7 text-[11px] font-bold transition-all duration-300"
                     style={
                       isSelected
                         ? {
@@ -496,7 +496,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
           {/* Row 2: Target (Losers) */}
           <div className="flex items-center justify-between gap-2.5 pt-1.5 border-t border-white/10">
             <span
-              className="text-[10px] font-black uppercase tracking-wider pl-1 flex items-center gap-1 transition-colors duration-300 select-none"
+              className="font-header text-[10px] font-bold uppercase tracking-wider pl-1 flex items-center gap-1 transition-colors duration-300 select-none"
               style={{
                 color: currentTheme.secondary,
                 filter: `drop-shadow(0 0 6px ${currentTheme.secondary}88)`,
@@ -520,7 +520,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
                       onUpdateSettings({ targetCount: tgt });
                       resetRound();
                     }}
-                    className={`pill-count-btn w-8 h-7 text-[11px] font-black transition-all duration-300 ${
+                    className={`pill-count-btn font-header w-8 h-7 text-[11px] font-bold transition-all duration-300 ${
                       isDisabled
                         ? 'opacity-20 cursor-not-allowed pointer-events-none border-white/5 text-gray-500 bg-white/[0.02]'
                         : isSelected
@@ -551,7 +551,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
       {gameState === 'countdown' && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <span
-            className="text-[15rem] font-black tracking-tighter text-white/10 select-none animate-ping"
+            className="font-header text-[15rem] font-black tracking-tighter text-white/10 select-none animate-ping"
             style={{ animationDuration: '1s' }}
           >
             {countdownNum}
@@ -671,7 +671,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
             >
               {/* Center Holographic Pip Badge */}
               <div
-                className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center font-black ${
+                className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center font-header font-bold ${
                   isLoser
                     ? 'bg-white text-rose-600 border border-rose-400 shadow-[0_0_16px_#ffffff]'
                     : isSafeDim

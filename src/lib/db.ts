@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AppSettings, AppStats, CustomBottleSprite } from '../types';
+import { AppSettings, AppStats, CustomBottleSprite, KaboomStats } from '../types';
 
 const DB_NAME = 'NeonPartyHubDB_v1';
 const DB_VERSION = 1;
@@ -43,11 +43,50 @@ function normalizeSettings(data: Partial<AppSettings>): AppSettings {
   return merged;
 }
 
-const DEFAULT_STATS: AppStats = {
+export const DEFAULT_KABOOM_STATS: KaboomStats = {
+  victories: 0,
+  bonusCollected: 0,
+  bombHits: 0,
+  totalRounds: 0,
+  winrate: 0,
+};
+
+export const DEFAULT_STATS: AppStats = {
   totalRouletteRounds: 0,
   totalBottleSpins: 0,
+  totalKaboomRounds: 0,
   lastPlayedAt: Date.now(),
+  kaboom: DEFAULT_KABOOM_STATS,
 };
+
+function normalizeStats(raw: Partial<AppStats> | null | undefined): AppStats {
+  if (!raw) return { ...DEFAULT_STATS, kaboom: { ...DEFAULT_KABOOM_STATS } };
+  
+  const rawKaboom = raw.kaboom || ({} as Partial<KaboomStats>);
+  const totalRounds = typeof rawKaboom.totalRounds === 'number'
+    ? rawKaboom.totalRounds
+    : (raw.totalKaboomRounds || 0);
+  const victories = rawKaboom.victories || 0;
+  const winrate = totalRounds > 0
+    ? Math.round((victories / totalRounds) * 1000) / 10
+    : 0;
+
+  const kaboom: KaboomStats = {
+    victories,
+    bonusCollected: rawKaboom.bonusCollected || 0,
+    bombHits: rawKaboom.bombHits || 0,
+    totalRounds,
+    winrate,
+  };
+
+  return {
+    totalRouletteRounds: raw.totalRouletteRounds || 0,
+    totalBottleSpins: raw.totalBottleSpins || 0,
+    totalKaboomRounds: totalRounds,
+    lastPlayedAt: raw.lastPlayedAt || Date.now(),
+    kaboom,
+  };
+}
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -134,12 +173,12 @@ export async function getStats(): Promise<AppStats> {
       const req = store.get('app_stats');
       req.onsuccess = () => {
         if (req.result) {
-          resolve({ ...DEFAULT_STATS, ...req.result });
+          resolve(normalizeStats(req.result));
         } else {
           const local = localStorage.getItem('neon_party_stats');
           if (local) {
             try {
-              resolve({ ...DEFAULT_STATS, ...JSON.parse(local) });
+              resolve(normalizeStats(JSON.parse(local)));
               return;
             } catch (e) {}
           }
@@ -151,7 +190,7 @@ export async function getStats(): Promise<AppStats> {
   } catch (err) {
     try {
       const local = localStorage.getItem('neon_party_stats');
-      if (local) return { ...DEFAULT_STATS, ...JSON.parse(local) };
+      if (local) return normalizeStats(JSON.parse(local));
     } catch (e) {}
     return DEFAULT_STATS;
   }
@@ -159,12 +198,13 @@ export async function getStats(): Promise<AppStats> {
 
 export async function saveStats(stats: AppStats): Promise<void> {
   try {
-    localStorage.setItem('neon_party_stats', JSON.stringify(stats));
+    const normalized = normalizeStats(stats);
+    localStorage.setItem('neon_party_stats', JSON.stringify(normalized));
     const db = await openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction('stats', 'readwrite');
       const store = tx.objectStore('stats');
-      const req = store.put(stats, 'app_stats');
+      const req = store.put(normalized, 'app_stats');
       req.onsuccess = () => resolve();
       req.onerror = () => reject(req.error);
     });
@@ -175,6 +215,40 @@ export async function recordGameEvent(type: 'roulette' | 'bottle'): Promise<AppS
   const current = await getStats();
   if (type === 'roulette') current.totalRouletteRounds += 1;
   else if (type === 'bottle') current.totalBottleSpins += 1;
+  current.lastPlayedAt = Date.now();
+  await saveStats(current);
+  return current;
+}
+
+export async function recordKaboomEvent(event: {
+  type: 'victory' | 'bomb_hit' | 'bonus';
+}): Promise<AppStats> {
+  const current = await getStats();
+  if (!current.kaboom) {
+    current.kaboom = { ...DEFAULT_KABOOM_STATS };
+  }
+
+  if (event.type === 'bonus') {
+    current.kaboom.bonusCollected += 1;
+  } else if (event.type === 'victory') {
+    // End a round without tapping the bomb
+    current.totalKaboomRounds += 1;
+    current.kaboom.totalRounds += 1;
+    current.kaboom.victories += 1;
+  } else if (event.type === 'bomb_hit') {
+    current.totalKaboomRounds += 1;
+    current.kaboom.totalRounds += 1;
+    current.kaboom.bombHits += 1;
+  }
+
+  // Recalculate winrate: victories / totalRounds * 100
+  if (current.kaboom.totalRounds > 0) {
+    current.kaboom.winrate =
+      Math.round((current.kaboom.victories / current.kaboom.totalRounds) * 1000) / 10;
+  } else {
+    current.kaboom.winrate = 0;
+  }
+
   current.lastPlayedAt = Date.now();
   await saveStats(current);
   return current;

@@ -34,15 +34,15 @@ export const KABOOM_GRID_CONFIGS: Record<KaboomGridDimension, KaboomGridConfig> 
   },
   4: {
     dimension: 4,
-    title: '4×4 STAKES',
-    tagline: 'STAKES',
+    title: '4×4 EXTREME',
+    tagline: 'EXTREME',
     difficulty: 'Balanced Thrill',
     totalTiles: 16,
     bombs: 1,
     bonusCountMin: 1,
     bonusCountMax: 3,
     bonusProbabilityText: '1 – 3 Bonuses',
-    description: 'The golden standard with 1 to 3 tactical commands.',
+    description: 'High stakes party round with 1 to 3 tactical commands.',
     accentColor: 'from-pink-600 to-fuchsia-500',
     badge: 'POPULAR',
   },
@@ -61,8 +61,8 @@ export const KABOOM_GRID_CONFIGS: Record<KaboomGridDimension, KaboomGridConfig> 
   },
   6: {
     dimension: 6,
-    title: '6×6 HELL',
-    tagline: 'HELL',
+    title: '6×6 ULTIMATE',
+    tagline: 'ULTIMATE',
     difficulty: 'Ultimate Gauntlet',
     totalTiles: 36,
     bombs: 1,
@@ -71,7 +71,7 @@ export const KABOOM_GRID_CONFIGS: Record<KaboomGridDimension, KaboomGridConfig> 
     bonusProbabilityText: '2 – 5 Bonuses',
     description: '36 tiles with 2 to 5 randomized commands.',
     accentColor: 'from-amber-600 to-orange-500',
-    badge: 'EXTREME',
+    badge: 'ULTIMATE',
   },
 };
 

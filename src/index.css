@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Hobeaux';
+  src: url('/fonts/Hobeaux-Bold.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-header: 'Hobeaux', 'Lilita One', 'Fredoka', cursive, sans-serif;
+  --font-hobeaux: 'Hobeaux', 'Lilita One', 'Fredoka', cursive, sans-serif;
+  --font-body: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-subbody: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-lilita: 'Hobeaux', 'Lilita One', 'Fredoka', cursive, sans-serif;
+  --font-fredoka: 'Fredoka', 'Hobeaux', 'Lilita One', cursive, sans-serif;
+  --font-outfit: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -27,7 +45,12 @@
     overflow: hidden;
     overscroll-behavior: none;
     background-color: #050614;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Hobeaux', 'Lilita One', 'Fredoka', cursive, sans-serif;
+    letter-spacing: 0.02em;
   }
 }
 
@@ -1145,12 +1168,33 @@
   will-change: opacity;
 }
 
+.font-header,
+.font-hobeaux {
+  font-family: 'Hobeaux', 'Lilita One', 'Fredoka', cursive, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.font-body {
+  font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.font-subbody {
+  font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: 0.02em;
+}
+
 .font-lilita {
-  font-family: 'Lilita One', 'Fredoka', 'Righteous', cursive, sans-serif;
+  font-family: 'Hobeaux', 'Lilita One', 'Fredoka', cursive, sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .font-fredoka {
-  font-family: 'Fredoka', 'Lilita One', cursive, sans-serif;
+  font-family: 'Fredoka', 'Hobeaux', 'Lilita One', cursive, sans-serif;
+}
+
+.font-outfit {
+  font-family: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .text-shadow-3d-orange {

@@ -77,23 +77,23 @@ export const KaboomBonusModal: React.FC<KaboomBonusModalProps> = ({
         </div>
 
         {/* Category Tag */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-black tracking-widest uppercase mb-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-header font-bold tracking-widest uppercase mb-2">
           <Sparkles className="w-3.5 h-3.5 text-amber-300" />
           {command.tag}
         </div>
 
         {/* Player Name Callout */}
-        <div className="text-sm font-semibold text-purple-200/90 mb-1">
+        <div className="font-subbody text-sm font-medium text-purple-200/90 mb-1">
           Awarded to <span className="text-amber-300 font-bold">{playerName}</span>!
         </div>
 
         {/* Command Title */}
-        <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 drop-shadow-[0_2px_10px_rgba(245,158,11,0.5)] mb-3">
+        <h3 className="font-header text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-400 drop-shadow-[0_2px_10px_rgba(245,158,11,0.5)] mb-3">
           {command.title}
         </h3>
 
         {/* Description Box */}
-        <div className="bg-slate-900/80 border border-purple-400/30 rounded-2xl p-4 mb-6 text-gray-100 text-base font-medium leading-relaxed shadow-inner">
+        <div className="font-body bg-slate-900/80 border border-purple-400/30 rounded-2xl p-4 mb-6 text-gray-100 text-base font-medium leading-relaxed shadow-inner">
           {command.description}
         </div>
 
@@ -102,7 +102,7 @@ export const KaboomBonusModal: React.FC<KaboomBonusModalProps> = ({
           id="kaboom-bonus-claim-button"
           type="button"
           onClick={handleClaim}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 text-slate-950 font-black text-lg shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 text-slate-950 font-header font-bold text-lg shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           <span>CLAIM & CONTINUE</span>
           <ArrowRight className="w-5 h-5 stroke-[2.5]" />

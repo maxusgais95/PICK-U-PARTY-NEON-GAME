@@ -11,14 +11,22 @@ import chibiBombImg from '../assets/images/Chibi Bomb Game.webp';
 import { getAssetUrl } from '../lib/assetPreloader';
 import { AppSettings } from '../types';
 import { SoundEngine, Haptics } from '../lib/audio';
+import { LeftSidebarStack } from './LeftSidebarStack';
+import { DailyQuestsWidget } from './DailyQuestsWidget';
+import { EconomyState } from '../lib/economy';
 
 interface LandingHubProps {
   settings: AppSettings;
+  economy?: EconomyState;
   onSelectRoulette: () => void;
   onSelectBottle: () => void;
   onSelectKaboom?: () => void;
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
   onOpenVersionNotes?: () => void;
+  onOpenStore?: () => void;
+  onOpenDailyQuests?: () => void;
+  onOpenRankings?: () => void;
+  onOpenRewards?: () => void;
 }
 
 interface GameCard {
@@ -38,10 +46,15 @@ interface GameCard {
 }
 
 export const LandingHub: React.FC<LandingHubProps> = ({
+  economy,
   onSelectRoulette,
   onSelectBottle,
   onSelectKaboom,
   onOpenVersionNotes,
+  onOpenStore,
+  onOpenDailyQuests,
+  onOpenRankings,
+  onOpenRewards,
 }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -209,6 +222,26 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       )}
 
+      {/* Benchmark Reference UI (Improve_game_UI_layout_2K_202609091537.jpeg) Side Widgets */}
+      {/* 1. Left Sidebar Stack: STORE, RANKINGS, REWARDS */}
+      <div className="absolute top-[72px] sm:top-[78px] left-3 sm:left-4 z-30 flex flex-col">
+        <LeftSidebarStack
+          onOpenStore={onOpenStore || (() => {})}
+          onOpenRankings={onOpenRankings || (() => {})}
+          onOpenRewards={onOpenRewards || (() => {})}
+        />
+      </div>
+
+      {/* 2. Top-Right Daily Quests Widget */}
+      {economy && (
+        <div className="absolute top-[72px] sm:top-[78px] right-3 sm:right-4 z-30 flex flex-col items-end">
+          <DailyQuestsWidget
+            quests={economy.dailyQuests}
+            onOpenQuests={onOpenDailyQuests || (() => {})}
+          />
+        </div>
+      )}
+
       {/* Header Container: Subtitle bottom edge rests at 57.5% */}
       <div className="absolute top-[57.5%] -translate-y-full left-0 right-0 z-20 flex flex-col items-center px-4">
         {/* Title Logo (x1.2 scale) */}
@@ -282,7 +315,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                   {card.badge && (
                     <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-20">
                       <div
-                        className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-black tracking-widest text-[8.5px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-white/50"
+                        className="absolute top-[18px] -right-[34px] w-[124px] transform rotate-45 py-0.5 text-center font-header font-bold tracking-widest text-[8.5px] uppercase shadow-[0_2px_8px_rgba(0,0,0,0.6)] border-y border-white/50"
                         style={{
                           background: card.badgeGradient,
                           color: '#ffffff',
@@ -310,10 +343,10 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
                   {/* Card Actions */}
                   <div className="relative z-10 flex flex-col items-center w-full mt-auto">
-                    <h2 className={`text-sm sm:text-base font-black tracking-wider uppercase bg-gradient-to-r ${card.titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight`}>
+                    <h2 className={`text-base sm:text-lg font-header font-bold tracking-wider uppercase bg-gradient-to-r ${card.titleGradient} bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight`}>
                       {card.title}
                     </h2>
-                    <p className={`text-[11px] sm:text-xs font-bold tracking-normal bg-gradient-to-r ${card.subGradient} bg-clip-text text-transparent mt-0.5 mb-2 leading-tight`}>
+                    <p className={`text-[11px] sm:text-xs font-body font-semibold tracking-normal bg-gradient-to-r ${card.subGradient} bg-clip-text text-transparent mt-0.5 mb-2 leading-tight`}>
                       {card.subtitle}
                     </p>
                     <button
@@ -321,7 +354,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
                       className="relative w-full h-8 sm:h-9 rounded-full flex items-center justify-center shadow-[0_3px_14px_rgba(0,0,0,0.4)] border-[1.2px] border-white/70"
                       style={{ background: card.btnGradient }}
                     >
-                      <span className="relative z-20 text-[10px] sm:text-[11px] font-black tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                      <span className="relative z-20 text-[11px] sm:text-xs font-header font-bold tracking-wider text-white uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                         {card.buttonText}
                       </span>
                     </button>
@@ -349,7 +382,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       </div>
 
-      {/* Footer Version Notes */}
+      {/* Footer About: How to Play & Tips */}
       <div className="absolute bottom-[18px] left-0 right-0 flex flex-col items-center select-none z-20">
         <button
           type="button"
@@ -358,9 +391,11 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             Haptics.buttonClick();
             if (onOpenVersionNotes) onOpenVersionNotes();
           }}
-          className="text-[10px] sm:text-[11px] text-gray-300/80 hover:text-white transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+          className="font-subbody text-[10px] sm:text-[11px] text-gray-300/80 hover:text-white transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] flex items-center gap-1.5"
+          title="About: How to Play, Game Instructions & Tips"
         >
-          Version notes: v1.4.001
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00f0ff] animate-pulse" />
+          <span>About: How to Play & Tips</span>
         </button>
       </div>
     </div>

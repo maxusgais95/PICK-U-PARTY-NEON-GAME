@@ -15,6 +15,10 @@ import {
   Smartphone,
   Zap,
   Sparkles,
+  Bomb,
+  Trophy,
+  Shield,
+  ShoppingBag,
 } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import {
@@ -26,7 +30,7 @@ import {
 } from '../types';
 import { THEMES } from '../lib/themes';
 import { SoundEngine, Haptics } from '../lib/audio';
-import { saveCustomSprite, deleteCustomSprite, saveStats } from '../lib/db';
+import { saveCustomSprite, deleteCustomSprite, saveStats, DEFAULT_KABOOM_STATS } from '../lib/db';
 import { processSpriteImage } from '../lib/imageProcessing';
 import { BOTTLE_SKINS } from '../lib/bottleSkins';
 import { useTransparentImage } from '../lib/bottleAlphaCache';
@@ -51,6 +55,7 @@ interface SettingsModalProps {
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
   onRefreshSprites: () => void;
   onRefreshStats: () => void;
+  onOpenStore?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -62,6 +67,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onUpdateSettings,
   onRefreshSprites,
   onRefreshStats,
+  onOpenStore,
 }) => {
   const [activeTab, setActiveTab] = useState<'game' | 'bottle' | 'stats'>('game');
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -169,7 +175,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="flex items-center justify-center px-5 pt-5 pb-3 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-pink-400 drop-shadow-[0_0_8px_#ff2a85]" />
-            <h2 className="text-base font-black uppercase tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            <h2 className="font-header text-base font-bold uppercase tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               Settings & Rules
             </h2>
           </div>
@@ -188,7 +194,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               borderColor: activeTab === 'game' ? currentTheme.primary : 'transparent',
               boxShadow: activeTab === 'game' ? `0 0 12px ${currentTheme.primary}55` : 'none',
             }}
-            className="py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 border cursor-pointer"
+            className="py-2 rounded-xl text-[11px] sm:text-xs font-header font-bold uppercase tracking-wider transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 border cursor-pointer"
           >
             <Sliders className="w-3.5 h-3.5 text-white shrink-0" />
             <span>Rules</span>
@@ -205,7 +211,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               borderColor: activeTab === 'bottle' ? currentTheme.secondary : 'transparent',
               boxShadow: activeTab === 'bottle' ? `0 0 12px ${currentTheme.secondary}55` : 'none',
             }}
-            className="py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 border cursor-pointer"
+            className="py-2 rounded-xl text-[11px] sm:text-xs font-header font-bold uppercase tracking-wider transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 border cursor-pointer"
           >
             <ChampagneBottleIcon className="w-3.5 h-3.5 text-white fill-white shrink-0" />
             <span>Bottle</span>
@@ -222,7 +228,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               borderColor: activeTab === 'stats' ? currentTheme.primary : 'transparent',
               boxShadow: activeTab === 'stats' ? `0 0 12px ${currentTheme.primary}55` : 'none',
             }}
-            className="py-2 rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 border cursor-pointer"
+            className="py-2 rounded-xl text-[11px] sm:text-xs font-header font-bold uppercase tracking-wider transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 border cursor-pointer"
           >
             <BarChart2 className="w-3.5 h-3.5 text-white shrink-0" />
             <span>Stats</span>
@@ -365,59 +371,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 2: BOTTLE SPRITES & UPLOAD */}
           {activeTab === 'bottle' && (
             <div data-scrollable="true" className="space-y-4 w-full min-w-0 scrollable-panel">
-              {/* Bottle Presets (Btl_E_001 to Btl_E_004) */}
-              <div className="w-full min-w-0">
-                <div className="flex items-center justify-between mb-2.5">
-                  <label className="text-xs font-extrabold uppercase tracking-wider text-gray-400">
-                    Bottle Presets
-                  </label>
+              {/* Notice: Bottle Skins Moved to Store */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-purple-950/40 border border-purple-500/30 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-extrabold text-white flex items-center gap-1.5 uppercase tracking-wide">
+                    <Sparkles className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                    <span className="truncate">Bottle Skins In Party Store</span>
+                  </div>
+                  <div className="text-[11px] text-gray-300 mt-0.5 leading-snug">
+                    All preset bottles are now unlocked and equipped in the Party Store with Stars!
+                  </div>
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full min-w-0">
-                  {BOTTLE_SKINS.map((skin) => {
-                    const isSelected = settings.bottleStyle === skin.id;
-                    return (
-                      <button
-                        key={skin.id}
-                        type="button"
-                        onClick={() => {
-                          SoundEngine.playButtonClick();
-                          onUpdateSettings({
-                            bottleStyle: skin.id,
-                            selectedCustomSpriteId: null,
-                          });
-                        }}
-                        style={{
-                          backgroundColor: isSelected ? `${skin.accentColor}22` : 'rgba(255, 255, 255, 0.04)',
-                          borderColor: isSelected ? skin.accentColor : 'rgba(255, 255, 255, 0.12)',
-                        }}
-                        className="p-1.5 rounded-2xl border text-left flex flex-col items-center justify-center transition-all cursor-pointer w-full min-w-0 group hover:border-white/30"
-                      >
-                        {/* Bottle Preview Box - Permanent Screen blend mode */}
-                        <div
-                          className="w-full h-28 rounded-xl flex items-center justify-center overflow-hidden relative p-1.5"
-                          style={{
-                            background: 'linear-gradient(135deg, rgba(20, 10, 35, 0.9) 0%, rgba(10, 5, 20, 0.95) 100%)',
-                          }}
-                        >
-                          <BottlePresetThumbnail image={skin.image} alt="Bottle preset" />
-                          {isSelected && (
-                            <div
-                              className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center shadow-md"
-                              style={{ backgroundColor: skin.accentColor }}
-                            >
-                              <Check className="w-3 h-3 text-black stroke-[3]" />
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                {onOpenStore && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      SoundEngine.playButtonClick();
+                      onClose();
+                      onOpenStore();
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-black text-xs uppercase tracking-wider shrink-0 transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1"
+                  >
+                    <ShoppingBag className="w-3 h-3" />
+                    <span>Store</span>
+                  </button>
+                )}
               </div>
 
               {/* Upload Custom Sprite Section */}
-              <div className="pt-3 border-t border-white/10 space-y-2.5 w-full min-w-0">
+              <div className="space-y-2.5 w-full min-w-0">
                 <div className="flex items-center justify-between w-full min-w-0">
                   <label className="text-xs font-extrabold uppercase tracking-wider text-gray-400 truncate">
                     Custom Uploaded Bottles
@@ -626,23 +608,116 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* TAB 3: STATS */}
           {activeTab === 'stats' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-2xl font-black" style={{ color: currentTheme.primary }}>
-                    {stats.totalRouletteRounds}
+            <div data-scrollable="true" className="space-y-4 max-h-[460px] overflow-y-auto pr-1 custom-scrollbar scrollable-panel">
+              {/* Classic Game Modes */}
+              <div>
+                <div className="text-xs font-extrabold uppercase tracking-wider text-gray-400 mb-2">
+                  Classic Party Modes
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="text-2xl font-black" style={{ color: currentTheme.primary }}>
+                      {stats.totalRouletteRounds}
+                    </div>
+                    <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
+                      Roulette Rounds
+                    </div>
                   </div>
-                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-1">
-                    Roulette Rounds
+
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="text-2xl font-black" style={{ color: currentTheme.secondary }}>
+                      {stats.totalBottleSpins}
+                    </div>
+                    <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
+                      Bottle Spins
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* KABOOM Bomb Game Statistics */}
+              <div className="pt-2 border-t border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <Bomb className="w-3.5 h-3.5 text-red-400" />
+                    <span>KABOOM Bomb Game</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
+                    {stats.kaboom?.totalRounds || stats.totalKaboomRounds || 0} Total Rounds
+                  </span>
+                </div>
+
+                {/* Winrate Banner */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-red-950/40 via-amber-950/30 to-emerald-950/40 border border-amber-500/30 mb-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                        Round Survival Winrate
+                      </div>
+                      <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">
+                        {(stats.kaboom?.winrate || 0).toFixed(1)}%
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                        Rounds Survived
+                      </div>
+                      <div className="text-sm font-extrabold text-emerald-300">
+                        {stats.kaboom?.victories || 0} / {stats.kaboom?.totalRounds || stats.totalKaboomRounds || 0}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Visual Progress Bar */}
+                  <div className="w-full h-2 rounded-full bg-black/60 overflow-hidden mt-2 border border-white/10">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-500"
+                      style={{ width: `${Math.min(100, Math.max(0, stats.kaboom?.winrate || 0))}%` }}
+                    />
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="text-2xl font-black" style={{ color: currentTheme.secondary }}>
-                    {stats.totalBottleSpins}
+                {/* Detailed 3-Stat Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Victories */}
+                  <div className="p-3 rounded-xl bg-emerald-950/25 border border-emerald-500/30 text-center">
+                    <div className="flex items-center justify-center gap-1 text-emerald-400 mb-1">
+                      <Trophy className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider">Victories</span>
+                    </div>
+                    <div className="text-xl font-black text-emerald-300">
+                      {stats.kaboom?.victories || 0}
+                    </div>
+                    <div className="text-[9px] text-gray-400 mt-0.5 leading-tight">
+                      No-Bomb Clears
+                    </div>
                   </div>
-                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mt-1">
-                    Bottle Spins
+
+                  {/* Bonus Collected */}
+                  <div className="p-3 rounded-xl bg-amber-950/25 border border-amber-500/30 text-center">
+                    <div className="flex items-center justify-center gap-1 text-amber-400 mb-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider">Bonuses</span>
+                    </div>
+                    <div className="text-xl font-black text-amber-300">
+                      {stats.kaboom?.bonusCollected || 0}
+                    </div>
+                    <div className="text-[9px] text-gray-400 mt-0.5 leading-tight">
+                      Power-ups Found
+                    </div>
+                  </div>
+
+                  {/* Bomb Hits */}
+                  <div className="p-3 rounded-xl bg-red-950/25 border border-red-500/30 text-center">
+                    <div className="flex items-center justify-center gap-1 text-red-400 mb-1">
+                      <Bomb className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider">Bomb Hits</span>
+                    </div>
+                    <div className="text-xl font-black text-red-300">
+                      {stats.kaboom?.bombHits || 0}
+                    </div>
+                    <div className="text-[9px] text-gray-400 mt-0.5 leading-tight">
+                      Detonations
+                    </div>
                   </div>
                 </div>
               </div>
@@ -657,7 +732,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   const cleared: AppStats = {
                     totalRouletteRounds: 0,
                     totalBottleSpins: 0,
+                    totalKaboomRounds: 0,
                     lastPlayedAt: Date.now(),
+                    kaboom: { ...DEFAULT_KABOOM_STATS },
                   };
                   await saveStats(cleared);
                   onRefreshStats();
@@ -678,7 +755,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               Haptics.buttonClick();
               onClose();
             }}
-            className="w-full py-2.5 rounded-full font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-98 transition-all cursor-pointer"
+            className="font-header w-full py-2.5 rounded-full font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-cyan-500 to-fuchsia-500 text-white shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-98 transition-all cursor-pointer"
           >
             Done
           </button>

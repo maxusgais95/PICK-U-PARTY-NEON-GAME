@@ -58,7 +58,7 @@ const CARDS: CardConfig[] = [
   },
   {
     dim: 4,
-    label: 'STAKES',
+    label: 'EXTREME',
     dimText: '4 X 4',
     bottomGradient: 'linear-gradient(to top, #ff007f 0%, rgba(220, 0, 130, 0.75) 45%, transparent 85%)',
     borderColor: 'border-[#ff007f]/60',
@@ -80,7 +80,7 @@ const CARDS: CardConfig[] = [
   },
   {
     dim: 6,
-    label: 'HELL',
+    label: 'ULTIMATE',
     dimText: '6 X 6',
     bottomGradient: 'linear-gradient(to top, #ff7b00 0%, rgba(245, 120, 0, 0.75) 45%, transparent 85%)',
     borderColor: 'border-[#ff7b00]/70',
@@ -115,18 +115,18 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
       </div>
 
       {/* Main Content Container: Clean, vertical flow with generous spacing */}
-      <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-auto flex flex-col justify-between min-h-full px-4 pt-28 sm:pt-32 pb-8">
-        {/* 3D Header: SELECT BOARD & Subtitle */}
-        <div className="text-center mb-6">
-          <h1 className="font-lilita text-4xl sm:text-5xl tracking-wide uppercase text-transparent bg-clip-text bg-gradient-to-b from-[#ffd24c] via-[#f97316] to-[#c2410c] text-shadow-3d-orange leading-none py-1">
+      <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-auto flex flex-col justify-between min-h-full px-4 pt-24 sm:pt-28 pb-6">
+        {/* Header: SELECT BOARD & Subtitle */}
+        <div className="text-center mb-4 sm:mb-5">
+          <h1 className="font-header text-3xl sm:text-4xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-red-400 drop-shadow-[0_2px_12px_rgba(249,115,22,0.6)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight py-1">
             SELECT BOARD
           </h1>
-          <p className="text-xs sm:text-sm font-medium text-white/95 mt-1 tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
-            Pick you grid size and take turn tapping ball !
+          <p className="font-body text-xs sm:text-sm font-medium text-white/90 mt-1 tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+            Pick your grid size and take turns tapping balls!
           </p>
         </div>
 
-        {/* Board Cards Grid: 2 Rows 2 Columns + 1 Wide Card */}
+        {/* Board Cards Grid: Consistent Card Height across all options */}
         <div className="grid grid-cols-2 gap-3.5 sm:gap-4 my-auto">
           {CARDS.map((card) => {
             const isWide = card.isWide;
@@ -136,9 +136,9 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
                 key={card.dim}
                 id={`kaboom-board-card-${card.dim}`}
                 onClick={() => handleCardClick(card.dim)}
-                className={`group relative overflow-hidden rounded-[26px] cursor-pointer transition-all duration-200 border-2 ${card.borderColor} ${card.hoverBorderColor} active:scale-[0.97] ${
-                  isWide ? 'col-span-2 h-32 sm:h-38' : 'col-span-1 h-40 sm:h-44'
-                } flex flex-col justify-end items-center text-center p-3 sm:p-4`}
+                className={`group relative overflow-hidden rounded-[24px] cursor-pointer transition-all duration-200 border-2 ${card.borderColor} ${card.hoverBorderColor} active:scale-[0.97] ${
+                  isWide ? 'col-span-2' : 'col-span-1'
+                } h-34 sm:h-38 flex flex-col justify-end items-center text-center p-3 sm:p-3.5`}
                 style={{
                   boxShadow: card.glowStyle,
                 }}
@@ -173,13 +173,13 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
 
                 {/* Card Content: Mode Title + Giant Rounded Dimension */}
                 <div className="relative z-10 flex flex-col items-center justify-center leading-none">
-                  {/* Mode Label (QUICK, CLASSIC, STAKES, CHAOS, HELL) */}
-                  <div className="font-lilita text-xl sm:text-2xl tracking-wider text-[#ffba08] text-shadow-label mb-0.5">
+                  {/* Mode Label (QUICK, CLASSIC, EXTREME, CHAOS, ULTIMATE) */}
+                  <div className="font-header text-lg sm:text-xl font-bold tracking-wider text-amber-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] mb-0.5">
                     {card.label}
                   </div>
 
                   {/* Dimension Text (2 X 2, 3 X 3, 4 X 4, 5 X 5, 6 X 6) */}
-                  <div className="font-lilita text-4xl sm:text-5xl text-white tracking-normal text-shadow-dimension">
+                  <div className="font-header text-3xl sm:text-4xl font-bold text-white tracking-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                     {card.dimText}
                   </div>
                 </div>

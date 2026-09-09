@@ -104,11 +104,20 @@ export interface AppSettings {
   hapticsEnabled: boolean;
 }
 
+export interface KaboomStats {
+  victories: number; // Ended a round without tapping the bomb
+  bonusCollected: number; // Total bonus power-ups collected
+  bombHits: number; // Total times a bomb was tapped / detonated
+  totalRounds: number; // Total Kaboom rounds completed
+  winrate: number; // Win percentage (0 to 100)
+}
+
 export interface AppStats {
   totalRouletteRounds: number;
   totalBottleSpins: number;
-  totalKaboomRounds?: number;
+  totalKaboomRounds: number;
   lastPlayedAt: number;
+  kaboom: KaboomStats;
 }
 
 // ============================================================================

@@ -23,12 +23,22 @@ import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { KaboomGame } from './components/kaboom/KaboomGame';
+import { getEconomyState, EconomyState } from './lib/economy';
+import { StoreModal } from './components/StoreModal';
+import { DailyQuestsModal } from './components/DailyQuestsModal';
+import { RankingsModal } from './components/RankingsModal';
+import { RewardsModal } from './components/RewardsModal';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [currentView, setCurrentView] = useState<ScreenView>('hub');
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isVersionNotesOpen, setIsVersionNotesOpen] = useState<boolean>(false);
+  const [isStoreOpen, setIsStoreOpen] = useState<boolean>(false);
+  const [isDailyQuestsOpen, setIsDailyQuestsOpen] = useState<boolean>(false);
+  const [isRankingsOpen, setIsRankingsOpen] = useState<boolean>(false);
+  const [isRewardsOpen, setIsRewardsOpen] = useState<boolean>(false);
+  const [economy, setEconomy] = useState<EconomyState>(() => getEconomyState());
   const [settings, setSettings] = useState<AppSettings>({
     minPlayers: 2,
     targetCount: 1,
@@ -231,6 +241,7 @@ export default function App() {
       <Header
         currentView={currentView}
         settings={settings}
+        stars={economy.stars}
         onNavigate={(view) => {
           setCurrentTouches([]);
           setShowTeamLines(false);
@@ -240,10 +251,13 @@ export default function App() {
           setCurrentView(view);
         }}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenStore={() => setIsStoreOpen(true)}
+        onOpenInfo={() => setIsVersionNotesOpen(true)}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onToggleBottleSprite={handleCycleBottleSprite}
         onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
+        onEconomyUpdated={setEconomy}
       />
 
       {/* Screen Views */}
@@ -251,11 +265,16 @@ export default function App() {
         {currentView === 'hub' && (
           <LandingHub
             settings={settings}
+            economy={economy}
             onSelectRoulette={() => setCurrentView('roulette')}
             onSelectBottle={() => setCurrentView('bottle')}
             onSelectKaboom={() => setCurrentView('kaboom')}
             onUpdateSettings={handleUpdateSettings}
             onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
+            onOpenStore={() => setIsStoreOpen(true)}
+            onOpenDailyQuests={() => setIsDailyQuestsOpen(true)}
+            onOpenRankings={() => setIsRankingsOpen(true)}
+            onOpenRewards={() => setIsRewardsOpen(true)}
           />
         )}
 
@@ -286,6 +305,7 @@ export default function App() {
           <KaboomGame
             settings={settings}
             onBackToMenu={() => setCurrentView('hub')}
+            onStatsUpdated={(newStats) => setStats(newStats)}
           />
         )}
       </div>
@@ -303,12 +323,64 @@ export default function App() {
         onUpdateSettings={handleUpdateSettings}
         onRefreshSprites={refreshSprites}
         onRefreshStats={refreshStats}
+        onOpenStore={() => setIsStoreOpen(true)}
       />
 
-      {/* Version Notes Modal (v1.3.002) */}
+      {/* About, How to Play & Game Guide Modal */}
       <VersionNotesModal
         isOpen={isVersionNotesOpen}
         onClose={() => setIsVersionNotesOpen(false)}
+        economy={economy}
+        onEconomyUpdated={setEconomy}
+        onNavigateToGame={(game) => {
+          setCurrentTouches([]);
+          setShowTeamLines(false);
+          setIsBottleSpinning(false);
+          setBottleSpinSpeed(0);
+          setRouletteGameState('waiting');
+          setCurrentView(game);
+        }}
+        onOpenStore={() => setIsStoreOpen(true)}
+      />
+
+      {/* Store Modal (Bottles, Bombs, Balls, Bonus Skins) */}
+      <StoreModal
+        isOpen={isStoreOpen}
+        economy={economy}
+        settings={settings}
+        onClose={() => setIsStoreOpen(false)}
+        onEconomyUpdated={setEconomy}
+        onUpdateSettings={handleUpdateSettings}
+      />
+
+      {/* Daily Quests Modal */}
+      <DailyQuestsModal
+        isOpen={isDailyQuestsOpen}
+        quests={economy.dailyQuests}
+        onClose={() => setIsDailyQuestsOpen(false)}
+        onNavigateToGame={(view) => {
+          setCurrentTouches([]);
+          setShowTeamLines(false);
+          setIsBottleSpinning(false);
+          setBottleSpinSpeed(0);
+          setRouletteGameState('waiting');
+          setCurrentView(view);
+        }}
+        onEconomyUpdated={setEconomy}
+      />
+
+      {/* Rankings Modal (Hall of Fame) */}
+      <RankingsModal
+        isOpen={isRankingsOpen}
+        onClose={() => setIsRankingsOpen(false)}
+      />
+
+      {/* Rewards Modal (Daily Login Streak) */}
+      <RewardsModal
+        isOpen={isRewardsOpen}
+        economy={economy}
+        onClose={() => setIsRewardsOpen(false)}
+        onEconomyUpdated={setEconomy}
       />
 
       {/* Portrait-Only Guard: Landscape Blocker Overlay */}

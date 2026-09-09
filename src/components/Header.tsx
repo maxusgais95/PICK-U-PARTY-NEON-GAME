@@ -4,32 +4,44 @@
  */
 
 import React from 'react';
-import { Volume2, VolumeX, Settings, Home, Calendar, Maximize, Minimize } from 'lucide-react';
+import { Volume2, VolumeX, Settings, Home, Calendar, Maximize, Minimize, Info } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
+import { CurrencyHud } from './CurrencyHud';
 import { AppSettings, ScreenView } from '../types';
 import { THEMES } from '../lib/themes';
 import { SoundEngine, Haptics } from '../lib/audio';
+import { EconomyState } from '../lib/economy';
 
 interface HeaderProps {
   currentView: ScreenView;
   settings: AppSettings;
+  stars?: number;
   onNavigate: (view: ScreenView) => void;
   onOpenSettings: (tab?: 'game' | 'bottle' | 'stats') => void;
+  onOpenStore?: () => void;
+  onOpenInfo?: () => void;
   onToggleSound: () => void;
   onToggleHaptics: () => void;
   onToggleBottleSprite?: () => void;
   onOpenVersionNotes?: () => void;
+  onEconomyUpdated?: (state: EconomyState) => void;
+  onRefillStars?: (amount: number) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentView,
   settings,
+  stars = 1250,
   onNavigate,
   onOpenSettings,
+  onOpenStore,
+  onOpenInfo,
   onToggleSound,
   onToggleHaptics,
   onToggleBottleSprite,
   onOpenVersionNotes,
+  onEconomyUpdated,
+  onRefillStars,
 }) => {
   const [isFullscreen, setIsFullscreen] = React.useState<boolean>(false);
   const [supportsFullscreen, setSupportsFullscreen] = React.useState<boolean>(true);
@@ -171,12 +183,22 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenSettings('stats');
               }
             }}
-            aria-label="Version Notes & Game Stats"
+            aria-label="About, Tips & Game Instructions"
             className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
           >
             <Calendar className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
           </button>
         )}
+      </div>
+
+      {/* Middle Top Currency HUD (Star Currency) */}
+      <div className="flex items-center justify-center pointer-events-auto">
+        <CurrencyHud
+          stars={stars}
+          onOpenStore={onOpenStore || (() => onOpenSettings('bottle'))}
+          onEconomyUpdated={onEconomyUpdated}
+          onRefillStars={onRefillStars}
+        />
       </div>
 
       {/* Right Action Buttons */}
@@ -208,6 +230,26 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <Maximize className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
             )}
+          </button>
+        )}
+
+        {/* Info Button (Hub view - matches (i) in reference layout) */}
+        {currentView === 'hub' && (
+          <button
+            onClick={() => {
+              SoundEngine.playButtonClick();
+              Haptics.buttonClick();
+              if (onOpenInfo) {
+                onOpenInfo();
+              } else if (onOpenVersionNotes) {
+                onOpenVersionNotes();
+              }
+            }}
+            aria-label="About, Tips & Game Instructions"
+            title="About: How to Play & Tips"
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
+          >
+            <Info className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
           </button>
         )}
 

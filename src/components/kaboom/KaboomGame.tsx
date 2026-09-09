@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import {
   AppSettings,
+  AppStats,
   KaboomCommand,
   KaboomGridDimension,
   KaboomLogEntry,
@@ -31,10 +32,12 @@ import { KaboomBoardSelection } from './KaboomBoardSelection';
 import { KaboomBall } from './KaboomBall';
 import { KaboomExplosionCanvas } from './KaboomExplosionCanvas';
 import { SoundEngine, Haptics } from '../../lib/audio';
+import { recordKaboomEvent } from '../../lib/db';
 
 interface KaboomGameProps {
   settings: AppSettings;
   onBackToMenu?: () => void;
+  onStatsUpdated?: (stats: AppStats) => void;
 }
 
 interface KaboomToast {
@@ -47,6 +50,7 @@ interface KaboomToast {
 export const KaboomGame: React.FC<KaboomGameProps> = ({
   settings,
   onBackToMenu,
+  onStatsUpdated,
 }) => {
   // Game view state: starts directly at 'selection'
   const [currentScreen, setCurrentScreen] = useState<'selection' | 'gameplay'>('selection');
@@ -262,6 +266,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       SoundEngine.playBonusFanfare();
       Haptics.buttonClick();
 
+      // Record round victory in persistent statistics
+      recordKaboomEvent({ type: 'victory' }).then((updatedStats) => {
+        if (onStatsUpdated) onStatsUpdated(updatedStats);
+      });
+
       addLog(
         'safe',
         playerIndex,
@@ -330,6 +339,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       setIsGameOver(true);
       setIsVictory(false);
 
+      // Record bomb hit in persistent statistics
+      recordKaboomEvent({ type: 'bomb_hit' }).then((updatedStats) => {
+        if (onStatsUpdated) onStatsUpdated(updatedStats);
+      });
+
       // Reveal bomb and all tiles on the board
       setTiles((prev) =>
         prev.map((t) =>
@@ -356,6 +370,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
     // ========================================================================
     if (tile.type === 'bonus') {
       SoundEngine.playBonusFanfare();
+
+      // Record bonus collected in persistent statistics
+      recordKaboomEvent({ type: 'bonus' }).then((updatedStats) => {
+        if (onStatsUpdated) onStatsUpdated(updatedStats);
+      });
 
       const command = tile.bonusCommand || getRandomCommand();
 
@@ -537,7 +556,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
                   {isVictory ? (
                     <Trophy className="w-6 h-6 text-amber-300" />
                   ) : (
-                    <span className="font-lilita text-base text-amber-300">
+                    <span className="font-header text-base text-amber-300">
                       P{isUnlimited ? activePlayerIndex + 1 : (activePlayerIndex % playerCount) + 1}
                     </span>
                   )}
@@ -552,7 +571,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
 
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-lilita text-lg tracking-wide text-white">
+                <span className="font-header text-lg tracking-wide text-white">
                   {isGameOver
                     ? isVictory
                       ? '🏆 VICTORY!'
@@ -560,12 +579,12 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
                     : `${getPlayerName(activePlayerIndex)}'s Turn`}
                 </span>
                 {isReverseOrder && !isGameOver && (
-                  <span className="text-[9px] font-black bg-purple-500/30 text-purple-300 border border-purple-400/40 px-1.5 py-0.2 rounded-full">
+                  <span className="font-header text-[9px] font-bold bg-purple-500/30 text-purple-300 border border-purple-400/40 px-1.5 py-0.2 rounded-full">
                     REVERSED
                   </span>
                 )}
               </div>
-              <div className="text-[11px] text-gray-400">
+              <div className="font-subbody text-[11px] text-gray-400">
                 {isGameOver
                   ? isVictory
                     ? 'All safe balls cleared! Bomb was defused.'
@@ -576,10 +595,10 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           </div>
 
           <div className="text-right">
-            <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+            <div className="font-subbody text-[10px] uppercase font-bold text-gray-400 tracking-wider">
               {selectedDimension}×{selectedDimension} Grid
             </div>
-            <div className="text-xs font-black text-amber-300">
+            <div className="font-header text-xs text-amber-300">
               {isGameOver
                 ? 'Complete'
                 : `${tiles.filter((t) => !t.revealed).length} Left`}
@@ -657,7 +676,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           type="button"
           onClick={handleNextRound}
           disabled={!isGameOver}
-          className={`w-full py-3.5 px-6 rounded-2xl font-lilita tracking-wider text-base transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
+          className={`w-full py-3.5 px-6 rounded-2xl font-header tracking-wider text-base transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
             isGameOver
               ? isVictory
                 ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-teal-400 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:brightness-110 active:scale-95 animate-pulse'
