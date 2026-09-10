@@ -25,6 +25,7 @@ import classicModeBg from '../assets/images/Classic Mode Background.jpeg';
 import extremeModeBg from '../assets/images/Extreme Mode Background.jpeg';
 import chaosModeBg from '../assets/images/Chaos Mode Background.jpeg';
 import ultimateModeBg from '../assets/images/Ultimate Mode Background.jpeg';
+import bombGameBg from '../assets/images/Bomb Game Background.jpeg';
 
 // In-Memory Blob URL registry (original URL -> blob: URL)
 const assetBlobMap = new Map<string, string>();
@@ -166,6 +167,12 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     url: ultimateModeBg,
     type: 'image',
     description: 'Buffering Ultimate Mode Card Art...',
+  },
+  {
+    name: 'Bomb Game Background',
+    url: bombGameBg,
+    type: 'image',
+    description: 'Buffering Bomb Game Background...',
   },
 ];
 

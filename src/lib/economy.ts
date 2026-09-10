@@ -6,7 +6,7 @@
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
 
-export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'bonus';
+export type StoreCategory = 'bottles' | 'bombs' | 'balls';
 
 export interface StoreItem {
   id: string;
@@ -19,7 +19,7 @@ export interface StoreItem {
   badge?: string;
   accentGradient: string;
   borderGlow: string;
-  iconType: 'bottle' | 'bomb' | 'ball' | 'bonus';
+  iconType: 'bottle' | 'bomb' | 'ball';
   builtInBottleStyle?: BottleBuiltinStyle;
   image?: string;
 }
@@ -42,7 +42,6 @@ export interface EconomyState {
     bottles: string;
     bombs: string;
     balls: string;
-    bonus: string;
   };
   dailyQuests: DailyQuest[];
   lastDailyReset: number;
@@ -218,58 +217,6 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       iconType: 'ball',
     },
   ],
-  bonus: [
-    {
-      id: 'bonus_cyber_holo',
-      category: 'bonus',
-      name: 'Cyber Hologram Cards',
-      subtitle: 'Tactical Neon Blueprint',
-      description: 'Futuristic floating holographic command cards with glowing circuitry.',
-      price: 0,
-      rarity: 'Common',
-      badge: 'DEFAULT',
-      accentGradient: 'from-cyan-400 to-indigo-500',
-      borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
-      iconType: 'bonus',
-    },
-    {
-      id: 'bonus_golden_royal',
-      category: 'bonus',
-      name: 'Golden Royal Scroll',
-      subtitle: 'Monarch VIP Decrees',
-      description: 'Regal golden border frames with velvet textures for high society dares.',
-      price: 350,
-      rarity: 'Rare',
-      accentGradient: 'from-amber-300 via-yellow-400 to-orange-500',
-      borderGlow: 'border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
-      iconType: 'bonus',
-    },
-    {
-      id: 'bonus_sunset_synth',
-      category: 'bonus',
-      name: 'Sunset Synthwave Deck',
-      subtitle: 'Retro Grid 1984',
-      description: 'Neon magenta and sunset gradient cards inspired by 80s synth vibes.',
-      price: 500,
-      rarity: 'Epic',
-      badge: 'STYLISH',
-      accentGradient: 'from-pink-500 via-rose-400 to-amber-400',
-      borderGlow: 'border-pink-400/70 shadow-[0_0_18px_rgba(244,63,94,0.5)]',
-      iconType: 'bonus',
-    },
-    {
-      id: 'bonus_cosmic_starlight',
-      category: 'bonus',
-      name: 'Cosmic Starlight Tarots',
-      subtitle: 'Mystic Nightclub Cards',
-      description: 'Deep starlight tarot cards revealing fateful party commands from the stars.',
-      price: 900,
-      rarity: 'Legendary',
-      accentGradient: 'from-purple-400 via-pink-400 to-amber-300',
-      borderGlow: 'border-purple-400/80 shadow-[0_0_22px_rgba(168,85,247,0.6)]',
-      iconType: 'bonus',
-    },
-  ],
 };
 
 const DEFAULT_QUESTS: DailyQuest[] = [
@@ -331,13 +278,11 @@ const DEFAULT_STATE: EconomyState = {
     'bottle_btl_001',
     'bomb_classic_tnt',
     'ball_cyan_orbs',
-    'bonus_cyber_holo',
   ],
   equippedSkins: {
     bottles: 'bottle_btl_001',
     bombs: 'bomb_classic_tnt',
     balls: 'ball_cyan_orbs',
-    bonus: 'bonus_cyber_holo',
   },
   dailyQuests: DEFAULT_QUESTS,
   lastDailyReset: Date.now(),
@@ -364,8 +309,7 @@ export function getEconomyState(): EconomyState {
     const validBottleIds = STORE_CATALOGUE.bottles.map((b) => b.id);
     const validBombIds = STORE_CATALOGUE.bombs.map((b) => b.id);
     const validBallIds = STORE_CATALOGUE.balls.map((b) => b.id);
-    const validBonusIds = STORE_CATALOGUE.bonus.map((b) => b.id);
-    const allValidIds = new Set([...validBottleIds, ...validBombIds, ...validBallIds, ...validBonusIds, 'btl_e_001']);
+    const allValidIds = new Set([...validBottleIds, ...validBombIds, ...validBallIds, 'btl_e_001']);
 
     const cleanUnlocked = rawUnlocked.filter((id) => allValidIds.has(id));
 
@@ -381,7 +325,6 @@ export function getEconomyState(): EconomyState {
         bottles: equippedBottles,
         bombs: parsed.equippedSkins?.bombs || DEFAULT_STATE.equippedSkins.bombs,
         balls: parsed.equippedSkins?.balls || DEFAULT_STATE.equippedSkins.balls,
-        bonus: parsed.equippedSkins?.bonus || DEFAULT_STATE.equippedSkins.bonus,
       },
       dailyQuests: Array.isArray(parsed.dailyQuests) && parsed.dailyQuests.length > 0 ? parsed.dailyQuests : DEFAULT_QUESTS,
       lastDailyReset: parsed.lastDailyReset || Date.now(),

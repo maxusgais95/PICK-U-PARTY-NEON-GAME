@@ -18,6 +18,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { PartyBackground } from './components/PartyBackground';
 import { FingerGameBackground } from './components/FingerGameBackground';
 import { SpinBottleBackground } from './components/SpinBottleBackground';
+import { BombGameBackground } from './components/BombGameBackground';
 import { VersionNotesModal } from './components/VersionNotesModal';
 import { AboutGuideModal } from './components/AboutGuideModal';
 import { LandscapeBlocker } from './components/LandscapeBlocker';
@@ -230,6 +231,11 @@ export default function App() {
         />
       </div>
 
+      {/* 4. Bomb Game Background (Preloaded & Persistent) */}
+      <div className={currentView === 'kaboom' ? 'contents' : 'hidden'}>
+        <BombGameBackground active={currentView === 'kaboom'} />
+      </div>
+
       {/* 3. 60FPS Background Particle & Shockwave Canvas */}
       <BackgroundCanvas
         theme={settings.theme}
@@ -259,7 +265,6 @@ export default function App() {
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onToggleBottleSprite={handleCycleBottleSprite}
-        onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
         onEconomyUpdated={setEconomy}
       />
 
@@ -309,6 +314,7 @@ export default function App() {
             settings={settings}
             onBackToMenu={() => setCurrentView('hub')}
             onStatsUpdated={(newStats) => setStats(newStats)}
+            onEconomyUpdated={setEconomy}
           />
         )}
       </div>
@@ -402,7 +408,6 @@ export default function App() {
       {showSplash && (
         <SplashScreen
           onComplete={() => setShowSplash(false)}
-          onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
         />
       )}
     </main>

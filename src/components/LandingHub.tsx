@@ -224,7 +224,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
       {/* Benchmark Reference UI (Improve_game_UI_layout_2K_202609091537.jpeg) Side Widgets */}
       {/* 1. Left Sidebar Stack: STORE, RANKINGS, REWARDS */}
-      <div className="absolute top-[72px] sm:top-[78px] left-3 sm:left-4 z-30 flex flex-col">
+      <div className="absolute top-[max(4.75rem,calc(env(safe-area-inset-top)+3.5rem))] left-3 sm:left-4 z-30 flex flex-col">
         <LeftSidebarStack
           onOpenStore={onOpenStore || (() => {})}
           onOpenRankings={onOpenRankings || (() => {})}
@@ -234,7 +234,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
       {/* 2. Top-Right Daily Quests Widget */}
       {economy && (
-        <div className="absolute top-[72px] sm:top-[78px] right-3 sm:right-4 z-30 flex flex-col items-end">
+        <div className="absolute top-[max(4.75rem,calc(env(safe-area-inset-top)+3.5rem))] right-3 sm:right-4 z-30 flex flex-col items-end">
           <DailyQuestsWidget
             quests={economy.dailyQuests}
             onOpenQuests={onOpenDailyQuests || (() => {})}

@@ -128,7 +128,7 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
       </div>
 
       {/* Main Content Container: Clean, vertical flow with generous spacing */}
-      <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-auto flex flex-col justify-between min-h-full px-4 pt-24 sm:pt-28 pb-6">
+      <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-auto flex flex-col justify-between min-h-full px-4 pt-[max(6rem,calc(env(safe-area-inset-top)+4.5rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
         {/* Header: SELECT BOARD & Subtitle */}
         <div className="text-center mb-4 sm:mb-5">
           <h1 className="font-header text-3xl sm:text-4xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-red-400 drop-shadow-[0_2px_12px_rgba(249,115,22,0.6)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight py-1">

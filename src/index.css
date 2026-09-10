@@ -1217,4 +1217,133 @@
     0 4px 10px rgba(0, 0, 0, 0.85);
 }
 
+/* ========================================================================= */
+/* KABOOM CYBER NEON GRID TILES & HYPER SPEED ANIMATIONS (Reference UI)     */
+/* ========================================================================= */
+
+@keyframes neonTileShimmer {
+  0% {
+    transform: translateX(-180%) skewX(-25deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(280%) skewX(-25deg);
+    opacity: 0;
+  }
+}
+
+.animate-neon-tile-shimmer {
+  animation: neonTileShimmer 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes hyperSpeedFlicker {
+  0%, 100% {
+    filter: brightness(1.8);
+    border-color: #ffe600;
+    opacity: 1;
+  }
+  10% {
+    filter: brightness(1.1);
+    border-color: #ff2a85;
+    opacity: 0.88;
+  }
+  20% {
+    filter: brightness(2.4);
+    border-color: #00f0ff;
+    opacity: 1;
+  }
+  30% {
+    filter: brightness(1.2);
+    border-color: #ffffff;
+    opacity: 0.92;
+  }
+  40% {
+    filter: brightness(2.6);
+    border-color: #ff2a85;
+    opacity: 1;
+  }
+  55% {
+    filter: brightness(1.15);
+    border-color: #ffe600;
+    opacity: 0.85;
+  }
+  70% {
+    filter: brightness(2.3);
+    border-color: #00f0ff;
+    opacity: 1;
+  }
+  85% {
+    filter: brightness(1.3);
+    border-color: #ffffff;
+    opacity: 0.95;
+  }
+}
+
+.animate-hyper-flicker {
+  animation: hyperSpeedFlicker 0.45s ease-in-out infinite alternate;
+  will-change: filter, border-color, opacity;
+}
+
+@keyframes spinHyper {
+  0% {
+    transform: rotate(0deg) scale(1.3);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.3);
+  }
+}
+
+.animate-spin-hyper {
+  animation: spinHyper 0.4s linear infinite;
+  will-change: transform;
+}
+
+@keyframes hyperSpeedPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.28);
+    filter: drop-shadow(0 0 16px #ffe600);
+  }
+}
+
+.animate-hyper-pulse {
+  animation: hyperSpeedPulse 0.35s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+@keyframes neonBreathingPink {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(255, 42, 133, 0.75), inset 0 0 8px rgba(255, 42, 133, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(255, 42, 133, 0.95), inset 0 0 14px rgba(255, 42, 133, 0.55);
+  }
+}
+
+.animate-neon-breathing-pink {
+  animation: neonBreathingPink 2.4s ease-in-out infinite;
+}
+
+@keyframes neonBreathingCyan {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.75), inset 0 0 8px rgba(0, 240, 255, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(0, 240, 255, 0.95), inset 0 0 14px rgba(0, 240, 255, 0.55);
+  }
+}
+
+.animate-neon-breathing-cyan {
+  animation: neonBreathingCyan 2.4s ease-in-out infinite;
+}
+
 

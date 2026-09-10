@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Volume2, VolumeX, Settings, Home, Calendar, Maximize, Minimize, Info, BookOpen } from 'lucide-react';
+import { Volume2, VolumeX, Settings, Home, Maximize, Minimize, Info, BookOpen } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import { CurrencyHud } from './CurrencyHud';
 import { AppSettings, ScreenView } from '../types';
@@ -24,7 +24,6 @@ interface HeaderProps {
   onToggleSound: () => void;
   onToggleHaptics: () => void;
   onToggleBottleSprite?: () => void;
-  onOpenVersionNotes?: () => void;
   onEconomyUpdated?: (state: EconomyState) => void;
   onRefillStars?: (amount: number) => void;
 }
@@ -41,7 +40,6 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSound,
   onToggleHaptics,
   onToggleBottleSprite,
-  onOpenVersionNotes,
   onEconomyUpdated,
   onRefillStars,
 }) => {
@@ -172,22 +170,6 @@ export const Header: React.FC<HeaderProps> = ({
             <VolumeX className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2] opacity-80" />
           )}
         </button>
-
-        {/* Version Notes Button - Top left next to audio toggle */}
-        {onOpenVersionNotes && (
-          <button
-            onClick={() => {
-              SoundEngine.playButtonClick();
-              Haptics.buttonClick();
-              onOpenVersionNotes();
-            }}
-            aria-label="Version Notes"
-            title="Version Notes (v1.4.01)"
-            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-purple-400/40 shadow-[0_0_12px_rgba(168,85,247,0.25)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
-          >
-            <Calendar className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-          </button>
-        )}
       </div>
 
       {/* Locked Center Currency HUD - Mathematically locked to horizontal center on all pages */}

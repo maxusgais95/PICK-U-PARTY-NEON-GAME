@@ -19,6 +19,7 @@ import {
 import {
   AppSettings,
   AppStats,
+  KaboomBonusItem,
   KaboomCommand,
   KaboomGridDimension,
   KaboomLogEntry,
@@ -28,16 +29,20 @@ import {
   KABOOM_GRID_CONFIGS,
   getRandomCommand,
 } from './kaboomCommands';
+import { getRandomBonusItem } from './kaboomBonusConfig';
+import { KaboomBonusModal } from './KaboomBonusModal';
 import { KaboomBoardSelection } from './KaboomBoardSelection';
 import { KaboomBall } from './KaboomBall';
 import { KaboomExplosionCanvas } from './KaboomExplosionCanvas';
 import { SoundEngine, Haptics } from '../../lib/audio';
 import { recordKaboomEvent } from '../../lib/db';
+import { addStars, EconomyState } from '../../lib/economy';
 
 interface KaboomGameProps {
   settings: AppSettings;
   onBackToMenu?: () => void;
   onStatsUpdated?: (stats: AppStats) => void;
+  onEconomyUpdated?: (economy: EconomyState) => void;
 }
 
 interface KaboomToast {
@@ -51,6 +56,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
   settings,
   onBackToMenu,
   onStatsUpdated,
+  onEconomyUpdated,
 }) => {
   // Game view state: starts directly at 'selection'
   const [currentScreen, setCurrentScreen] = useState<'selection' | 'gameplay'>('selection');
@@ -63,6 +69,13 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
   const [isReverseOrder, setIsReverseOrder] = useState<boolean>(false);
   const [activeShieldPlayer, setActiveShieldPlayer] = useState<number | null>(null);
   const [turnCount, setTurnCount] = useState<number>(1);
+
+  // Active bonus modal pop up
+  const [activeBonusModal, setActiveBonusModal] = useState<{
+    command: KaboomCommand;
+    bonusItem: KaboomBonusItem;
+    playerName: string;
+  } | null>(null);
 
   // Tiles array
   const [tiles, setTiles] = useState<KaboomTile[]>([]);
@@ -77,6 +90,9 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
   // Explosion visual effect
   const [explosionActive, setExplosionActive] = useState<boolean>(false);
   const [explosionCoords, setExplosionCoords] = useState<{ x: number; y: number } | undefined>(undefined);
+
+  // Hyper-speed bonus discovery screen flash & flicker
+  const [bonusFlickerActive, setBonusFlickerActive] = useState<boolean>(false);
 
   // Action log / Event feed
   const [actionLogs, setActionLogs] = useState<KaboomLogEntry[]>([]);
@@ -176,8 +192,10 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         for (let c = 0; c < dimension; c++) {
           const type = types[tileIndex];
           let command: KaboomCommand | undefined = undefined;
+          let bonusItem: KaboomBonusItem | undefined = undefined;
 
           if (type === 'bonus') {
+            bonusItem = getRandomBonusItem();
             command = getRandomCommand(usedCommandIdsRef.current);
             usedCommandIdsRef.current.add(command.id);
           }
@@ -188,6 +206,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
             col: c,
             type,
             revealed: false,
+            bonusItem,
             bonusCommand: command,
           });
           tileIndex++;
@@ -195,6 +214,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       }
 
       setTiles(newTiles);
+      setActiveBonusModal(null);
       setIsGameOver(false);
       setIsVictory(false);
       setExplosionActive(false);
@@ -366,17 +386,28 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
     }
 
     // ========================================================================
-    // OUTCOME 2: COMMAND BONUS (NO MODAL - TOAST ONLY)
+    // OUTCOME 2: BONUS SPRITE DISCOVERY (POP UP MODAL WITH STAR CURRENCY & COMMAND)
     // ========================================================================
     if (tile.type === 'bonus') {
       SoundEngine.playBonusFanfare();
+
+      // Trigger intense hyper-speed flash & flicker
+      setBonusFlickerActive(true);
+      setTimeout(() => setBonusFlickerActive(false), 950);
+
+      const bonusItem = tile.bonusItem || getRandomBonusItem();
+      const command = tile.bonusCommand || getRandomCommand();
+
+      // Grant Stars currency to user wallet
+      const updatedEconomy = addStars(bonusItem.starReward);
+      if (onEconomyUpdated) {
+        onEconomyUpdated(updatedEconomy);
+      }
 
       // Record bonus collected in persistent statistics
       recordKaboomEvent({ type: 'bonus' }).then((updatedStats) => {
         if (onStatsUpdated) onStatsUpdated(updatedStats);
       });
-
-      const command = tile.bonusCommand || getRandomCommand();
 
       // Apply instant bonus mechanics if tactical
       if (command.id === 'uno_reverse') {
@@ -408,26 +439,18 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
 
       setTiles(updatedTiles);
 
-      // Check if this bonus tap leaves only the bomb remaining -> VICTORY!
-      if (checkAndApplyVictory(updatedTiles, currentPlayer)) {
-        return;
-      }
+      // Pop up the Bonus Event modal with the 3D sprite, rank, and star currency!
+      setActiveBonusModal({
+        command,
+        bonusItem,
+        playerName,
+      });
 
-      // Pop up toast message without blocking window
-      showToast(
+      addLog(
         'bonus',
-        `⭐ ${command.title} (${playerName})`,
-        command.description,
-        4500
+        currentPlayer,
+        `⭐ ${playerName} found ${bonusItem.name} [Rank ${bonusItem.rank} • +${bonusItem.starReward}★]: ${command.title}!`
       );
-
-      addLog('bonus', currentPlayer, `⭐ ${playerName} found BONUS: ${command.title}!`);
-
-      if (command.id === 'skip_turn') {
-        advanceToNextPlayer(2); // Skip next player
-      } else {
-        advanceToNextPlayer();
-      }
       return;
     }
 
@@ -452,28 +475,67 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
     advanceToNextPlayer();
   };
 
+  // Claim & close bonus modal pop-up
+  const handleClaimBonusModal = () => {
+    if (!activeBonusModal) return;
+    const { command } = activeBonusModal;
+    setActiveBonusModal(null);
+
+    // Check if this bonus tap leaves only the bomb remaining -> AUTOMATIC VICTORY!
+    if (checkAndApplyVictory(tiles, activePlayerIndex)) {
+      return;
+    }
+
+    if (command.id === 'skip_turn') {
+      advanceToNextPlayer(2); // Skip next player
+    } else {
+      advanceToNextPlayer();
+    }
+  };
+
   // Start a new round directly
   const handleNextRound = () => {
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
+    setActiveBonusModal(null);
     initializeBoard(selectedDimension);
+  };
+
+  // Board container size & proportion based on dimension:
+  // "The board size proportion: 2x2 is slightly smaller than 3x3, 3x3 slightly smaller than 4x4, and so on."
+  // Tiles are enlarged to almost fit the horizontal phone screen!
+  const getBoardContainerClass = () => {
+    switch (selectedDimension) {
+      case 2:
+        return 'w-[78%] max-w-[290px] sm:max-w-[325px] p-3 sm:p-4';
+      case 3:
+        return 'w-[86%] max-w-[340px] sm:max-w-[380px] p-2.5 sm:p-3.5';
+      case 4:
+        return 'w-[93%] max-w-[385px] sm:max-w-[430px] p-2 sm:p-3';
+      case 5:
+        return 'w-[97%] max-w-[415px] sm:max-w-[465px] p-1.5 sm:p-2.5';
+      case 6:
+        return 'w-full max-w-[440px] sm:max-w-[495px] p-1 sm:p-2';
+      default:
+        return 'w-[93%] max-w-[385px] p-2';
+    }
   };
 
   // Grid style class based on dimension
   const getGridColsClass = () => {
     switch (selectedDimension) {
       case 2:
-        return 'grid-cols-2 gap-5 sm:gap-6';
+        return 'grid-cols-2 gap-3.5 sm:gap-4';
       case 3:
-        return 'grid-cols-3 gap-3.5 sm:gap-4';
+        return 'grid-cols-3 gap-2.5 sm:gap-3';
       case 4:
-        return 'grid-cols-4 gap-2.5 sm:gap-3';
+        return 'grid-cols-4 gap-2 sm:gap-2.5';
       case 5:
-        return 'grid-cols-5 gap-2 sm:gap-2.5';
+        return 'grid-cols-5 gap-1.5 sm:gap-2';
       case 6:
-        return 'grid-cols-6 gap-1.5 sm:gap-2';
+        return 'grid-cols-6 gap-1 sm:gap-1.5';
       default:
-        return 'grid-cols-4 gap-2.5';
+        return 'grid-cols-4 gap-2';
     }
   };
 
@@ -494,13 +556,18 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       {/* ========================================================================== */}
       <div
         id="kaboom-game-container"
-        className={`w-full h-full flex flex-col justify-between overflow-hidden px-4 pt-16 pb-4 select-none ${
+        className={`w-full h-full flex flex-col justify-between overflow-hidden px-2.5 sm:px-4 pt-[max(5.75rem,calc(env(safe-area-inset-top)+4.25rem))] pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.75rem))] select-none ${
           currentScreen === 'gameplay' ? 'flex' : 'hidden'
         } ${explosionActive ? 'animate-screen-shake' : ''}`}
       >
         {/* Red / Orange Explosion Flash Screen Overlay */}
         {explosionActive && (
           <div className="fixed inset-0 bg-red-600/30 z-40 pointer-events-none animate-explosion-flash" />
+        )}
+
+        {/* Bonus Discovery Hyper-Speed Flash & Flicker Screen Overlay */}
+        {bonusFlickerActive && (
+          <div className="fixed inset-0 bg-amber-300/20 z-40 pointer-events-none animate-hyper-flicker" />
         )}
 
         {/* 60FPS Explosion Particle & Shockwave Canvas */}
@@ -511,8 +578,8 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           onComplete={() => setExplosionActive(false)}
         />
 
-      {/* Top Header / Navigation Bar */}
-      <div className="w-full max-w-md mx-auto shrink-0 mb-1">
+      {/* Top Header / Navigation Bar - Clean, generous spacing below global Header */}
+      <div className="w-full max-w-md mx-auto shrink-0 mb-1.5">
         <div className="flex items-center justify-between gap-2 mb-2">
           {/* Back to Board Selection */}
           <button
@@ -523,7 +590,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
               Haptics.buttonClick();
               setCurrentScreen('selection');
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-purple-400/40 text-purple-200 text-xs font-bold hover:border-purple-300 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(168,85,247,0.2)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-md border border-purple-400/40 text-purple-200 text-xs font-bold hover:border-purple-300 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(168,85,247,0.25)]"
           >
             <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             <span>Select Board</span>
@@ -534,10 +601,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
             id="kaboom-restart-round-button"
             type="button"
             onClick={handleNextRound}
-            title="Start new round"
-            className="w-8 h-8 rounded-xl bg-black/40 backdrop-blur-md border border-orange-500/40 text-orange-300 flex items-center justify-center hover:border-orange-400 active:scale-95 transition-all cursor-pointer shadow-[0_0_10px_rgba(249,115,22,0.3)]"
+            title="Restart round"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-md border border-orange-500/40 text-orange-300 text-xs font-bold hover:border-orange-400 active:scale-95 transition-all cursor-pointer shadow-[0_0_10px_rgba(249,115,22,0.25)]"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5 stroke-[2.2]" />
+            <span>Restart</span>
           </button>
         </div>
 
@@ -608,7 +676,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       </div>
 
       {/* Floating Toast Notification: Positioned ABSOLUTE so it NEVER shifts the board grid */}
-      <div className="absolute top-20 left-0 right-0 px-4 flex justify-center z-50 pointer-events-none">
+      <div className="absolute top-[max(5.75rem,calc(env(safe-area-inset-top)+4.25rem))] left-0 right-0 px-4 flex justify-center z-50 pointer-events-none">
         {toast && (
           <div
             onClick={() => setToast(null)}
@@ -650,11 +718,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         )}
       </div>
 
-      {/* Center: Tactile 3D Ball Grid - LOCKED IN PLACE */}
-      <div className="flex-1 flex items-center justify-center w-full max-w-md mx-auto my-auto min-h-[320px]">
+      {/* Center: Tactile Cyber Neon Grid Board - LOCKED IN PLACE */}
+      <div className="flex-1 flex items-center justify-center w-full max-w-lg mx-auto my-auto py-1">
         <div
           id="kaboom-grid-board"
-          className={`grid ${getGridColsClass()} p-4 sm:p-5 rounded-3xl bg-slate-950/60 backdrop-blur-lg border border-purple-500/30 shadow-[0_0_40px_rgba(168,85,247,0.2)] justify-items-center items-center transition-none`}
+          className={`grid ${getGridColsClass()} ${getBoardContainerClass()} rounded-2xl sm:rounded-3xl bg-[#03010a]/85 backdrop-blur-xl border border-purple-500/30 shadow-[0_0_45px_rgba(168,85,247,0.22)] justify-items-center items-center transition-all duration-300`}
         >
           {tiles.map((tile) => (
             <KaboomBall
@@ -694,6 +762,16 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           </span>
         </button>
       </div>
+
+      {/* Bonus Event Pop-Up Modal with 3D Sprite, Star Currency & Dare/Action */}
+      {activeBonusModal && (
+        <KaboomBonusModal
+          command={activeBonusModal.command}
+          bonusItem={activeBonusModal.bonusItem}
+          playerName={activeBonusModal.playerName}
+          onClaim={handleClaimBonusModal}
+        />
+      )}
     </div>
     </div>
   );

@@ -130,6 +130,29 @@ export type KaboomTileType = 'safe' | 'bonus' | 'bomb';
 
 export type KaboomCommandCategory = 'dare' | 'privilege' | 'tactical' | 'party';
 
+export type KaboomBonusSpriteId =
+  | 'musical_note'
+  | 'headset'
+  | 'cute_star'
+  | 'crystal_rose'
+  | 'diamond_key';
+
+export interface KaboomBonusItem {
+  id: KaboomBonusSpriteId;
+  name: string;
+  rank: 1 | 2 | 3 | 4 | 5;
+  rankName: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+  starReward: number;
+  probability: number;
+  description: string;
+  tagline: string;
+  image: string;
+  accentColor: string;
+  glowColor: string;
+  badgeBg: string;
+  borderColor: string;
+}
+
 export interface KaboomCommand {
   id: string;
   title: string;
@@ -147,6 +170,7 @@ export interface KaboomTile {
   revealed: boolean;
   isDetonated?: boolean;
   isDefused?: boolean;
+  bonusItem?: KaboomBonusItem;
   bonusCommand?: KaboomCommand;
   revealedByPlayerIndex?: number;
 }

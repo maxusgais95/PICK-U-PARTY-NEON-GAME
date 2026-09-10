@@ -749,6 +749,37 @@ export class AudioManager {
   }
 
   // =========================================================================
+  // 11b. Star Currency HUD Beep / Pickup Chime (High-register bright arcade ping)
+  // =========================================================================
+  public static playHudCoinBeep() {
+    triggerHaptic([12, 25, 18]);
+    if (!this.soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      // High-register sparkling arcade coin bell: E6 (1318.5Hz) -> B6 (1975.5Hz)
+      const pings = [
+        { freq: 1318.5, delay: 0.0, dur: 0.22, vol: 0.28 },
+        { freq: 1975.5, delay: 0.07, dur: 0.32, vol: 0.35 },
+      ];
+      pings.forEach(({ freq, delay, dur, vol }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + delay);
+        gain.gain.setValueAtTime(0.001, now + delay);
+        gain.gain.linearRampToValueAtTime(vol * this.masterVolume, now + delay + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + delay);
+        osc.stop(now + delay + dur + 0.02);
+      });
+    } catch (e) {}
+  }
+
+  // =========================================================================
   // 12. Kaboom: Bomb Explosion (Sub-bass detonation rumble + noise blast)
   // =========================================================================
   public static playBombExplosion() {

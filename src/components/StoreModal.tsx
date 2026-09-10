@@ -30,7 +30,6 @@ const CATEGORIES: { id: StoreCategory; label: string; icon: string }[] = [
   { id: 'bottles', label: 'BOTTLES', icon: '🍾' },
   { id: 'bombs', label: 'BOMBS', icon: '💣' },
   { id: 'balls', label: 'BALLS', icon: '⚽' },
-  { id: 'bonus', label: 'BONUS SKINS', icon: '⚡' },
 ];
 
 export const StoreModal: React.FC<StoreModalProps> = ({
@@ -135,15 +134,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({
             <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
             <div className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-white/90 to-cyan-300 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.7)] flex items-center justify-center transform group-hover:scale-105 transition-transform">
               <Sparkles className="w-6 h-6 text-cyan-700" />
-            </div>
-          </div>
-        );
-      case 'bonus':
-        return (
-          <div className="relative flex items-center justify-center w-full h-full">
-            <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
-            <div className="relative w-11 h-14 rounded-xl bg-gradient-to-b from-purple-500/80 to-indigo-700/80 border border-purple-300 flex flex-col items-center justify-center shadow-[0_0_12px_rgba(168,85,247,0.5)] transform -rotate-6 group-hover:rotate-0 transition-transform">
-              <Sparkles className="w-5 h-5 text-amber-300 animate-pulse" />
             </div>
           </div>
         );
