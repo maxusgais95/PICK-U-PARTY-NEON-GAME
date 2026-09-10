@@ -382,7 +382,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
         </div>
       </div>
 
-      {/* Footer About: How to Play & Tips */}
+      {/* Footer Version Notes */}
       <div className="absolute bottom-[18px] left-0 right-0 flex flex-col items-center select-none z-20">
         <button
           type="button"
@@ -391,11 +391,11 @@ export const LandingHub: React.FC<LandingHubProps> = ({
             Haptics.buttonClick();
             if (onOpenVersionNotes) onOpenVersionNotes();
           }}
-          className="font-subbody text-[10px] sm:text-[11px] text-gray-300/80 hover:text-white transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] flex items-center gap-1.5"
-          title="About: How to Play, Game Instructions & Tips"
+          className="font-subbody text-[10px] sm:text-[11px] text-gray-300/80 hover:text-cyan-300 transition-colors tracking-wide cursor-pointer focus:outline-none py-0.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] flex items-center gap-1.5"
+          title="Version Notes • v1.4.01"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00f0ff] animate-pulse" />
-          <span>About: How to Play & Tips</span>
+          <span>v1.4.01 • Version Notes</span>
         </button>
       </div>
     </div>

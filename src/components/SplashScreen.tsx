@@ -275,7 +275,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
         </div>
       </div>
 
-      {/* About & Game Guide Capsule at the Bottom of the Screen */}
+      {/* Version Notes Capsule at the Bottom of the Screen */}
       <div className="relative z-10 w-full pb-5 sm:pb-7 flex flex-col items-center animate-version-fadein">
         <button
           type="button"
@@ -286,10 +286,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
             if (onOpenVersionNotes) onOpenVersionNotes();
           }}
           className="font-subbody px-4 py-1.5 rounded-full bg-[#0a061a]/85 hover:bg-[#120b2e] border border-cyan-500/30 hover:border-cyan-400/60 text-xs font-semibold tracking-wider text-gray-300 hover:text-cyan-300 transition-all cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.6)] flex items-center gap-2 focus:outline-none"
-          title="About: Game Instructions & Tips"
+          title="Version Notes • v1.4.01"
         >
           <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00f0ff] animate-pulse" />
-          <span>About: How to Play & Tips</span>
+          <span>v1.4.01 • Version Notes</span>
         </button>
       </div>
     </div>

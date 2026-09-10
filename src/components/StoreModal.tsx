@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { X, Star, Check, ShoppingBag, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Star, Check, ShoppingBag, Sparkles, AlertCircle, Lock } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import {
   StoreCategory,
@@ -13,7 +13,6 @@ import {
   EconomyState,
   purchaseItem,
   equipItem,
-  addStars,
 } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { AppSettings, BottleBuiltinStyle } from '../types';
@@ -55,34 +54,6 @@ export const StoreModal: React.FC<StoreModalProps> = ({
     setTimeout(() => {
       setNotification(null);
     }, 2800);
-  };
-
-  const handleQuickRefill = () => {
-    SoundEngine.playTeamDivisionChime();
-    Haptics.touchSuccess();
-    const updated = addStars(1000);
-    onEconomyUpdated(updated);
-    showToast('Refilled +1,000 Stars (Prototype)!', 'success');
-  };
-
-  const handleRefillAndPurchase = (item: StoreItem) => {
-    SoundEngine.playTeamDivisionChime();
-    Haptics.touchSuccess();
-    const deficit = Math.max(500, item.price - economy.stars);
-    addStars(deficit);
-    const res = purchaseItem(item.id);
-    if (res.success) {
-      onEconomyUpdated(res.updatedState);
-      if (item.category === 'bottles' && item.builtInBottleStyle) {
-        onUpdateSettings({
-          bottleStyle: item.builtInBottleStyle,
-          selectedCustomSpriteId: null,
-        });
-      }
-      showToast(`Refilled +${deficit} ⭐ and unlocked ${item.name}!`, 'success');
-    } else {
-      showToast(`Refilled +${deficit} Stars!`, 'success');
-    }
   };
 
   const handlePurchase = (item: StoreItem) => {
@@ -246,7 +217,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({
           </div>
         </div>
 
-        {/* Currency & Earning Condition Info Banner + Prototype Star Refill */}
+        {/* Currency & Earning Condition Info Banner */}
         <div className="px-4 py-2 bg-black/40 border-b border-white/5 flex items-center justify-between text-[11px] text-gray-300">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
@@ -258,15 +229,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({
               <span className="text-gray-400 italic">—</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleQuickRefill}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-400/50 text-amber-300 text-[10px] font-header font-bold tracking-wider uppercase active:scale-95 transition-all shadow-[0_0_10px_rgba(245,158,11,0.2)] cursor-pointer"
-            title="Refill 1,000 Stars (Prototype)"
-          >
-            <Sparkles className="w-3 h-3 text-amber-300" />
-            <span>Refill +1,000 ⭐</span>
-          </button>
+          <div className="flex items-center gap-1 text-[11px] text-amber-300 font-header font-semibold">
+            <Star className="w-3 h-3 fill-amber-400" />
+            <span>Balance: {economy.stars.toLocaleString()}</span>
+          </div>
         </div>
 
         {/* Category Tabs */}
@@ -397,12 +363,12 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleRefillAndPurchase(item)}
-                        className="w-full py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/60 text-amber-300 font-header font-bold text-xs tracking-wider active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer shadow-[0_0_10px_rgba(245,158,11,0.2)]"
-                        title={`Refill needed ${item.price - economy.stars} Stars & Unlock`}
+                        disabled
+                        className="w-full py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-500 font-header font-bold text-xs tracking-wider cursor-not-allowed flex items-center justify-center gap-1.5"
+                        title={`Requires ${item.price} Stars (Need ${item.price - economy.stars} more)`}
                       >
-                        <Sparkles className="w-3 h-3 text-amber-300" />
-                        <span>REFILL & BUY ({item.price} ⭐)</span>
+                        <Lock className="w-3 h-3 text-gray-500" />
+                        <span>LOCKED ({item.price} ⭐)</span>
                       </button>
                     )}
                   </div>

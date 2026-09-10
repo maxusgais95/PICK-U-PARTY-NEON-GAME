@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Volume2, VolumeX, Settings, Home, Calendar, Maximize, Minimize, Info } from 'lucide-react';
+import { Volume2, VolumeX, Settings, Home, Calendar, Maximize, Minimize, Info, BookOpen } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import { CurrencyHud } from './CurrencyHud';
 import { AppSettings, ScreenView } from '../types';
@@ -20,6 +20,7 @@ interface HeaderProps {
   onOpenSettings: (tab?: 'game' | 'bottle' | 'stats') => void;
   onOpenStore?: () => void;
   onOpenInfo?: () => void;
+  onOpenGuide?: () => void;
   onToggleSound: () => void;
   onToggleHaptics: () => void;
   onToggleBottleSprite?: () => void;
@@ -36,6 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenStore,
   onOpenInfo,
+  onOpenGuide,
   onToggleSound,
   onToggleHaptics,
   onToggleBottleSprite,
@@ -133,9 +135,9 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-4 pt-[max(1rem,calc(env(safe-area-inset-top)+0.6rem))] pb-2 pointer-events-none">
-      {/* Left Action Buttons (Squircle Neon Glass matching IMG_0687.jpeg) */}
-      <div className="flex items-center gap-2.5 pointer-events-auto">
+    <header className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 pt-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] pb-2 pointer-events-none">
+      {/* Left Action Buttons (Compact, non-overlapping) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto z-40">
         {currentView !== 'hub' ? (
           <button
             onClick={() => {
@@ -144,9 +146,9 @@ export const Header: React.FC<HeaderProps> = ({
               onNavigate('hub');
             }}
             aria-label="Return to Hub"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-purple-400/40 shadow-[0_0_12px_rgba(168,85,247,0.25)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
           >
-            <Home className="w-5 h-5 stroke-[2.2] text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+            <Home className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
           </button>
         ) : null}
 
@@ -158,51 +160,46 @@ export const Header: React.FC<HeaderProps> = ({
             onToggleSound();
           }}
           aria-label={settings.soundEnabled ? 'Mute Sound' : 'Enable Sound'}
-          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border transition-all flex items-center justify-center active:scale-95 ${
+          className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border transition-all flex items-center justify-center active:scale-95 ${
             settings.soundEnabled
-              ? 'border-purple-400/60 shadow-[0_0_15px_rgba(192,38,211,0.35)] text-pink-300'
+              ? 'border-purple-400/60 shadow-[0_0_12px_rgba(192,38,211,0.3)] text-pink-300'
               : 'border-purple-900/40 text-gray-500 shadow-[0_2px_8px_rgba(0,0,0,0.5)]'
           }`}
         >
           {settings.soundEnabled ? (
-            <Volume2 className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
+            <Volume2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
           ) : (
-            <VolumeX className="w-5 h-5 stroke-[2] opacity-80" />
+            <VolumeX className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2] opacity-80" />
           )}
         </button>
 
-        {/* Calendar / Version Notes & Stats Button - ONLY on main page (hub) */}
-        {currentView === 'hub' && (
+        {/* Version Notes Button - Top left next to audio toggle */}
+        {onOpenVersionNotes && (
           <button
             onClick={() => {
               SoundEngine.playButtonClick();
               Haptics.buttonClick();
-              if (onOpenVersionNotes) {
-                onOpenVersionNotes();
-              } else {
-                onOpenSettings('stats');
-              }
+              onOpenVersionNotes();
             }}
-            aria-label="About, Tips & Game Instructions"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
+            aria-label="Version Notes"
+            title="Version Notes (v1.4.01)"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-purple-400/40 shadow-[0_0_12px_rgba(168,85,247,0.25)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
           >
-            <Calendar className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+            <Calendar className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
           </button>
         )}
       </div>
 
-      {/* Middle Top Currency HUD (Star Currency) */}
-      <div className="flex items-center justify-center pointer-events-auto">
+      {/* Locked Center Currency HUD - Mathematically locked to horizontal center on all pages */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] pointer-events-auto z-50 flex items-center justify-center">
         <CurrencyHud
           stars={stars}
           onOpenStore={onOpenStore || (() => onOpenSettings('bottle'))}
-          onEconomyUpdated={onEconomyUpdated}
-          onRefillStars={onRefillStars}
         />
       </div>
 
-      {/* Right Action Buttons */}
-      <div className="flex items-center gap-2.5 pointer-events-auto">
+      {/* Right Action Buttons (Compact, non-overlapping) */}
+      <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto z-40">
         {/* Bottle Sprite Quick Switcher in Bottle Mode */}
         {currentView === 'bottle' && onToggleBottleSprite && (
           <button
@@ -212,9 +209,9 @@ export const Header: React.FC<HeaderProps> = ({
               onToggleBottleSprite();
             }}
             aria-label="Switch Bottle Sprite"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-pink-400/50 shadow-[0_0_15px_rgba(236,72,153,0.35)] flex items-center justify-center text-pink-300 active:scale-95 transition-all"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-pink-400/50 shadow-[0_0_12px_rgba(236,72,153,0.3)] flex items-center justify-center text-pink-300 active:scale-95 transition-all"
           >
-            <ChampagneBottleIcon className="w-5 h-5 text-pink-300 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
+            <ChampagneBottleIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-300 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
           </button>
         )}
 
@@ -223,33 +220,33 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={toggleFullscreen}
             aria-label="Toggle Fullscreen"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.3)] flex items-center justify-center text-cyan-300 active:scale-95 transition-all"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)] flex items-center justify-center text-cyan-300 active:scale-95 transition-all"
           >
             {isFullscreen ? (
-              <Minimize className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+              <Minimize className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
             ) : (
-              <Maximize className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+              <Maximize className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
             )}
           </button>
         )}
 
-        {/* Info Button (Hub view - matches (i) in reference layout) */}
-        {currentView === 'hub' && (
+        {/* Game Guide Button - Top right next to Settings */}
+        {(onOpenGuide || onOpenInfo) && (
           <button
             onClick={() => {
               SoundEngine.playButtonClick();
               Haptics.buttonClick();
-              if (onOpenInfo) {
+              if (onOpenGuide) {
+                onOpenGuide();
+              } else if (onOpenInfo) {
                 onOpenInfo();
-              } else if (onOpenVersionNotes) {
-                onOpenVersionNotes();
               }
             }}
-            aria-label="About, Tips & Game Instructions"
-            title="About: How to Play & Tips"
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
+            aria-label="Game Guide & How to Play"
+            title="Game Guide (How to Play & Tips)"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)] flex items-center justify-center text-cyan-300 hover:border-cyan-300 active:scale-95 transition-all"
           >
-            <Info className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+            <BookOpen className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
           </button>
         )}
 
@@ -261,9 +258,9 @@ export const Header: React.FC<HeaderProps> = ({
             onOpenSettings();
           }}
           aria-label="Open Settings"
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-[18px] bg-black/40 backdrop-blur-md border border-purple-400/40 shadow-[0_0_15px_rgba(168,85,247,0.3)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
+          className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-purple-400/40 shadow-[0_0_12px_rgba(168,85,247,0.25)] flex items-center justify-center text-purple-300 hover:border-purple-300 active:scale-95 transition-all"
         >
-          <Settings className="w-5 h-5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+          <Settings className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2] drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
         </button>
       </div>
     </header>

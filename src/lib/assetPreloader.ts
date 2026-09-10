@@ -20,6 +20,11 @@ import btl001 from '../assets/images/Btl_E_001.webp';
 import btl002 from '../assets/images/Btl_E_002.webp';
 import btl003 from '../assets/images/Btl_E_003.webp';
 import btl004 from '../assets/images/Btl_E_004.webp';
+import quickModeBg from '../assets/images/Quick Mode Background.jpeg';
+import classicModeBg from '../assets/images/Classic Mode Background.jpeg';
+import extremeModeBg from '../assets/images/Extreme Mode Background.jpeg';
+import chaosModeBg from '../assets/images/Chaos Mode Background.jpeg';
+import ultimateModeBg from '../assets/images/Ultimate Mode Background.jpeg';
 
 // In-Memory Blob URL registry (original URL -> blob: URL)
 const assetBlobMap = new Map<string, string>();
@@ -131,6 +136,36 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     url: btl004,
     type: 'image',
     description: 'Decoding Neon Bottle Sprites (4/4)...',
+  },
+  {
+    name: 'Quick Mode Background',
+    url: quickModeBg,
+    type: 'image',
+    description: 'Buffering Quick Mode Card Art...',
+  },
+  {
+    name: 'Classic Mode Background',
+    url: classicModeBg,
+    type: 'image',
+    description: 'Buffering Classic Mode Card Art...',
+  },
+  {
+    name: 'Extreme Mode Background',
+    url: extremeModeBg,
+    type: 'image',
+    description: 'Buffering Extreme Mode Card Art...',
+  },
+  {
+    name: 'Chaos Mode Background',
+    url: chaosModeBg,
+    type: 'image',
+    description: 'Buffering Chaos Mode Card Art...',
+  },
+  {
+    name: 'Ultimate Mode Background',
+    url: ultimateModeBg,
+    type: 'image',
+    description: 'Buffering Ultimate Mode Card Art...',
   },
 ];
 

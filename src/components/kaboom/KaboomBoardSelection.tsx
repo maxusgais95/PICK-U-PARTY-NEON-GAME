@@ -7,11 +7,18 @@ import React from 'react';
 import { KaboomGridDimension } from '../../types';
 import { SoundEngine, Haptics } from '../../lib/audio';
 import chibiBombImg from '../../assets/images/Chibi Bomb Game.webp';
+import quickModeBg from '../../assets/images/Quick Mode Background.jpeg';
+import classicModeBg from '../../assets/images/Classic Mode Background.jpeg';
+import extremeModeBg from '../../assets/images/Extreme Mode Background.jpeg';
+import chaosModeBg from '../../assets/images/Chaos Mode Background.jpeg';
+import ultimateModeBg from '../../assets/images/Ultimate Mode Background.jpeg';
 
-// Preload the image asset once at module level so the browser caches and never re-fetches
+// Preload the image assets at module level so the browser caches and never re-fetches
 if (typeof window !== 'undefined') {
-  const imgPreload = new Image();
-  imgPreload.src = chibiBombImg;
+  [quickModeBg, classicModeBg, extremeModeBg, chaosModeBg, ultimateModeBg, chibiBombImg].forEach((src) => {
+    const imgPreload = new Image();
+    imgPreload.src = src;
+  });
 }
 
 interface KaboomBoardSelectionProps {
@@ -23,71 +30,77 @@ interface CardConfig {
   dim: KaboomGridDimension;
   label: string;
   dimText: string;
+  bgImage: string;
   bottomGradient: string;
   borderColor: string;
   hoverBorderColor: string;
   glowStyle: string;
   hoverGlowStyle: string;
-  bgPosition: string;
+  bgPosition?: string;
   isWide?: boolean;
 }
 
-// Exact cards benchmarked from the game neon palette
+// Cards configured with their respective custom background artwork
 const CARDS: CardConfig[] = [
   {
     dim: 2,
     label: 'QUICK',
     dimText: '2 X 2',
-    bottomGradient: 'linear-gradient(to top, #00d2ff 0%, rgba(0, 180, 255, 0.75) 45%, transparent 85%)',
+    bgImage: quickModeBg,
+    bottomGradient: 'linear-gradient(to top, rgba(3, 7, 18, 0.88) 0%, rgba(0, 210, 255, 0.35) 45%, transparent 85%)',
     borderColor: 'border-[#00e5ff]/60',
     hoverBorderColor: 'hover:border-[#00f0ff]',
     glowStyle: '0 0 20px rgba(0, 229, 255, 0.4), 0 8px 25px rgba(0, 0, 0, 0.7)',
     hoverGlowStyle: '0 0 35px rgba(0, 240, 255, 0.7), 0 10px 30px rgba(0, 0, 0, 0.85)',
-    bgPosition: '78% 25%',
+    bgPosition: 'center',
   },
   {
     dim: 3,
     label: 'CLASSIC',
     dimText: '3 X 3',
-    bottomGradient: 'linear-gradient(to top, #0051ff 0%, rgba(30, 80, 255, 0.75) 45%, transparent 85%)',
+    bgImage: classicModeBg,
+    bottomGradient: 'linear-gradient(to top, rgba(3, 7, 18, 0.88) 0%, rgba(30, 80, 255, 0.35) 45%, transparent 85%)',
     borderColor: 'border-[#1e50ff]/60',
     hoverBorderColor: 'hover:border-[#3b82f6]',
     glowStyle: '0 0 20px rgba(30, 80, 255, 0.45), 0 8px 25px rgba(0, 0, 0, 0.7)',
     hoverGlowStyle: '0 0 35px rgba(59, 130, 246, 0.7), 0 10px 30px rgba(0, 0, 0, 0.85)',
-    bgPosition: '32% 25%',
+    bgPosition: 'center',
   },
   {
     dim: 4,
     label: 'EXTREME',
     dimText: '4 X 4',
-    bottomGradient: 'linear-gradient(to top, #ff007f 0%, rgba(220, 0, 130, 0.75) 45%, transparent 85%)',
+    bgImage: extremeModeBg,
+    bottomGradient: 'linear-gradient(to top, rgba(3, 7, 18, 0.88) 0%, rgba(255, 0, 127, 0.35) 45%, transparent 85%)',
     borderColor: 'border-[#ff007f]/60',
     hoverBorderColor: 'hover:border-[#ff3399]',
     glowStyle: '0 0 20px rgba(255, 0, 127, 0.45), 0 8px 25px rgba(0, 0, 0, 0.7)',
     hoverGlowStyle: '0 0 35px rgba(255, 0, 127, 0.7), 0 10px 30px rgba(0, 0, 0, 0.85)',
-    bgPosition: '78% 25%',
+    bgPosition: 'center',
   },
   {
     dim: 5,
     label: 'CHAOS',
     dimText: '5 X 5',
-    bottomGradient: 'linear-gradient(to top, #8000ff 0%, rgba(130, 0, 230, 0.75) 45%, transparent 85%)',
+    bgImage: chaosModeBg,
+    bottomGradient: 'linear-gradient(to top, rgba(3, 7, 18, 0.88) 0%, rgba(168, 85, 247, 0.35) 45%, transparent 85%)',
     borderColor: 'border-[#a855f7]/60',
     hoverBorderColor: 'hover:border-[#c084fc]',
     glowStyle: '0 0 20px rgba(168, 85, 247, 0.45), 0 8px 25px rgba(0, 0, 0, 0.7)',
     hoverGlowStyle: '0 0 35px rgba(168, 85, 247, 0.75), 0 10px 30px rgba(0, 0, 0, 0.85)',
-    bgPosition: '32% 25%',
+    bgPosition: 'center',
   },
   {
     dim: 6,
     label: 'ULTIMATE',
     dimText: '6 X 6',
-    bottomGradient: 'linear-gradient(to top, #ff7b00 0%, rgba(245, 120, 0, 0.75) 45%, transparent 85%)',
+    bgImage: ultimateModeBg,
+    bottomGradient: 'linear-gradient(to top, rgba(3, 7, 18, 0.88) 0%, rgba(255, 123, 0, 0.35) 45%, transparent 85%)',
     borderColor: 'border-[#ff7b00]/70',
     hoverBorderColor: 'hover:border-[#fb923c]',
     glowStyle: '0 0 25px rgba(255, 123, 0, 0.5), 0 8px 25px rgba(0, 0, 0, 0.7)',
     hoverGlowStyle: '0 0 40px rgba(255, 123, 0, 0.8), 0 10px 30px rgba(0, 0, 0, 0.85)',
-    bgPosition: '50% 35%',
+    bgPosition: 'center',
     isWide: true,
   },
 ];
@@ -147,8 +160,8 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
                 <div
                   className="absolute inset-0 z-0 bg-cover pointer-events-none filter brightness-95 group-hover:scale-105 transition-transform duration-300"
                   style={{
-                    backgroundImage: `url("${chibiBombImg}")`,
-                    backgroundPosition: card.bgPosition,
+                    backgroundImage: `url("${card.bgImage}")`,
+                    backgroundPosition: card.bgPosition || 'center',
                   }}
                 />
 

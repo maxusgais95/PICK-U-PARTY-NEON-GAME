@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
@@ -17,46 +17,47 @@ import {
   Shuffle,
   Users,
   CheckCircle2,
+  Trophy,
+  Calendar,
+  Layers,
+  Palette,
+  Check,
+  Smartphone,
+  ChevronRight,
 } from 'lucide-react';
 import { SoundEngine, Haptics } from '../lib/audio';
-import { refillPrototypeStars, EconomyState } from '../lib/economy';
+import { EconomyState } from '../lib/economy';
 
 export interface AboutGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: TabKey;
   economy?: EconomyState;
   onEconomyUpdated?: (state: EconomyState) => void;
   onNavigateToGame?: (game: 'roulette' | 'bottle' | 'kaboom') => void;
   onOpenStore?: () => void;
 }
 
-type TabKey = 'modes' | 'tips' | 'stars';
+export type TabKey = 'modes' | 'tips' | 'stars';
 
 export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
   isOpen,
   onClose,
+  initialTab = 'modes',
   economy,
   onEconomyUpdated,
   onNavigateToGame,
   onOpenStore,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabKey>('modes');
-  const [refillToast, setRefillToast] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   if (!isOpen) return null;
-
-  const handleRefill = (amount: number) => {
-    SoundEngine.playTeamDivisionChime();
-    Haptics.touchSuccess();
-    const result = refillPrototypeStars(amount);
-    if (onEconomyUpdated) {
-      onEconomyUpdated(result.updatedState);
-    }
-    setRefillToast(`+${amount.toLocaleString()} Stars Refilled!`);
-    setTimeout(() => {
-      setRefillToast(null);
-    }, 2200);
-  };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xl animate-fadeIn select-none">
@@ -75,12 +76,12 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
             <div>
               <h2 className="font-header text-base font-bold uppercase tracking-wider text-white flex items-center gap-1.5 leading-none">
                 <span>PICK'U PARTY</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 font-normal">
-                  Guide
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 font-header font-bold tracking-wider">
+                  GUIDE
                 </span>
               </h2>
               <p className="font-subbody text-[11px] text-gray-400 mt-0.5">
-                Game Instructions & Party Tips
+                How to Play, Party Tips & Star Economy
               </p>
             </div>
           </div>
@@ -91,13 +92,13 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
               onClose();
             }}
             className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-gray-300 hover:text-white transition-colors cursor-pointer"
-            aria-label="Close Guide"
+            aria-label="Close Game Guide"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Navigation Tabs */}
+        {/* Navigation Tabs - 3 Distinct Guide Categories */}
         <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/10 my-3">
           <button
             type="button"
@@ -147,7 +148,7 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
             }`}
           >
             <Star className="w-3.5 h-3.5 fill-current" />
-            <span>Stars & Refill</span>
+            <span>Star Economy</span>
           </button>
         </div>
 
@@ -416,7 +417,7 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
             </div>
           )}
 
-          {/* TAB 3: STARS & PROTOTYPE REFILLING */}
+          {/* TAB 3: STAR ECONOMY & PARTY STORE */}
           {activeTab === 'stars' && (
             <div className="space-y-3.5 animate-fadeIn">
               <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
@@ -426,7 +427,7 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
                   </div>
                   <div>
                     <h3 className="font-header font-bold text-sm text-amber-300 uppercase tracking-wide">
-                      Star Economy (Prototype)
+                      Star Economy
                     </h3>
                     <p className="text-[10px] text-gray-400">Unlock party cosmetics & skins</p>
                   </div>
@@ -453,54 +454,30 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
                 </div>
 
                 <p className="text-[11px] text-gray-300 mb-3 leading-relaxed">
-                  Use Stars in the Party Store to unlock exclusive skins for Bottles, Bombs, Balls, and Bonus cards. Because this is a prototype, you can freely refill Stars anytime below:
+                  Use your Stars in the Party Store to unlock exclusive skins for Bottles, Bombs, Balls, and Bonus cards.
                 </p>
 
-                {/* Prototype Star Refill Faucet */}
-                <div className="bg-gradient-to-b from-amber-500/20 to-orange-500/10 rounded-xl p-3 border border-amber-400/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5 text-xs font-header font-bold text-amber-300 uppercase tracking-wider">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                      <span>PROTOTYPE STAR REFILL</span>
+                {/* Star Guide Cards */}
+                <div className="space-y-2 mb-3">
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
+                      <Trophy className="w-4 h-4" />
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-[10px] font-bold text-amber-200 border border-amber-400/30">
-                      Free Faucet
-                    </span>
+                    <div className="text-[11px]">
+                      <span className="font-bold text-white block">Flawless Victories</span>
+                      <span className="text-gray-400">Defuse all safe balls in Kaboom without triggering the bomb.</span>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleRefill(500)}
-                      className="py-2 px-1 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-amber-400/40 text-amber-300 font-header font-bold text-xs active:scale-95 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.4)] flex flex-col items-center justify-center cursor-pointer"
-                    >
-                      <span className="text-[10px] text-gray-400 font-normal">Add</span>
-                      <span>+500 ⭐</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRefill(1000)}
-                      className="py-2 px-1 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-neutral-950 font-header font-bold text-xs active:scale-95 transition-all shadow-[0_0_12px_rgba(245,158,11,0.5)] flex flex-col items-center justify-center cursor-pointer"
-                    >
-                      <span className="text-[10px] text-neutral-800 font-medium">Popular</span>
-                      <span>+1,000 ⭐</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRefill(5000)}
-                      className="py-2 px-1 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-amber-400/40 text-amber-300 font-header font-bold text-xs active:scale-95 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.4)] flex flex-col items-center justify-center cursor-pointer"
-                    >
-                      <span className="text-[10px] text-gray-400 font-normal">Max</span>
-                      <span>+5,000 ⭐</span>
-                    </button>
-                  </div>
-
-                  {refillToast && (
-                    <div className="mt-2.5 py-1 px-2.5 rounded-lg bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center gap-1.5 text-xs text-emerald-300 font-medium animate-fadeIn">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>{refillToast}</span>
+                  <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-purple-300 shrink-0">
+                      <Sparkles className="w-4 h-4" />
                     </div>
-                  )}
+                    <div className="text-[11px]">
+                      <span className="font-bold text-white block">Party Store Equips</span>
+                      <span className="text-gray-400">Show off custom skins and special animations during party play.</span>
+                    </div>
+                  </div>
                 </div>
 
                 {onOpenStore && (
@@ -512,7 +489,7 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
                       onClose();
                       onOpenStore();
                     }}
-                    className="mt-3 w-full py-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-white font-header font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-amber-300/60 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-white font-header font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.4)] border border-amber-300/60 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                   >
                     <span>Browse Party Store</span>
                     <Star className="w-3.5 h-3.5 fill-current" />

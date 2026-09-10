@@ -19,6 +19,7 @@ import { PartyBackground } from './components/PartyBackground';
 import { FingerGameBackground } from './components/FingerGameBackground';
 import { SpinBottleBackground } from './components/SpinBottleBackground';
 import { VersionNotesModal } from './components/VersionNotesModal';
+import { AboutGuideModal } from './components/AboutGuideModal';
 import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -34,6 +35,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState<ScreenView>('hub');
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isVersionNotesOpen, setIsVersionNotesOpen] = useState<boolean>(false);
+  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean>(false);
   const [isDailyQuestsOpen, setIsDailyQuestsOpen] = useState<boolean>(false);
   const [isRankingsOpen, setIsRankingsOpen] = useState<boolean>(false);
@@ -252,7 +254,8 @@ export default function App() {
         }}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenStore={() => setIsStoreOpen(true)}
-        onOpenInfo={() => setIsVersionNotesOpen(true)}
+        onOpenInfo={() => setIsGuideOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onToggleBottleSprite={handleCycleBottleSprite}
@@ -326,10 +329,16 @@ export default function App() {
         onOpenStore={() => setIsStoreOpen(true)}
       />
 
-      {/* About, How to Play & Game Guide Modal */}
+      {/* Version Notes Modal (Changelog History & v1.4.01 Updates) */}
       <VersionNotesModal
         isOpen={isVersionNotesOpen}
         onClose={() => setIsVersionNotesOpen(false)}
+      />
+
+      {/* Game Guide Modal (How to Play, Party Tips & Star Economy) */}
+      <AboutGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
         economy={economy}
         onEconomyUpdated={setEconomy}
         onNavigateToGame={(game) => {
