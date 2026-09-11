@@ -6,7 +6,7 @@
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
 
-export type StoreCategory = 'bottles' | 'bombs' | 'balls';
+export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';
 
 export interface StoreItem {
   id: string;
@@ -19,9 +19,17 @@ export interface StoreItem {
   badge?: string;
   accentGradient: string;
   borderGlow: string;
-  iconType: 'bottle' | 'bomb' | 'ball';
+  iconType: 'bottle' | 'bomb' | 'ball' | 'accessory';
   builtInBottleStyle?: BottleBuiltinStyle;
   image?: string;
+}
+
+export interface StarEarringsProgress {
+  bombVictory: boolean;
+  bottleSpin: boolean;
+  fingerGame: boolean;
+  unlocked: boolean;
+  unlockedAt?: number;
 }
 
 export interface DailyQuest {
@@ -42,7 +50,9 @@ export interface EconomyState {
     bottles: string;
     bombs: string;
     balls: string;
+    accessories?: string;
   };
+  starEarrings: StarEarringsProgress;
   dailyQuests: DailyQuest[];
   lastDailyReset: number;
   claimedLoginDay: number;
@@ -217,6 +227,21 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       iconType: 'ball',
     },
   ],
+  accessories: [
+    {
+      id: 'accessory_star_earrings',
+      category: 'accessories',
+      name: 'Star Earrings',
+      subtitle: 'Trophy of Triple Mastery',
+      description: 'Radiant celestial star earrings forged from pure party starlight. Awarded by fulfilling the mastery condition: Win Bomb Game, Complete Bottle Spin, and Complete Finger Game.',
+      price: 0,
+      rarity: 'Legendary',
+      badge: 'SPECIAL',
+      accentGradient: 'from-amber-300 via-yellow-400 to-amber-500',
+      borderGlow: 'border-amber-300/80 shadow-[0_0_22px_rgba(251,191,36,0.7)]',
+      iconType: 'accessory',
+    },
+  ],
 };
 
 const DEFAULT_QUESTS: DailyQuest[] = [
@@ -283,6 +308,13 @@ const DEFAULT_STATE: EconomyState = {
     bottles: 'bottle_btl_001',
     bombs: 'bomb_classic_tnt',
     balls: 'ball_cyan_orbs',
+    accessories: '',
+  },
+  starEarrings: {
+    bombVictory: false,
+    bottleSpin: false,
+    fingerGame: false,
+    unlocked: false,
   },
   dailyQuests: DEFAULT_QUESTS,
   lastDailyReset: Date.now(),
@@ -309,7 +341,27 @@ export function getEconomyState(): EconomyState {
     const validBottleIds = STORE_CATALOGUE.bottles.map((b) => b.id);
     const validBombIds = STORE_CATALOGUE.bombs.map((b) => b.id);
     const validBallIds = STORE_CATALOGUE.balls.map((b) => b.id);
-    const allValidIds = new Set([...validBottleIds, ...validBombIds, ...validBallIds, 'btl_e_001']);
+    const validAccessoryIds = STORE_CATALOGUE.accessories.map((a) => a.id);
+    const allValidIds = new Set([...validBottleIds, ...validBombIds, ...validBallIds, ...validAccessoryIds, 'btl_e_001']);
+
+    // Parse Star Earrings Condition progress
+    const rawEarrings = parsed.starEarrings || {};
+    const bombVictory = Boolean(rawEarrings.bombVictory);
+    const bottleSpin = Boolean(rawEarrings.bottleSpin);
+    const fingerGame = Boolean(rawEarrings.fingerGame);
+    const isUnlocked = Boolean(rawEarrings.unlocked || (bombVictory && bottleSpin && fingerGame));
+
+    const starEarrings: StarEarringsProgress = {
+      bombVictory,
+      bottleSpin,
+      fingerGame,
+      unlocked: isUnlocked,
+      unlockedAt: rawEarrings.unlockedAt,
+    };
+
+    if (isUnlocked && !rawUnlocked.includes('accessory_star_earrings')) {
+      rawUnlocked.push('accessory_star_earrings');
+    }
 
     const cleanUnlocked = rawUnlocked.filter((id) => allValidIds.has(id));
 
@@ -325,7 +377,9 @@ export function getEconomyState(): EconomyState {
         bottles: equippedBottles,
         bombs: parsed.equippedSkins?.bombs || DEFAULT_STATE.equippedSkins.bombs,
         balls: parsed.equippedSkins?.balls || DEFAULT_STATE.equippedSkins.balls,
+        accessories: parsed.equippedSkins?.accessories || (isUnlocked ? 'accessory_star_earrings' : ''),
       },
+      starEarrings,
       dailyQuests: Array.isArray(parsed.dailyQuests) && parsed.dailyQuests.length > 0 ? parsed.dailyQuests : DEFAULT_QUESTS,
       lastDailyReset: parsed.lastDailyReset || Date.now(),
       claimedLoginDay: parsed.claimedLoginDay || 1,
@@ -360,6 +414,16 @@ export function purchaseItem(itemId: string): { success: boolean; message: strin
 
   if (!foundItem) {
     return { success: false, message: 'Item not found.', updatedState: state };
+  }
+
+  if (itemId === 'accessory_star_earrings') {
+    if (!state.starEarrings?.unlocked) {
+      return {
+        success: false,
+        message: 'Master all 3 games (Bomb Victory, Bottle Spin & Finger Game) to unlock!',
+        updatedState: state,
+      };
+    }
   }
 
   if (state.stars < foundItem.price) {
@@ -437,3 +501,88 @@ export function refillPrototypeStars(amount: number = 1000): { starsAdded: numbe
   const updated = addStars(amount);
   return { starsAdded: amount, updatedState: updated };
 }
+
+/**
+ * Update Star Earrings condition progress:
+ * Star earrings unlocked when:
+ * 1. Bomb game victory (bombVictory)
+ * 2. Complete bottle spin (bottleSpin)
+ * 3. Complete finger game (fingerGame)
+ */
+export function recordStarEarringsCondition(
+  condition: 'bombVictory' | 'bottleSpin' | 'fingerGame'
+): { updatedState: EconomyState; newlyUnlocked: boolean } {
+  const state = getEconomyState();
+  const current = state.starEarrings || {
+    bombVictory: false,
+    bottleSpin: false,
+    fingerGame: false,
+    unlocked: false,
+  };
+
+  // If already unlocked and this condition is already true, no-op
+  if (current[condition] && current.unlocked) {
+    return { updatedState: state, newlyUnlocked: false };
+  }
+
+  const nextProgress: StarEarringsProgress = {
+    ...current,
+    [condition]: true,
+  };
+
+  const wasUnlocked = current.unlocked;
+  const isNowUnlocked =
+    nextProgress.bombVictory &&
+    nextProgress.bottleSpin &&
+    nextProgress.fingerGame;
+
+  const newlyUnlocked = !wasUnlocked && isNowUnlocked;
+  if (newlyUnlocked) {
+    nextProgress.unlocked = true;
+    nextProgress.unlockedAt = Date.now();
+  } else if (wasUnlocked) {
+    nextProgress.unlocked = true;
+  }
+
+  const unlockedItems = [...state.unlockedItems];
+  if (nextProgress.unlocked && !unlockedItems.includes('accessory_star_earrings')) {
+    unlockedItems.push('accessory_star_earrings');
+  }
+
+  const updatedState: EconomyState = {
+    ...state,
+    starEarrings: nextProgress,
+    unlockedItems,
+    equippedSkins: {
+      ...state.equippedSkins,
+      ...(newlyUnlocked ? { accessories: 'accessory_star_earrings' } : {}),
+    },
+  };
+
+  saveEconomyState(updatedState);
+
+  if (newlyUnlocked && typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('star_earrings_unlocked', { detail: nextProgress })
+    );
+  }
+
+  return { updatedState, newlyUnlocked };
+}
+
+export function equipStarEarrings(equip: boolean): EconomyState {
+  const state = getEconomyState();
+  if (!state.starEarrings?.unlocked) return state;
+
+  const updatedState: EconomyState = {
+    ...state,
+    equippedSkins: {
+      ...state.equippedSkins,
+      accessories: equip ? 'accessory_star_earrings' : '',
+    },
+  };
+
+  saveEconomyState(updatedState);
+  return updatedState;
+}
+

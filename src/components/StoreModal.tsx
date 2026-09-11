@@ -30,6 +30,7 @@ const CATEGORIES: { id: StoreCategory; label: string; icon: string }[] = [
   { id: 'bottles', label: 'BOTTLES', icon: '🍾' },
   { id: 'bombs', label: 'BOMBS', icon: '💣' },
   { id: 'balls', label: 'BALLS', icon: '⚽' },
+  { id: 'accessories', label: 'ACCESSORIES', icon: '✨' },
 ];
 
 export const StoreModal: React.FC<StoreModalProps> = ({
@@ -134,6 +135,25 @@ export const StoreModal: React.FC<StoreModalProps> = ({
             <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
             <div className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-white/90 to-cyan-300 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.7)] flex items-center justify-center transform group-hover:scale-105 transition-transform">
               <Sparkles className="w-6 h-6 text-cyan-700" />
+            </div>
+          </div>
+        );
+      case 'accessory':
+        return (
+          <div className="relative flex items-center justify-center w-full h-full gap-2">
+            <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-40 blur-lg animate-pulse`} />
+            {/* Pair of glowing star earrings */}
+            <div className="relative flex items-center gap-3">
+              <div className="flex flex-col items-center animate-bounce" style={{ animationDuration: '2.5s' }}>
+                <div className="w-1.5 h-2 rounded-full border border-amber-300 bg-amber-200 shadow-sm" />
+                <div className="w-0.5 h-2.5 bg-gradient-to-b from-amber-300 to-yellow-400" />
+                <Star className="w-6 h-6 fill-amber-300 text-yellow-100 drop-shadow-[0_0_10px_rgba(251,191,36,0.95)]" />
+              </div>
+              <div className="flex flex-col items-center animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.4s' }}>
+                <div className="w-1.5 h-2 rounded-full border border-amber-300 bg-amber-200 shadow-sm" />
+                <div className="w-0.5 h-2.5 bg-gradient-to-b from-amber-300 to-yellow-400" />
+                <Star className="w-6 h-6 fill-amber-300 text-yellow-100 drop-shadow-[0_0_10px_rgba(251,191,36,0.95)]" />
+              </div>
             </div>
           </div>
         );
@@ -317,7 +337,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                   </div>
 
                   {/* Name & Flavor text */}
-                  <div className="text-center mb-2.5">
+                  <div className="text-center mb-2">
                     <h3 className="font-header text-xs sm:text-sm font-bold text-white tracking-wide truncate">
                       {item.name}
                     </h3>
@@ -326,6 +346,46 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                     </p>
                   </div>
 
+                  {/* Special Mastery Conditions Box for Star Earrings */}
+                  {item.id === 'accessory_star_earrings' && (
+                    <div className="w-full mb-2.5 p-2 rounded-xl bg-black/60 border border-amber-400/30 text-left space-y-1">
+                      <div className="text-[9px] font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between border-b border-amber-400/20 pb-1">
+                        <span>Mastery Conditions</span>
+                        <span className="text-[8px] text-amber-200">
+                          {[
+                            economy.starEarrings?.bombVictory,
+                            economy.starEarrings?.bottleSpin,
+                            economy.starEarrings?.fingerGame,
+                          ].filter(Boolean).length}/3
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-gray-300">💣 Bomb Victory</span>
+                        {economy.starEarrings?.bombVictory ? (
+                          <span className="text-emerald-400 font-bold">✓ Done</span>
+                        ) : (
+                          <span className="text-gray-500">Pending</span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-gray-300">🍾 Bottle Spin</span>
+                        {economy.starEarrings?.bottleSpin ? (
+                          <span className="text-emerald-400 font-bold">✓ Done</span>
+                        ) : (
+                          <span className="text-gray-500">Pending</span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-gray-300">☝️ Finger Game</span>
+                        {economy.starEarrings?.fingerGame ? (
+                          <span className="text-emerald-400 font-bold">✓ Done</span>
+                        ) : (
+                          <span className="text-gray-500">Pending</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Action Button */}
                   <div>
                     {isEquipped ? (
@@ -333,13 +393,23 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                         <Check className="w-3.5 h-3.5" />
                         <span>EQUIPPED</span>
                       </div>
-                    ) : isUnlocked ? (
+                    ) : (isUnlocked || (item.id === 'accessory_star_earrings' && economy.starEarrings?.unlocked)) ? (
                       <button
                         type="button"
                         onClick={() => handleEquip(item)}
                         className="w-full py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-purple-400/50 text-purple-200 font-header font-bold text-xs tracking-wider active:scale-95 transition-all"
                       >
                         EQUIP
+                      </button>
+                    ) : item.id === 'accessory_star_earrings' ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full py-1.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 font-header font-bold text-[10px] tracking-wider cursor-not-allowed flex items-center justify-center gap-1"
+                        title="Complete Bomb Victory, Bottle Spin & Finger Game to unlock!"
+                      >
+                        <Lock className="w-3 h-3 text-amber-400" />
+                        <span>LOCKED (CONDITION)</span>
                       </button>
                     ) : canAfford ? (
                       <button

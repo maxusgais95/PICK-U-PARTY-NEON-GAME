@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Check, Star, Bomb, Shield } from 'lucide-react';
+import { Check, Star, Bomb } from 'lucide-react';
 import { KaboomTile } from '../../types';
 
 interface KaboomBallProps {
@@ -65,11 +65,30 @@ export const KaboomBall: React.FC<KaboomBallProps> = ({
         return (
           <div
             id={`kaboom-tile-${tile.id}`}
-            className={`relative w-full aspect-square ${outerRadius} flex items-center justify-center border-2 border-emerald-400 bg-[#03150d]/90 shadow-[0_0_20px_rgba(16,185,129,0.8),inset_0_0_10px_rgba(16,185,129,0.4)] animate-bonus-bounce`}
+            className={`relative w-full aspect-square ${outerRadius} flex items-center justify-center border-2 border-emerald-400 bg-[#03150d]/90 shadow-[0_0_16px_rgba(16,185,129,0.7),inset_0_0_8px_rgba(16,185,129,0.35)] animate-bonus-bounce`}
           >
-            <div className={`absolute ${insetClass} ${innerRadius} border border-emerald-300/60 flex items-center justify-center bg-emerald-950/40`}>
-              <Bomb className="w-1/2 h-1/2 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-              <Shield className="absolute -top-1 -right-1 w-4 h-4 text-emerald-200 animate-pulse" />
+            <div className={`absolute ${insetClass} ${innerRadius} border border-emerald-400/40 flex items-center justify-center bg-emerald-950/30 overflow-hidden`}>
+              {/* 3D DEFUSED BOMB SPHERE SIMILAR TO BALL */}
+              <div
+                className="relative z-10 w-[74%] h-[74%] rounded-full flex items-center justify-center shadow-lg"
+                style={{
+                  background:
+                    'radial-gradient(circle at 35% 28%, #86efac 0%, #22c55e 25%, #16a34a 55%, #14532d 80%, #052e16 100%)',
+                  boxShadow:
+                    '0 6px 14px rgba(0,0,0,0.85), inset 0 2px 4px rgba(255,255,255,0.75), inset 0 -4px 8px rgba(0,0,0,0.7), 0 0 12px rgba(34,197,94,0.5)',
+                }}
+              >
+                {/* Specular White Gloss Glare on top-left of sphere */}
+                <div
+                  className="absolute top-[10%] left-[16%] w-[38%] h-[32%] rounded-full pointer-events-none opacity-85"
+                  style={{
+                    background:
+                      'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.45) 45%, transparent 80%)',
+                    transform: 'rotate(-25deg)',
+                  }}
+                />
+                <Bomb className="w-1/2 h-1/2 text-white drop-shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
+              </div>
             </div>
           </div>
         );
@@ -85,65 +104,96 @@ export const KaboomBall: React.FC<KaboomBallProps> = ({
           }`}
         >
           <div className={`absolute ${insetClass} ${innerRadius} border border-red-500/60 flex items-center justify-center bg-black/40 overflow-hidden`}>
-            <div className="absolute inset-0 bg-red-600/20 animate-ping opacity-75" />
-            <Bomb className="w-1/2 h-1/2 text-red-200 drop-shadow-[0_0_12px_rgba(255,255,255,0.9)] animate-pulse" />
+            {tile.isDetonated && (
+              <div className="absolute inset-0 bg-red-600/20 animate-ping opacity-75 pointer-events-none" />
+            )}
+            {/* 3D TACTILE BOMB SPHERE SIMILAR TO THE BALL */}
+            <div
+              className={`relative z-10 w-[74%] h-[74%] rounded-full flex items-center justify-center ${
+                tile.isDetonated ? 'animate-pulse' : ''
+              }`}
+              style={{
+                background: tile.isDetonated
+                  ? 'radial-gradient(circle at 35% 28%, #fca5a5 0%, #ef4444 28%, #dc2626 55%, #991b1b 80%, #450a0a 100%)'
+                  : 'radial-gradient(circle at 35% 28%, #9ca3af 0%, #4b5563 28%, #374151 55%, #1f2937 80%, #030712 100%)',
+                boxShadow: tile.isDetonated
+                  ? '0 6px 14px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.75), inset 0 -4px 8px rgba(0,0,0,0.8), 0 0 16px rgba(239,68,68,0.85)'
+                  : '0 6px 14px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.5), inset 0 -4px 8px rgba(0,0,0,0.8), 0 0 10px rgba(239,68,68,0.4)',
+              }}
+            >
+              {/* Specular White Gloss Glare on top-left of sphere */}
+              <div
+                className="absolute top-[10%] left-[16%] w-[38%] h-[32%] rounded-full pointer-events-none opacity-85"
+                style={{
+                  background:
+                    'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.45) 45%, transparent 80%)',
+                  transform: 'rotate(-25deg)',
+                }}
+              />
+              {/* Bomb Icon */}
+              <Bomb
+                className={`w-1/2 h-1/2 drop-shadow-[0_0_8px_rgba(0,0,0,0.9)] ${
+                  tile.isDetonated ? 'text-white animate-pulse' : 'text-red-400'
+                }`}
+              />
+            </div>
           </div>
         </div>
       );
     }
 
-    // B. BONUS: "flash, flicker, hyper speed" with specific bonus sprite
+    // B. BONUS: Soft, refined glow (less glowing yellow) with specific bonus sprite
     if (tile.type === 'bonus') {
       const bonus = tile.bonusItem;
-      const borderColor = bonus?.borderColor || 'border-amber-300';
-      const glowColor = bonus?.glowColor || 'rgba(255, 230, 0, 0.95)';
+      const borderColor = bonus?.borderColor || 'border-amber-400/70';
+      const glowColor = bonus?.glowColor || 'rgba(245, 158, 11, 0.45)';
 
       return (
         <div
           id={`kaboom-tile-${tile.id}`}
           className="relative z-30 w-full aspect-square flex items-center justify-center overflow-visible"
         >
-          {/* Expanded Soft Radial Glow Aura - Generous bounding box ensures light diffuses smoothly without any square clipping */}
+          {/* Subtle soft ambient aura - Gentle, low opacity to avoid harsh glowing yellow */}
           <div
-            className="absolute -inset-4 sm:-inset-6 -z-10 rounded-full pointer-events-none opacity-80 blur-xl animate-pulse"
+            className="absolute -inset-1 -z-10 rounded-full pointer-events-none opacity-30 blur-md"
             style={{
-              background: `radial-gradient(circle, ${glowColor} 20%, rgba(0, 240, 255, 0.45) 55%, transparent 75%)`,
+              background: `radial-gradient(circle, ${glowColor} 15%, transparent 70%)`,
             }}
           />
 
           {/* Inner Bonus Tile Frame */}
           <div
-            className={`relative w-full h-full ${outerRadius} flex items-center justify-center border-2 ${borderColor} bg-black/95 overflow-hidden animate-hyper-flicker`}
+            className={`relative w-full h-full ${outerRadius} flex items-center justify-center border ${borderColor} bg-black/95 overflow-hidden`}
             style={{
-              boxShadow: `0 0 25px ${glowColor}, inset 0 0 12px ${glowColor}`,
+              boxShadow: `0 0 10px ${glowColor}, inset 0 0 6px ${glowColor}`,
             }}
           >
-            {/* Rotating Hyper-Speed Light Rays */}
+            {/* Subtle light ambient sweep */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden rounded-[inherit]">
               <div
-                className="w-[190%] h-[190%] rounded-full animate-spin-hyper opacity-80"
+                className="w-[180%] h-[180%] rounded-full animate-spin-slow opacity-20"
                 style={{
                   background:
-                    'conic-gradient(from 0deg, transparent 0deg, #ffe600 20deg, transparent 40deg, #ff007f 60deg, transparent 80deg, #00f0ff 100deg, transparent 120deg, #ffe600 140deg, transparent 160deg, #ff007f 180deg, transparent 200deg, #00f0ff 220deg, transparent 240deg, #ffe600 260deg, transparent 280deg, #ff007f 300deg, transparent 320deg, #00f0ff 340deg, transparent 360deg)',
+                    'conic-gradient(from 0deg, transparent 0deg, rgba(245,158,11,0.4) 40deg, transparent 90deg, rgba(6,182,212,0.3) 180deg, transparent 270deg)',
                 }}
               />
             </div>
 
             {/* Inner Recessed Frame */}
-            <div className={`absolute ${insetClass} ${innerRadius} border border-yellow-200/90 flex flex-col items-center justify-center bg-black/70 backdrop-blur-xs z-10 overflow-hidden`}>
+            <div className={`absolute ${insetClass} ${innerRadius} border border-amber-300/40 flex flex-col items-center justify-center bg-black/75 backdrop-blur-xs z-10 overflow-hidden`}>
               {bonus ? (
                 <img
                   src={bonus.image}
                   alt={bonus.name}
-                  className="w-full h-full object-cover rounded-[inherit] relative z-10 transform scale-105"
+                  className="w-full h-full object-cover rounded-[inherit] relative z-10 transform scale-100"
                 />
               ) : (
-                <Star className="w-1/2 h-1/2 fill-amber-300 text-amber-200 animate-hyper-pulse drop-shadow-[0_0_16px_rgba(255,230,0,1)] relative z-10" />
+                <Star className="w-1/2 h-1/2 fill-amber-300/80 text-amber-200 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)] relative z-10" />
               )}
 
-              {/* Glowing Bonus Badge with Star Currency amount */}
+              {/* Discreet Bonus Badge with Star Currency amount */}
               <div className="absolute bottom-0.5 inset-x-0.5 flex justify-center z-20">
-                <span className="px-1.5 py-0.2 rounded-full bg-black/90 border border-amber-300/80 text-[7px] sm:text-[8px] font-black text-amber-300 uppercase tracking-tight shadow-[0_0_8px_rgba(255,230,0,0.8)] leading-tight flex items-center gap-0.5 whitespace-nowrap">
+                <span className="px-1.5 py-0.2 rounded-full bg-black/90 border border-amber-400/50 text-[7px] sm:text-[8px] font-bold text-amber-300 uppercase tracking-tight shadow-sm leading-tight flex items-center gap-0.5 whitespace-nowrap">
                   <Star className="w-2 h-2 fill-amber-300 text-amber-300 inline" />
                   +{bonus?.starReward || 10}
                 </span>
@@ -154,14 +204,16 @@ export const KaboomBall: React.FC<KaboomBallProps> = ({
       );
     }
 
-    // C. SAFE TILE REVEALED
+    // C. SAFE TILE REVEALED: Appears faded gray instead of green with tick
     return (
       <div
         id={`kaboom-tile-${tile.id}`}
-        className={`relative w-full aspect-square ${outerRadius} flex items-center justify-center border-2 border-emerald-400 bg-emerald-950/80 shadow-[0_0_16px_rgba(16,185,129,0.5),inset_0_0_8px_rgba(16,185,129,0.3)] animate-ball-pop`}
+        className={`relative w-full aspect-square ${outerRadius} flex items-center justify-center border border-zinc-700/60 bg-zinc-900/75 shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)] opacity-65 transition-all duration-200`}
       >
-        <div className={`absolute ${insetClass} ${innerRadius} border border-emerald-400/60 bg-[#02130b]/80 backdrop-blur-sm flex items-center justify-center`}>
-          <Check className="w-1/2 h-1/2 stroke-[3] text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.85)]" />
+        <div
+          className={`absolute ${insetClass} ${innerRadius} border border-zinc-700/40 bg-zinc-800/40 backdrop-blur-xs flex items-center justify-center`}
+        >
+          <div className="w-[36%] h-[36%] rounded-full bg-zinc-600/40 border border-zinc-500/20 shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)]" />
         </div>
       </div>
     );
@@ -193,12 +245,28 @@ export const KaboomBall: React.FC<KaboomBallProps> = ({
             )
           )}
           {tile.type === 'bomb' && (
-            <Bomb className="w-1/2 h-1/2 text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+            <div
+              className="relative z-10 w-[74%] h-[74%] rounded-full flex items-center justify-center opacity-85"
+              style={{
+                background:
+                  'radial-gradient(circle at 35% 28%, #9ca3af 0%, #4b5563 28%, #374151 55%, #1f2937 80%, #030712 100%)',
+                boxShadow:
+                  '0 4px 10px rgba(0,0,0,0.8), inset 0 1.5px 3px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(0,0,0,0.8), 0 0 10px rgba(239,68,68,0.4)',
+              }}
+            >
+              <div
+                className="absolute top-[10%] left-[16%] w-[38%] h-[32%] rounded-full pointer-events-none opacity-80"
+                style={{
+                  background:
+                    'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.9) 0%, transparent 75%)',
+                  transform: 'rotate(-25deg)',
+                }}
+              />
+              <Bomb className="w-1/2 h-1/2 text-red-400 drop-shadow-[0_0_6px_rgba(0,0,0,0.8)]" />
+            </div>
           )}
           {tile.type === 'safe' && (
-            <div className="w-[62%] h-[62%] rounded-full border border-emerald-400/40 bg-emerald-950/30 flex items-center justify-center">
-              <Check className="w-1/2 h-1/2 text-emerald-400/50" />
-            </div>
+            <div className="w-[50%] h-[50%] rounded-full border border-zinc-500/30 bg-zinc-800/40" />
           )}
         </div>
       </div>

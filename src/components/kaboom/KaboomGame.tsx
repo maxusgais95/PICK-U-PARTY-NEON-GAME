@@ -29,14 +29,14 @@ import {
   KABOOM_GRID_CONFIGS,
   getRandomCommand,
 } from './kaboomCommands';
-import { getRandomBonusItem } from './kaboomBonusConfig';
-import { KaboomBonusModal } from './KaboomBonusModal';
+import { getRandomBonusItem, getMaxBonusTierForDimension } from './kaboomBonusConfig';
+import { KaboomFlyingStars, FlyingStarBatch } from './KaboomFlyingStars';
 import { KaboomBoardSelection } from './KaboomBoardSelection';
 import { KaboomBall } from './KaboomBall';
 import { KaboomExplosionCanvas } from './KaboomExplosionCanvas';
 import { SoundEngine, Haptics } from '../../lib/audio';
 import { recordKaboomEvent } from '../../lib/db';
-import { addStars, EconomyState } from '../../lib/economy';
+import { addStars, EconomyState, recordStarEarringsCondition } from '../../lib/economy';
 
 interface KaboomGameProps {
   settings: AppSettings;
@@ -70,12 +70,8 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
   const [activeShieldPlayer, setActiveShieldPlayer] = useState<number | null>(null);
   const [turnCount, setTurnCount] = useState<number>(1);
 
-  // Active bonus modal pop up
-  const [activeBonusModal, setActiveBonusModal] = useState<{
-    command: KaboomCommand;
-    bonusItem: KaboomBonusItem;
-    playerName: string;
-  } | null>(null);
+  // Flying star currency particles for bonus discoveries
+  const [flyingStarBatches, setFlyingStarBatches] = useState<FlyingStarBatch[]>([]);
 
   // Tiles array
   const [tiles, setTiles] = useState<KaboomTile[]>([]);
@@ -195,7 +191,8 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           let bonusItem: KaboomBonusItem | undefined = undefined;
 
           if (type === 'bonus') {
-            bonusItem = getRandomBonusItem();
+            const maxTier = getMaxBonusTierForDimension(dimension);
+            bonusItem = getRandomBonusItem(maxTier);
             command = getRandomCommand(usedCommandIdsRef.current);
             usedCommandIdsRef.current.add(command.id);
           }
@@ -214,7 +211,6 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       }
 
       setTiles(newTiles);
-      setActiveBonusModal(null);
       setIsGameOver(false);
       setIsVictory(false);
       setExplosionActive(false);
@@ -291,16 +287,47 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         if (onStatsUpdated) onStatsUpdated(updatedStats);
       });
 
+      // Award stars for Bomb Game Victory!
+      const victoryStars = Math.max(20, selectedDimension * 10);
+      const nextEco = addStars(victoryStars);
+      if (onEconomyUpdated) onEconomyUpdated(nextEco);
+
+      const hudEl = document.getElementById('star-currency-hud');
+      const hudRect = hudEl?.getBoundingClientRect();
+      const endX = hudRect ? hudRect.left + hudRect.width / 2 : window.innerWidth / 2;
+      const endY = hudRect ? hudRect.top + hudRect.height / 2 : 28;
+
+      setFlyingStarBatches((prev) => [
+        ...prev,
+        {
+          id: `batch-victory-${Date.now()}`,
+          startX: window.innerWidth / 2,
+          startY: window.innerHeight / 2,
+          endX,
+          endY,
+          amount: victoryStars,
+        },
+      ]);
+
+      // Update Star Earrings condition: Bomb Game Victory
+      const { updatedState: updatedEconomy, newlyUnlocked: earringsUnlocked } =
+        recordStarEarringsCondition('bombVictory');
+      if (onEconomyUpdated) onEconomyUpdated(updatedEconomy);
+
       addLog(
         'safe',
         playerIndex,
-        `🏆 VICTORY! All safe balls cleared! The bomb was successfully defused!`
+        earringsUnlocked
+          ? `🏆 Bomb avoided till the game end! Victory! (+${victoryStars}★) ⭐ Star Earrings Unlocked!`
+          : `🏆 Bomb avoided till the game end! Victory! (+${victoryStars}★)`
       );
 
       showToast(
         'bonus',
-        '🏆 VICTORY! BOARD CLEARED!',
-        'All safe balls found without detonating! The bomb was defused!',
+        '🏆 VICTORY!',
+        earringsUnlocked
+          ? `Bomb avoided till the game end and Victory! (+${victoryStars}★) ⭐ Star Earrings Unlocked!`
+          : `Bomb avoided till the game end and Victory! (+${victoryStars}★)`,
         0 // Stays visible until Next Round is clicked
       );
       return true;
@@ -330,13 +357,14 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         setActiveShieldPlayer(null);
         showToast(
           'info',
-          '🛡️ SHIELD SAVED YOU!',
-          `${playerName}'s Immunity Shield absorbed the blast! Bomb defused!`
+          '🛡️ DEFUSED',
+          'Immunity Shield absorbed the blast! Bomb defused!',
+          3000
         );
         addLog(
           'safe',
           currentPlayer,
-          `🛡️ ${playerName}'s IMMUNITY SHIELD absorbed the blast!`
+          `🛡️ Immunity Shield absorbed the blast! Bomb defused!`
         );
         // Mark tile safe
         const nextTiles = tiles.map((t) =>
@@ -373,36 +401,54 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         )
       );
 
-      addLog('bomb', currentPlayer, `💥 KABOOM! ${playerName} tapped the bomb!`);
+      addLog('bomb', currentPlayer, `💥 Bomb was tapped!`);
 
-      // Pop up toast message and enable next round button (No pop up modal window!)
+      // Pop up toast message: no player order number
       showToast(
         'bomb',
-        '💥 KABOOM! ROUND OVER!',
-        `${playerName} tapped the bomb! Tap Next Round to play again.`,
+        '💥 BOMB TAPPED',
+        'The bomb was tapped! Round over.',
         0 // Stays visible until Next Round is clicked
       );
       return;
     }
 
     // ========================================================================
-    // OUTCOME 2: BONUS SPRITE DISCOVERY (POP UP MODAL WITH STAR CURRENCY & COMMAND)
+    // OUTCOME 2: BONUS SPRITE DISCOVERY (FLYING STARS TO HUD + BEEP, NO MODAL)
     // ========================================================================
     if (tile.type === 'bonus') {
       SoundEngine.playBonusFanfare();
 
-      // Trigger intense hyper-speed flash & flicker
+      // Trigger subtle bonus discovery indicator
       setBonusFlickerActive(true);
-      setTimeout(() => setBonusFlickerActive(false), 950);
+      setTimeout(() => setBonusFlickerActive(false), 600);
 
-      const bonusItem = tile.bonusItem || getRandomBonusItem();
+      const maxTier = getMaxBonusTierForDimension(selectedDimension);
+      const bonusItem = tile.bonusItem || getRandomBonusItem(maxTier);
       const command = tile.bonusCommand || getRandomCommand();
 
-      // Grant Stars currency to user wallet
-      const updatedEconomy = addStars(bonusItem.starReward);
-      if (onEconomyUpdated) {
-        onEconomyUpdated(updatedEconomy);
-      }
+      // Calculate tile position to fly stars smoothly to #star-currency-hud
+      const tileEl = document.getElementById(`kaboom-tile-${tile.id}`);
+      const tileRect = tileEl?.getBoundingClientRect();
+      const hudEl = document.getElementById('star-currency-hud');
+      const hudRect = hudEl?.getBoundingClientRect();
+
+      const startX = tileRect ? tileRect.left + tileRect.width / 2 : window.innerWidth / 2;
+      const startY = tileRect ? tileRect.top + tileRect.height / 2 : window.innerHeight / 2;
+      const endX = hudRect ? hudRect.left + hudRect.width / 2 : window.innerWidth / 2;
+      const endY = hudRect ? hudRect.top + hudRect.height / 2 : 28;
+
+      setFlyingStarBatches((prev) => [
+        ...prev,
+        {
+          id: `batch-${Date.now()}-${Math.random()}`,
+          startX,
+          startY,
+          endX,
+          endY,
+          amount: bonusItem.starReward,
+        },
+      ]);
 
       // Record bonus collected in persistent statistics
       recordKaboomEvent({ type: 'bonus' }).then((updatedStats) => {
@@ -416,41 +462,55 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         setActiveShieldPlayer(currentPlayer);
       }
 
-      // Prepare updated tiles
+      // Prepare updated tiles with this bonus tile revealed
       let updatedTiles = tiles.map((t) =>
         t.id === tile.id
           ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
           : t
       );
 
-      // Radar / safe double reveal logic
-      if (command.id === 'bomb_radar' || command.id === 'safe_reveal_double') {
-        const count = command.id === 'safe_reveal_double' ? 2 : 1;
-        const unrevealedSafe = updatedTiles.filter((t) => !t.revealed && t.id !== tile.id && t.type === 'safe');
-        if (unrevealedSafe.length > 0) {
-          const toReveal = unrevealedSafe.slice(0, count);
-          updatedTiles = updatedTiles.map((t) =>
-            toReveal.some((r) => r.id === t.id)
-              ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
-              : t
-          );
-        }
+      // Bonus Discovered Skill:
+      // Lowest bonus tier (rank 1) = tap 1 ball, highest bonus tier (rank 5) = tap 5 balls
+      const ballsToTap = Math.max(1, Math.min(5, bonusItem.rank));
+      const unrevealedSafe = updatedTiles.filter(
+        (t) => !t.revealed && t.id !== tile.id && t.type === 'safe'
+      );
+      const toReveal = unrevealedSafe.slice(0, ballsToTap);
+      const tappedCount = toReveal.length;
+
+      if (tappedCount > 0) {
+        updatedTiles = updatedTiles.map((t) =>
+          toReveal.some((r) => r.id === t.id)
+            ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
+            : t
+        );
       }
 
       setTiles(updatedTiles);
 
-      // Pop up the Bonus Event modal with the 3D sprite, rank, and star currency!
-      setActiveBonusModal({
-        command,
-        bonusItem,
-        playerName,
-      });
-
       addLog(
         'bonus',
         currentPlayer,
-        `⭐ ${playerName} found ${bonusItem.name} [Rank ${bonusItem.rank} • +${bonusItem.starReward}★]: ${command.title}!`
+        `⭐ Discovered ${bonusItem.name}! ${tappedCount} ball${tappedCount === 1 ? '' : 's'} tapped by bonus (+${bonusItem.starReward}★)!`
       );
+
+      showToast(
+        'bonus',
+        `✨ BONUS DISCOVERED`,
+        `${tappedCount} ball${tappedCount === 1 ? '' : 's'} tapped by discovered bonus (+${bonusItem.starReward}★)!`,
+        3000
+      );
+
+      // Check if this bonus tap leaves only the bomb remaining -> AUTOMATIC VICTORY!
+      if (checkAndApplyVictory(updatedTiles, currentPlayer)) {
+        return;
+      }
+
+      if (command.id === 'skip_turn') {
+        advanceToNextPlayer(2); // Skip next player
+      } else {
+        advanceToNextPlayer();
+      }
       return;
     }
 
@@ -471,33 +531,26 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       return;
     }
 
-    addLog('safe', currentPlayer, `${playerName} tapped a Safe Ball.`);
+    addLog('safe', currentPlayer, `Safe ball tapped.`);
     advanceToNextPlayer();
   };
 
-  // Claim & close bonus modal pop-up
-  const handleClaimBonusModal = () => {
-    if (!activeBonusModal) return;
-    const { command } = activeBonusModal;
-    setActiveBonusModal(null);
-
-    // Check if this bonus tap leaves only the bomb remaining -> AUTOMATIC VICTORY!
-    if (checkAndApplyVictory(tiles, activePlayerIndex)) {
-      return;
-    }
-
-    if (command.id === 'skip_turn') {
-      advanceToNextPlayer(2); // Skip next player
-    } else {
-      advanceToNextPlayer();
-    }
-  };
+  // Called when flying stars reach the currency HUD and trigger the beep
+  const handleBatchComplete = useCallback(
+    (batchId: string, amount: number) => {
+      const updatedEconomy = addStars(amount);
+      if (onEconomyUpdated) {
+        onEconomyUpdated(updatedEconomy);
+      }
+      setFlyingStarBatches((prev) => prev.filter((b) => b.id !== batchId));
+    },
+    [onEconomyUpdated]
+  );
 
   // Start a new round directly
   const handleNextRound = () => {
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
-    setActiveBonusModal(null);
     initializeBoard(selectedDimension);
   };
 
@@ -565,9 +618,9 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           <div className="fixed inset-0 bg-red-600/30 z-40 pointer-events-none animate-explosion-flash" />
         )}
 
-        {/* Bonus Discovery Hyper-Speed Flash & Flicker Screen Overlay */}
+        {/* Bonus Discovery Screen Overlay (Very gentle, non-blinding) */}
         {bonusFlickerActive && (
-          <div className="fixed inset-0 bg-amber-300/20 z-40 pointer-events-none animate-hyper-flicker" />
+          <div className="fixed inset-0 bg-amber-400/[0.04] z-40 pointer-events-none transition-opacity duration-300" />
         )}
 
         {/* 60FPS Explosion Particle & Shockwave Canvas */}
@@ -578,9 +631,9 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           onComplete={() => setExplosionActive(false)}
         />
 
-      {/* Top Header / Navigation Bar - Clean, generous spacing below global Header */}
-      <div className="w-full max-w-md mx-auto shrink-0 mb-1.5">
-        <div className="flex items-center justify-between gap-2 mb-2">
+      {/* Top Header / Navigation Bar - Fixed height container */}
+      <div className="w-full max-w-md mx-auto shrink-0 mb-2 relative z-30">
+        <div className="flex items-center justify-between gap-2 h-10">
           {/* Back to Board Selection */}
           <button
             id="kaboom-back-to-selection-button"
@@ -609,113 +662,53 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           </button>
         </div>
 
-        {/* Turn Status Card */}
-        <div className="bg-black/50 backdrop-blur-md rounded-2xl border border-purple-400/30 p-3 shadow-[0_0_25px_rgba(168,85,247,0.15)] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
+        {/* Toast Notification: Floating absolutely directly below buttons row
+            - absolute top-11: floats below the buttons without overlapping "Select Board" or "Restart"
+            - 0px layout footprint: the board below NEVER shifts when toast appears or disappears!
+        */}
+        <div className="absolute top-11 left-0 right-0 pointer-events-none flex justify-center z-40">
+          {toast && (
+            <div className="w-full pointer-events-auto animate-bounce-in">
               <div
-                className={`w-11 h-11 rounded-xl p-0.5 shadow-md ${
-                  isVictory
-                    ? 'bg-gradient-to-tr from-emerald-400 to-amber-400 shadow-[0_0_15px_rgba(16,185,129,0.7)]'
-                    : 'bg-gradient-to-tr from-orange-500 via-amber-400 to-red-500 shadow-[0_0_15px_rgba(249,115,22,0.6)]'
-                }`}
-              >
-                <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center">
-                  {isVictory ? (
-                    <Trophy className="w-6 h-6 text-amber-300" />
-                  ) : (
-                    <span className="font-header text-base text-amber-300">
-                      P{isUnlimited ? activePlayerIndex + 1 : (activePlayerIndex % playerCount) + 1}
-                    </span>
-                  )}
-                </div>
-              </div>
-              {activeShieldPlayer === activePlayerIndex && !isGameOver && (
-                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-blue-500 border border-white flex items-center justify-center shadow-[0_0_8px_rgba(59,130,246,0.8)]">
-                  <Shield className="w-3 h-3 text-white" />
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-header text-lg tracking-wide text-white">
-                  {isGameOver
-                    ? isVictory
-                      ? '🏆 VICTORY!'
-                      : 'Round Finished'
-                    : `${getPlayerName(activePlayerIndex)}'s Turn`}
-                </span>
-                {isReverseOrder && !isGameOver && (
-                  <span className="font-header text-[9px] font-bold bg-purple-500/30 text-purple-300 border border-purple-400/40 px-1.5 py-0.2 rounded-full">
-                    REVERSED
-                  </span>
-                )}
-              </div>
-              <div className="font-subbody text-[11px] text-gray-400">
-                {isGameOver
-                  ? isVictory
-                    ? 'All safe balls cleared! Bomb was defused.'
-                    : 'Bomb detonated! Start next round below.'
-                  : `Turn #${turnCount} • Tap any ball`}
-              </div>
-            </div>
-          </div>
-
-          <div className="text-right">
-            <div className="font-subbody text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-              {selectedDimension}×{selectedDimension} Grid
-            </div>
-            <div className="font-header text-xs text-amber-300">
-              {isGameOver
-                ? 'Complete'
-                : `${tiles.filter((t) => !t.revealed).length} Left`}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Floating Toast Notification: Positioned ABSOLUTE so it NEVER shifts the board grid */}
-      <div className="absolute top-[max(5.75rem,calc(env(safe-area-inset-top)+4.25rem))] left-0 right-0 px-4 flex justify-center z-50 pointer-events-none">
-        {toast && (
-          <div
-            onClick={() => setToast(null)}
-            className={`pointer-events-auto w-full max-w-md cursor-pointer rounded-2xl p-3 border shadow-2xl backdrop-blur-xl flex items-start justify-between gap-3 animate-bounce-in ${
-              toast.type === 'bomb'
-                ? 'bg-gradient-to-r from-red-950/95 via-orange-950/95 to-slate-950/95 border-red-500/80 shadow-[0_0_25px_rgba(239,68,68,0.6)]'
-                : toast.type === 'bonus'
-                ? 'bg-gradient-to-r from-amber-950/95 via-purple-950/95 to-slate-950/95 border-amber-400/80 shadow-[0_0_25px_rgba(245,158,11,0.5)]'
-                : 'bg-black/90 border-cyan-500/60 shadow-[0_0_20px_rgba(6,182,212,0.4)]'
-            }`}
-          >
-            <div className="flex-1">
-              <div
-                className={`text-xs font-black uppercase tracking-wider ${
+                onClick={() => setToast(null)}
+                className={`w-full cursor-pointer rounded-xl p-2.5 border shadow-2xl backdrop-blur-xl flex items-start justify-between gap-2.5 ${
                   toast.type === 'bomb'
-                    ? 'text-red-300'
+                    ? 'bg-gradient-to-r from-red-950/95 via-orange-950/95 to-slate-950/95 border-red-500/80 shadow-[0_0_20px_rgba(239,68,68,0.6)]'
                     : toast.type === 'bonus'
-                    ? 'text-amber-300'
-                    : 'text-cyan-300'
+                    ? 'bg-gradient-to-r from-amber-950/95 via-purple-950/95 to-slate-950/95 border-amber-400/80 shadow-[0_0_20px_rgba(245,158,11,0.5)]'
+                    : 'bg-black/90 border-cyan-500/60 shadow-[0_0_18px_rgba(6,182,212,0.4)]'
                 }`}
               >
-                {toast.title}
-              </div>
-              <div className="text-xs text-white font-medium mt-0.5 leading-snug">
-                {toast.message}
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`text-[11px] font-black uppercase tracking-wider ${
+                      toast.type === 'bomb'
+                        ? 'text-red-300'
+                        : toast.type === 'bonus'
+                        ? 'text-amber-300'
+                        : 'text-cyan-300'
+                    }`}
+                  >
+                    {toast.title}
+                  </div>
+                  <div className="text-xs text-white/90 font-medium mt-0.5 leading-snug">
+                    {toast.message}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setToast(null);
+                  }}
+                  className="text-gray-400 hover:text-white p-1 cursor-pointer shrink-0"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setToast(null);
-              }}
-              className="text-gray-400 hover:text-white p-1 cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Center: Tactile Cyber Neon Grid Board - LOCKED IN PLACE */}
@@ -763,15 +756,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         </button>
       </div>
 
-      {/* Bonus Event Pop-Up Modal with 3D Sprite, Star Currency & Dare/Action */}
-      {activeBonusModal && (
-        <KaboomBonusModal
-          command={activeBonusModal.command}
-          bonusItem={activeBonusModal.bonusItem}
-          playerName={activeBonusModal.playerName}
-          onClaim={handleClaimBonusModal}
-        />
-      )}
+      {/* Flying Star Currency Particles toward HUD */}
+      <KaboomFlyingStars
+        batches={flyingStarBatches}
+        onBatchComplete={handleBatchComplete}
+      />
     </div>
     </div>
   );

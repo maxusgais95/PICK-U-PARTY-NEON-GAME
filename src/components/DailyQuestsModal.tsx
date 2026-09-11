@@ -5,13 +5,14 @@
 
 import React from 'react';
 import { X, Check, Star, Clock, Gift, ArrowRight, Sparkles } from 'lucide-react';
-import { DailyQuest, claimQuestReward, EconomyState } from '../lib/economy';
+import { DailyQuest, claimQuestReward, EconomyState, equipStarEarrings } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { ScreenView } from '../types';
 
 interface DailyQuestsModalProps {
   isOpen: boolean;
   quests: DailyQuest[];
+  economy?: EconomyState;
   onClose: () => void;
   onNavigateToGame?: (view: ScreenView) => void;
   onEconomyUpdated: (state: EconomyState) => void;
@@ -20,6 +21,7 @@ interface DailyQuestsModalProps {
 export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
   isOpen,
   quests,
+  economy,
   onClose,
   onNavigateToGame,
   onEconomyUpdated,
@@ -30,6 +32,14 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
   const totalCount = quests.length || 5;
   const progressPercent = Math.min(100, Math.round((completedCount / totalCount) * 100));
 
+  const earringsProgress = economy?.starEarrings || {
+    bombVictory: false,
+    bottleSpin: false,
+    fingerGame: false,
+    unlocked: false,
+  };
+  const isEarringsEquipped = economy?.equippedSkins?.accessories === 'accessory_star_earrings';
+
   const handleClaim = (questId: string) => {
     SoundEngine.playTeamDivisionChime();
     Haptics.touchSuccess();
@@ -37,6 +47,13 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
     if (res.success) {
       onEconomyUpdated(res.updatedState);
     }
+  };
+
+  const handleToggleEarrings = () => {
+    SoundEngine.playButtonClick();
+    Haptics.buttonClick();
+    const updated = equipStarEarrings(!isEarringsEquipped);
+    onEconomyUpdated(updated);
   };
 
   const handleGoToQuest = (gameMode?: ScreenView) => {
@@ -118,6 +135,98 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
 
         {/* Quests Scrollable List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+          {/* SPECIAL LEGENDARY MASTERY CONDITION: STAR EARRINGS */}
+          <div className="relative rounded-2xl p-3.5 border border-amber-400/60 bg-gradient-to-r from-amber-950/60 via-purple-950/60 to-black/60 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-header text-sm font-bold tracking-wide text-amber-200 truncate flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span>Star Earrings (Triple Mastery)</span>
+                  </h4>
+                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-header font-bold bg-amber-500/20 text-amber-300 border border-amber-400/50 uppercase tracking-widest shrink-0">
+                    SPECIAL
+                  </span>
+                </div>
+                <p className="text-xs text-gray-300 font-body mt-1 leading-snug">
+                  Unlock radiant celestial Star Earrings by completing all 3 party feats:
+                </p>
+              </div>
+
+              {earringsProgress.unlocked ? (
+                <button
+                  type="button"
+                  onClick={handleToggleEarrings}
+                  className={`shrink-0 px-3 py-1.5 rounded-full font-header font-bold text-xs tracking-wider transition-all active:scale-95 border ${
+                    isEarringsEquipped
+                      ? 'bg-cyan-950/80 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
+                      : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-400 text-amber-200'
+                  }`}
+                >
+                  {isEarringsEquipped ? 'EQUIPPED' : 'EQUIP'}
+                </button>
+              ) : (
+                <span className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-header text-gray-400">
+                  {[earringsProgress.bombVictory, earringsProgress.bottleSpin, earringsProgress.fingerGame].filter(Boolean).length}/3 Done
+                </span>
+              )}
+            </div>
+
+            {/* Condition Checkboxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1 border-t border-amber-400/20">
+              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-black/40 border border-white/5 text-[11px]">
+                <span className="text-gray-300">💣 Bomb Victory</span>
+                {earringsProgress.bombVictory ? (
+                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">
+                    <Check className="w-3 h-3" /> Done
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleGoToQuest('kaboom')}
+                    className="text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
+                  >
+                    Play
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-black/40 border border-white/5 text-[11px]">
+                <span className="text-gray-300">🍾 Bottle Spin</span>
+                {earringsProgress.bottleSpin ? (
+                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">
+                    <Check className="w-3 h-3" /> Done
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleGoToQuest('bottle')}
+                    className="text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
+                  >
+                    Play
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-black/40 border border-white/5 text-[11px]">
+                <span className="text-gray-300">☝️ Finger Game</span>
+                {earringsProgress.fingerGame ? (
+                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">
+                    <Check className="w-3 h-3" /> Done
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleGoToQuest('roulette')}
+                    className="text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
+                  >
+                    Play
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           {quests.map((quest) => {
             const isCompleted = quest.currentCount >= quest.targetCount;
             const canClaim = isCompleted && !quest.isClaimed;

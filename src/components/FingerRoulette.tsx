@@ -9,6 +9,7 @@ import { AppSettings, TouchPlayer } from '../types';
 import { THEMES } from '../lib/themes';
 import { SoundEngine } from '../lib/audio';
 import { recordGameEvent } from '../lib/db';
+import { recordStarEarringsCondition, addStars } from '../lib/economy';
 
 interface FingerRouletteProps {
   settings: AppSettings;
@@ -202,6 +203,8 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
 
     SoundEngine.playTargetImpact();
     recordGameEvent('roulette');
+    recordStarEarringsCondition('fingerGame');
+    addStars(15);
     touchesRef.current = updatedMap;
     setTouches(new Map(updatedMap));
     notifyTouches(updatedMap);

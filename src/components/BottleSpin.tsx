@@ -10,6 +10,7 @@ import { BottlePhysicsController } from '../lib/bottlePhysics';
 import { BottleSpriteRenderer } from './BottleSprites';
 import { SoundEngine } from '../lib/audio';
 import { recordGameEvent } from '../lib/db';
+import { recordStarEarringsCondition, addStars } from '../lib/economy';
 
 interface BottleSpinProps {
   settings: AppSettings;
@@ -64,6 +65,8 @@ export const BottleSpin: React.FC<BottleSpinProps> = ({
       }
       SoundEngine.playBottleSettle();
       recordGameEvent('bottle');
+      recordStarEarringsCondition('bottleSpin');
+      addStars(10);
 
       // Trigger landing shockwave
       const rect = containerRef.current?.getBoundingClientRect();

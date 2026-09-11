@@ -125,6 +125,20 @@ export default function App() {
     loadDB();
   }, []);
 
+  // Sync economy whenever stars are earned or items purchased
+  useEffect(() => {
+    const handleEconomyEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<EconomyState>;
+      if (customEvent.detail) {
+        setEconomy(customEvent.detail);
+      } else {
+        setEconomy(getEconomyState());
+      }
+    };
+    window.addEventListener('picku_economy_updated', handleEconomyEvent);
+    return () => window.removeEventListener('picku_economy_updated', handleEconomyEvent);
+  }, []);
+
   const refreshSprites = useCallback(async () => {
     const sprites = await getAllCustomSprites();
     setCustomSprites(sprites);
@@ -372,6 +386,7 @@ export default function App() {
       <DailyQuestsModal
         isOpen={isDailyQuestsOpen}
         quests={economy.dailyQuests}
+        economy={economy}
         onClose={() => setIsDailyQuestsOpen(false)}
         onNavigateToGame={(view) => {
           setCurrentTouches([]);
