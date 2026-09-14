@@ -5,6 +5,7 @@
 
 import React from 'react';
 import bombGameBg from '../assets/images/Bomb Game Background.jpeg';
+import { getAssetUrl } from '../lib/assetPreloader';
 
 interface BombGameBackgroundProps {
   active?: boolean;
@@ -22,7 +23,7 @@ export const BombGameBackground: React.FC<BombGameBackgroundProps> = ({ active =
       <div
         className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out"
         style={{
-          backgroundImage: `url("${bombGameBg}")`,
+          backgroundImage: `url("${getAssetUrl(bombGameBg)}")`,
         }}
       />
 

@@ -72,24 +72,64 @@ export const KaboomBonusModal: React.FC<KaboomBonusModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in select-none">
       <div className="relative w-full max-w-sm rounded-3xl bg-gradient-to-b from-[#130924] via-[#0b0417] to-black border-2 border-amber-400/80 p-5 sm:p-6 shadow-[0_0_55px_rgba(245,158,11,0.45)] text-center animate-bonus-bounce">
-        {/* Top Floating Glow Bonus Sprite / Icon */}
-        <div className="relative mx-auto -mt-14 mb-3 w-24 h-24 rounded-2xl p-1 bg-black/90 border-2 shadow-2xl flex items-center justify-center overflow-hidden"
-          style={{
-            borderColor: bonusItem?.accentColor || '#fbbf24',
-            boxShadow: `0 0 35px ${bonusItem?.glowColor || 'rgba(251,191,36,0.7)'}`,
-          }}
-        >
-          {bonusItem ? (
-            <img
-              src={bonusItem.image}
-              alt={bonusItem.name}
-              className="w-full h-full object-cover rounded-xl transform hover:scale-110 transition-transform"
-            />
-          ) : (
-            <div className="w-full h-full rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center">
-              {ICON_MAP[command.icon] || <Star className="w-10 h-10 text-slate-950 fill-current" />}
+        {/* Top Floating Glow Bonus Sprite / Icon with double rounded frame and glowing frame */}
+        <div className="relative mx-auto -mt-14 mb-3 w-28 h-28 flex items-center justify-center select-none">
+          {/* Outer Rounded Glow Frame */}
+          <div
+            className="relative w-full h-full rounded-2xl border-2 flex items-center justify-center"
+            style={{
+              borderColor: bonusItem?.accentColor || '#00f0ff',
+              background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.95) 100%)',
+              boxShadow: `0 0 20px ${(bonusItem?.accentColor || '#00f0ff')}, 0 0 32px ${(bonusItem?.accentColor || '#00f0ff')}40, inset 0 0 12px ${(bonusItem?.accentColor || '#00f0ff')}50`,
+            }}
+          >
+            {/* Inner Rounded Frame */}
+            <div
+              className="absolute inset-1.5 rounded-xl border flex items-center justify-center overflow-hidden"
+              style={{
+                borderColor: `${bonusItem?.accentColor || '#00f0ff'}80`,
+                background: 'radial-gradient(circle at 50% 40%, rgba(30, 41, 59, 0.6) 0%, rgba(2, 6, 23, 0.85) 100%)',
+                boxShadow: `inset 0 0 10px ${(bonusItem?.accentColor || '#00f0ff')}30`,
+              }}
+            >
+              {/* Specular White Gloss Reflection */}
+              <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.15] to-transparent pointer-events-none rounded-t-[inherit]" />
+
+              {/* Central Flashy Smooth Glowing Bonus Artwork / Sprite */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden p-1.5">
+                {/* Smooth hardware-accelerated radial aura behind the sprite */}
+                <div
+                  className="absolute inset-1 rounded-full pointer-events-none blur-md animate-sprite-aura-pulse"
+                  style={{
+                    background: `radial-gradient(circle, ${bonusItem?.accentColor || '#00f0ff'} 45%, transparent 75%)`,
+                  }}
+                />
+
+                {bonusItem ? (
+                  <img
+                    src={bonusItem.image}
+                    alt={bonusItem.name}
+                    className="relative z-10 w-[80%] h-[80%] object-contain select-none pointer-events-none animate-sprite-flashy-glow"
+                    style={{
+                      ['--sprite-tier-color' as any]: bonusItem.accentColor,
+                    }}
+                  />
+                ) : (
+                  <div className="relative z-10 w-full h-full rounded-[inherit] bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 flex items-center justify-center">
+                    {ICON_MAP[command.icon] || <Star className="w-10 h-10 text-slate-950 fill-current" />}
+                  </div>
+                )}
+              </div>
+
+              {/* Golden pill badge matching reference */}
+              <div className="absolute bottom-1.5 inset-x-0 mx-auto w-max px-2.5 py-0.5 rounded-full bg-black/90 border border-yellow-400/90 flex items-center gap-1 shadow-[0_0_10px_rgba(255,234,0,0.85)] animate-gold-pill-pulse">
+                <Star className="w-2.5 h-2.5 fill-yellow-400 text-yellow-400" />
+                <span className="font-header font-black text-[11px] text-white leading-none">
+                  +{bonusItem?.starReward || 15}
+                </span>
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Rank Badge & Star Reward Capsule */}

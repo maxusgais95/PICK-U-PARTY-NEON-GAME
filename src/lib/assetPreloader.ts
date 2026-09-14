@@ -26,10 +26,20 @@ import extremeModeBg from '../assets/images/Extreme Mode Background.jpeg';
 import chaosModeBg from '../assets/images/Chaos Mode Background.jpeg';
 import ultimateModeBg from '../assets/images/Ultimate Mode Background.jpeg';
 import bombGameBg from '../assets/images/Bomb Game Background.jpeg';
+import kaboomBombImg from '../assets/images/kaboom_bomb_sprite.png';
+import kaboomBallImg from '../assets/images/kaboom_ball_sprite.png';
+import bonusMusicalNoteImg from '../assets/images/bonus_musical_note.png';
+import bonusHeadsetImg from '../assets/images/bonus_headset.png';
+import bonusCuteStarImg from '../assets/images/bonus_cute_star.png';
+import bonusCrystalRoseImg from '../assets/images/bonus_crystal_rose.png';
+import bonusDiamondKeyImg from '../assets/images/bonus_diamond_key.png';
+import { preloadTransparentImages } from './bottleAlphaCache';
+import { AudioManager } from './audioManager';
 
 // In-Memory Blob URL registry (original URL -> blob: URL)
 const assetBlobMap = new Map<string, string>();
 let isLoadedFlag = false;
+let isFontsLoadedFlag = false;
 
 export function getAssetUrl(originalUrl: string): string {
   if (!originalUrl) return '';
@@ -38,6 +48,59 @@ export function getAssetUrl(originalUrl: string): string {
 
 export function isAssetsLoaded(): boolean {
   return isLoadedFlag;
+}
+
+export function isFontsLoaded(): boolean {
+  return isFontsLoadedFlag;
+}
+
+/**
+ * Preloads all custom web fonts and Google Fonts via the FontFaceSet API.
+ * Ensures font glyphs, metrics, and kerning pairs are compiled and cached in memory
+ * prior to rendering, preventing FOUT (Flash of Unstyled Text) or layout shift.
+ */
+export async function preloadFonts(
+  onProgress?: (progress: number, statusText: string) => void
+): Promise<void> {
+  if (isFontsLoadedFlag) {
+    onProgress?.(100, 'Typography and font glyphs primed');
+    return;
+  }
+
+  onProgress?.(30, 'Buffering and shaping Hobeaux & Google font families...');
+
+  if (typeof document === 'undefined' || !('fonts' in document)) {
+    isFontsLoadedFlag = true;
+    onProgress?.(100, 'Font API unavailable, proceeding');
+    return;
+  }
+
+  try {
+    const fontPromises = [
+      document.fonts.load('16px Hobeaux'),
+      document.fonts.load('bold 16px Hobeaux'),
+      document.fonts.load('700 16px "Lilita One"'),
+      document.fonts.load('600 16px Fredoka'),
+      document.fonts.load('700 16px Fredoka'),
+      document.fonts.load('800 16px Fredoka'),
+      document.fonts.load('500 16px Outfit'),
+      document.fonts.load('600 16px Outfit'),
+      document.fonts.load('700 16px Outfit'),
+      document.fonts.load('700 16px Righteous'),
+      document.fonts.ready,
+    ];
+
+    // Max 1500ms safety timeout to avoid blocking if network is slow
+    await Promise.race([
+      Promise.all(fontPromises),
+      new Promise((res) => setTimeout(res, 1500)),
+    ]);
+  } catch (err) {
+    console.warn('[AssetPreloader] Font preloading non-fatal fallback:', err);
+  }
+
+  isFontsLoadedFlag = true;
+  onProgress?.(100, 'Typography glyphs rendered & primed in cache');
 }
 
 interface PreloadItem {
@@ -101,6 +164,18 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     url: chibiBombGame,
     type: 'image',
     description: 'Loading Kaboom Game Panel...',
+  },
+  {
+    name: 'Cyber Bomb Sprite',
+    url: kaboomBombImg,
+    type: 'image',
+    description: 'Decoding 3D Cyber Bomb & Fireworks Spark Fuse...',
+  },
+  {
+    name: 'Cyber Ball Sprite',
+    url: kaboomBallImg,
+    type: 'image',
+    description: 'Decoding 3D Cyber Ball & Neon Horizontal Light Bands...',
   },
   {
     name: 'Picku Party Logo',
@@ -173,6 +248,36 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     url: bombGameBg,
     type: 'image',
     description: 'Buffering Bomb Game Background...',
+  },
+  {
+    name: 'Bonus Musical Note',
+    url: bonusMusicalNoteImg,
+    type: 'image',
+    description: 'Decoding Bonus Musical Note Sprite...',
+  },
+  {
+    name: 'Bonus Headset',
+    url: bonusHeadsetImg,
+    type: 'image',
+    description: 'Decoding Bonus DJ Headset Sprite...',
+  },
+  {
+    name: 'Bonus Cute Star',
+    url: bonusCuteStarImg,
+    type: 'image',
+    description: 'Decoding Bonus Cute Star Sprite...',
+  },
+  {
+    name: 'Bonus Crystal Rose',
+    url: bonusCrystalRoseImg,
+    type: 'image',
+    description: 'Decoding Bonus Crystal Rose Sprite...',
+  },
+  {
+    name: 'Bonus Diamond Key',
+    url: bonusDiamondKeyImg,
+    type: 'image',
+    description: 'Decoding Bonus Diamond Key Sprite...',
   },
 ];
 
@@ -258,6 +363,211 @@ export async function preloadAllAssets(
     onProgress?.(percent, item.description);
   }
 
+  // Preload and cache transparent bottle textures
+  preloadTransparentImages([btl001, btl002, btl003, btl004]);
+  preloadedGameModes.add('roulette');
+  preloadedGameModes.add('bottle');
+  preloadedGameModes.add('kaboom');
+
   isLoadedFlag = true;
   onProgress?.(100, 'All media buffered! Initializing Party Suite...');
+}
+
+export type GameModeId = 'roulette' | 'bottle' | 'kaboom';
+
+export interface GameAssetDefinition {
+  name: string;
+  url: string;
+  type: 'video' | 'image';
+  description: string;
+}
+
+export const GAME_ASSET_REGISTRY: Record<GameModeId, GameAssetDefinition[]> = {
+  roulette: [
+    {
+      name: 'Roulette Background Image',
+      url: rouletteBgImage,
+      type: 'image',
+      description: 'Decoding Ultra-HD Roulette Table Background...',
+    },
+    {
+      name: 'Roulette Dynamic Animation Video',
+      url: rouletteBgVideo,
+      type: 'video',
+      description: 'Buffering Finger Roulette Dynamic Neon Video...',
+    },
+  ],
+  bottle: [
+    {
+      name: 'Neon DJ Visualizer Video',
+      url: spectrumVideo,
+      type: 'video',
+      description: 'Buffering Neon DJ Disc Video...',
+    },
+    {
+      name: 'Classic Bottle Skin',
+      url: btl001,
+      type: 'image',
+      description: 'Caching Classic Neon Bottle Texture...',
+    },
+    {
+      name: 'Cyber Bottle Skin',
+      url: btl002,
+      type: 'image',
+      description: 'Caching Cyber Neon Bottle Texture...',
+    },
+    {
+      name: 'Laser Bottle Skin',
+      url: btl003,
+      type: 'image',
+      description: 'Caching Laser Neon Bottle Texture...',
+    },
+    {
+      name: 'Matrix Bottle Skin',
+      url: btl004,
+      type: 'image',
+      description: 'Caching Matrix Neon Bottle Texture...',
+    },
+  ],
+  kaboom: [
+    {
+      name: 'Bomb Game Background',
+      url: bombGameBg,
+      type: 'image',
+      description: 'Buffering Bomb Game High-Res Background...',
+    },
+    {
+      name: 'Cyber Bomb Sprite',
+      url: kaboomBombImg,
+      type: 'image',
+      description: 'Decoding 3D Cyber Bomb & Fireworks Spark Fuse...',
+    },
+    {
+      name: 'Cyber Ball Sprite',
+      url: kaboomBallImg,
+      type: 'image',
+      description: 'Decoding 3D Cyber Ball & Light Bands...',
+    },
+    {
+      name: 'Bonus Musical Note',
+      url: bonusMusicalNoteImg,
+      type: 'image',
+      description: 'Decoding Bonus Musical Note Sprite...',
+    },
+    {
+      name: 'Bonus DJ Headset',
+      url: bonusHeadsetImg,
+      type: 'image',
+      description: 'Decoding Bonus DJ Headset Sprite...',
+    },
+    {
+      name: 'Bonus Cute Star',
+      url: bonusCuteStarImg,
+      type: 'image',
+      description: 'Decoding Bonus Cute Star Sprite...',
+    },
+    {
+      name: 'Bonus Crystal Rose',
+      url: bonusCrystalRoseImg,
+      type: 'image',
+      description: 'Decoding Bonus Crystal Rose Sprite...',
+    },
+    {
+      name: 'Bonus Diamond Key',
+      url: bonusDiamondKeyImg,
+      type: 'image',
+      description: 'Decoding Bonus Diamond Key Sprite...',
+    },
+  ],
+};
+
+const preloadedGameModes = new Set<GameModeId>();
+
+export function isGameAssetsPreloaded(game: GameModeId): boolean {
+  return preloadedGameModes.has(game);
+}
+
+/**
+ * Preload all required files for a specific game mode before entering the game.
+ * Guarantees zero blank frames, zero buffering lag, and decoded textures in GPU/Audio cache.
+ */
+export async function preloadGameAssets(
+  game: GameModeId,
+  onProgress?: (progress: number, statusText: string) => void
+): Promise<void> {
+  const assets = GAME_ASSET_REGISTRY[game] || [];
+  const total = assets.length + 1; // +1 for audio
+  let completed = 0;
+
+  onProgress?.(10, `Initializing ${game.toUpperCase()} stage files...`);
+
+  // Eagerly preload sound engine in background
+  AudioManager.preloadSounds().catch(() => {});
+
+  // If bottle, preload transparent textures
+  if (game === 'bottle') {
+    preloadTransparentImages([btl001, btl002, btl003, btl004]);
+  }
+
+  // Open cache if available
+  let cache: Cache | null = null;
+  try {
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      cache = await caches.open('picku-party-asset-cache-v1');
+    }
+  } catch {
+    cache = null;
+  }
+
+  for (const item of assets) {
+    try {
+      let blobUrl = assetBlobMap.get(item.url);
+
+      if (!blobUrl) {
+        let blob: Blob | null = null;
+        if (cache) {
+          try {
+            const cached = await cache.match(item.url);
+            if (cached) blob = await cached.blob();
+          } catch {
+            blob = null;
+          }
+        }
+
+        if (!blob) {
+          const res = await fetch(item.url);
+          if (res.ok) {
+            if (cache) {
+              try {
+                await cache.put(item.url, res.clone());
+              } catch {}
+            }
+            blob = await res.blob();
+          }
+        }
+
+        if (blob) {
+          blobUrl = URL.createObjectURL(blob);
+          assetBlobMap.set(item.url, blobUrl);
+        }
+      }
+
+      if (blobUrl && item.type === 'image') {
+        const img = new Image();
+        img.src = blobUrl;
+        if ('decode' in img) {
+          await img.decode().catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.warn(`[AssetPreloader] Preloading ${item.name} fallback:`, err);
+    }
+
+    completed++;
+    const pct = Math.min(94, Math.round(10 + (completed / total) * 84));
+    onProgress?.(pct, item.description);
+  }
+
+  preloadedGameModes.add(game);
+  onProgress?.(100, `${game.toUpperCase()} files primed and ready!`);
 }

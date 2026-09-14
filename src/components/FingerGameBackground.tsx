@@ -37,18 +37,13 @@ export const FingerGameBackground: React.FC<FingerGameBackgroundProps> = ({
   // 1. Video is enabled ONLY when all players placed their fingers (during countdown)
   const isVideoActive = active && gameState === 'countdown';
 
-  // 2. Subtle moving ambience lights gradient at the bleed of the screen:
-  // Active during finger roulette gameplay.
-  // - When idle: gentle atmospheric neon edge glow (opacity-50)
-  // - When finger(s) are placed: surges to high-intensity vibrant radiance (opacity-100)
-  // - In countdown: intense high-tension aura (opacity-85)
-  const ambienceIntensityClass = !active
-    ? 'opacity-0'
-    : activeFingersCount > 0 && gameState === 'waiting'
-    ? 'opacity-100'
-    : gameState === 'countdown'
-    ? 'opacity-85'
-    : 'opacity-50';
+  // 2. Moving ambience lights gradient at the bleed of the screen:
+  // - During idle (no fingers placed): REMOVED (opacity-0, completely hidden)
+  // - When placing fingers: surges with vibrant cyan, blue, magenta, purple gradient animation
+  const hasFingersPlaced = active && (activeFingersCount > 0 || gameState === 'countdown');
+  const ambienceIntensityClass = hasFingersPlaced
+    ? 'opacity-100 pointer-events-none'
+    : 'opacity-0 pointer-events-none';
 
   // Manage video playback rate and sync
   useEffect(() => {
@@ -150,40 +145,54 @@ export const FingerGameBackground: React.FC<FingerGameBackgroundProps> = ({
         }}
       />
 
-      {/* 4. Moving Ambience Lights Gradient at the Bleed of the Screen */}
+      {/* 4. Moving Ambience Lights Gradient at the Bleed of the Screen (Reduced & Animated Color Gradient) */}
       <div
-        className={`absolute inset-0 pointer-events-none z-[3] overflow-hidden transition-opacity duration-500 ${ambienceIntensityClass}`}
+        className={`absolute inset-0 pointer-events-none z-[3] overflow-hidden transition-opacity duration-300 ${ambienceIntensityClass}`}
       >
         {/* Outer Pulsing Container */}
-        <div className="absolute inset-0 pointer-events-none animate-bleed-pulse">
-          {/* Inner Rotating Conic Aurora Centered with translate(-50%, -50%) */}
+        <div className="absolute inset-0 pointer-events-none animate-finger-bleed-pulse">
+          {/* Inner Rotating Conic Aurora: Cyan -> Blue -> Magenta -> Purple -> Cyan (Restricted to edge rim) */}
           <div
-            className="absolute left-1/2 top-1/2 w-[150vmax] h-[150vmax] pointer-events-none animate-ambient-bleed"
+            className="absolute left-1/2 top-1/2 w-[140vmax] h-[140vmax] pointer-events-none animate-finger-bleed-rotate"
             style={{
               background:
-                'conic-gradient(from 0deg, #00f0ff 0deg, #a855f7 60deg, #ec4899 120deg, #f59e0b 180deg, #00f0ff 240deg, #3b82f6 300deg, #00f0ff 360deg)',
+                'conic-gradient(from 0deg, #00f0ff 0deg, #2563eb 90deg, #ec4899 180deg, #8b5cf6 270deg, #00f0ff 360deg)',
               WebkitMaskImage:
-                'radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.4) 55%, black 75%)',
+                'radial-gradient(ellipse at center, transparent 72%, rgba(0, 0, 0, 0.4) 86%, black 98%)',
               maskImage:
-                'radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.4) 55%, black 75%)',
-              filter: 'blur(35px)',
+                'radial-gradient(ellipse at center, transparent 72%, rgba(0, 0, 0, 0.4) 86%, black 98%)',
+              filter: 'blur(16px)',
               mixBlendMode: 'screen',
+              opacity: 0.85,
             }}
           />
         </div>
 
-        {/* 4 Outer Edge Bleed Accent Light Beams */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-cyan-400/50 via-cyan-400/15 to-transparent pointer-events-none animate-bleed-shimmer" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-fuchsia-500/50 via-fuchsia-500/15 to-transparent pointer-events-none animate-bleed-shimmer" />
-        <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-purple-500/40 via-purple-500/10 to-transparent pointer-events-none animate-bleed-shimmer" />
-        <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-amber-400/40 via-amber-400/10 to-transparent pointer-events-none animate-bleed-shimmer" />
+        {/* 4 Outer Edge Bleed Accent Light Beams: Cyan, Blue, Magenta, Purple ONLY */}
+        {/* Top: Vibrant Cyan */}
+        <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#00f0ff]/35 via-[#00f0ff]/10 to-transparent pointer-events-none animate-finger-bleed-shimmer" />
+        {/* Left: Electric Blue */}
+        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#2563eb]/30 via-[#2563eb]/08 to-transparent pointer-events-none animate-finger-bleed-shimmer" />
+        {/* Bottom: Hot Magenta */}
+        <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#ec4899]/35 via-[#ec4899]/10 to-transparent pointer-events-none animate-finger-bleed-shimmer" />
+        {/* Right: Cyber Purple */}
+        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#8b5cf6]/30 via-[#8b5cf6]/08 to-transparent pointer-events-none animate-finger-bleed-shimmer" />
 
-        {/* Perimeter Inset Aura */}
+        {/* Perimeter Inset Aura with Active Color Gradient Cycling */}
+        <div className="absolute inset-0 pointer-events-none animate-finger-bleed-glow" />
+
+        {/* Flowing Perimeter Border Bleed Line with Cyan, Blue, Magenta, Purple Gradient Animation */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none border-[1.5px] border-transparent animate-finger-bleed-border"
           style={{
-            boxShadow:
-              'inset 0 0 45px 12px rgba(0, 240, 255, 0.4), inset 0 0 90px 24px rgba(236, 72, 153, 0.25)',
+            background:
+              'linear-gradient(135deg, #00f0ff, #2563eb, #ec4899, #8b5cf6, #00f0ff) border-box',
+            WebkitMask:
+              'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+            WebkitMaskComposite: 'xor',
+            maskComposite: 'exclude',
+            opacity: 0.85,
+            filter: 'drop-shadow(0 0 4px rgba(0,240,255,0.45))',
           }}
         />
       </div>

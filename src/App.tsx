@@ -28,18 +28,23 @@ import { KaboomGame } from './components/kaboom/KaboomGame';
 import { getEconomyState, EconomyState } from './lib/economy';
 import { StoreModal } from './components/StoreModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
-import { RankingsModal } from './components/RankingsModal';
+import { AchievementsModal } from './components/AchievementsModal';
 import { RewardsModal } from './components/RewardsModal';
+import { GamePreloader } from './components/GamePreloader';
+import { preloadGameAssets, GameModeId } from './lib/assetPreloader';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [currentView, setCurrentView] = useState<ScreenView>('hub');
+  const [preloadingGame, setPreloadingGame] = useState<GameModeId | null>(null);
+  const [preloadProgress, setPreloadProgress] = useState<number>(0);
+  const [preloadStatus, setPreloadStatus] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isVersionNotesOpen, setIsVersionNotesOpen] = useState<boolean>(false);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const [isStoreOpen, setIsStoreOpen] = useState<boolean>(false);
   const [isDailyQuestsOpen, setIsDailyQuestsOpen] = useState<boolean>(false);
-  const [isRankingsOpen, setIsRankingsOpen] = useState<boolean>(false);
+  const [isAchievementsOpen, setIsAchievementsOpen] = useState<boolean>(false);
   const [isRewardsOpen, setIsRewardsOpen] = useState<boolean>(false);
   const [economy, setEconomy] = useState<EconomyState>(() => getEconomyState());
   const [settings, setSettings] = useState<AppSettings>({
@@ -210,6 +215,56 @@ export default function App() {
     Haptics.buttonClick();
   }, [settings.bottleStyle, settings.selectedCustomSpriteId, customSprites, handleUpdateSettings]);
 
+  const handleNavigateToGame = useCallback((targetView: ScreenView) => {
+    setCurrentTouches([]);
+    setShowTeamLines(false);
+    setIsBottleSpinning(false);
+    setBottleSpinSpeed(0);
+    setRouletteGameState('waiting');
+
+    if (targetView === 'hub') {
+      setCurrentView('hub');
+      return;
+    }
+
+    const gameId = targetView as GameModeId;
+    setPreloadingGame(gameId);
+    setPreloadProgress(0);
+    setPreloadStatus(`Initializing ${targetView.toUpperCase()} stage files...`);
+
+    const TOTAL_PRELOAD_MS = 2000;
+    const startTime = Date.now();
+
+    // Trigger asset preloading in parallel
+    preloadGameAssets(gameId).catch(() => {});
+
+    // Smoothly animate progress bar over 2000ms (2s)
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, Math.round((elapsed / TOTAL_PRELOAD_MS) * 100));
+      setPreloadProgress(pct);
+
+      if (pct < 30) {
+        setPreloadStatus(`Buffering ${targetView.toUpperCase()} textures...`);
+      } else if (pct < 65) {
+        setPreloadStatus(`Warming GPU pipelines & sound shaders...`);
+      } else if (pct < 95) {
+        setPreloadStatus(`Finalizing stage files...`);
+      } else {
+        setPreloadStatus(`Ready! Entering stage...`);
+      }
+
+      if (elapsed >= TOTAL_PRELOAD_MS) {
+        clearInterval(interval);
+        setPreloadProgress(100);
+        setTimeout(() => {
+          setCurrentView(targetView);
+          setPreloadingGame(null);
+        }, 120);
+      }
+    }, 35);
+  }, []);
+
   return (
     <main
       className="relative w-screen h-screen overflow-hidden select-none touch-none font-sans transition-colors duration-500"
@@ -264,14 +319,7 @@ export default function App() {
         currentView={currentView}
         settings={settings}
         stars={economy.stars}
-        onNavigate={(view) => {
-          setCurrentTouches([]);
-          setShowTeamLines(false);
-          setIsBottleSpinning(false);
-          setBottleSpinSpeed(0);
-          setRouletteGameState('waiting');
-          setCurrentView(view);
-        }}
+        onNavigate={handleNavigateToGame}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenStore={() => setIsStoreOpen(true)}
         onOpenInfo={() => setIsGuideOpen(true)}
@@ -288,14 +336,14 @@ export default function App() {
           <LandingHub
             settings={settings}
             economy={economy}
-            onSelectRoulette={() => setCurrentView('roulette')}
-            onSelectBottle={() => setCurrentView('bottle')}
-            onSelectKaboom={() => setCurrentView('kaboom')}
+            onSelectRoulette={() => handleNavigateToGame('roulette')}
+            onSelectBottle={() => handleNavigateToGame('bottle')}
+            onSelectKaboom={() => handleNavigateToGame('kaboom')}
             onUpdateSettings={handleUpdateSettings}
             onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
             onOpenStore={() => setIsStoreOpen(true)}
             onOpenDailyQuests={() => setIsDailyQuestsOpen(true)}
-            onOpenRankings={() => setIsRankingsOpen(true)}
+            onOpenAchievements={() => setIsAchievementsOpen(true)}
             onOpenRewards={() => setIsRewardsOpen(true)}
           />
         )}
@@ -361,14 +409,7 @@ export default function App() {
         onClose={() => setIsGuideOpen(false)}
         economy={economy}
         onEconomyUpdated={setEconomy}
-        onNavigateToGame={(game) => {
-          setCurrentTouches([]);
-          setShowTeamLines(false);
-          setIsBottleSpinning(false);
-          setBottleSpinSpeed(0);
-          setRouletteGameState('waiting');
-          setCurrentView(game);
-        }}
+        onNavigateToGame={handleNavigateToGame}
         onOpenStore={() => setIsStoreOpen(true)}
       />
 
@@ -388,21 +429,17 @@ export default function App() {
         quests={economy.dailyQuests}
         economy={economy}
         onClose={() => setIsDailyQuestsOpen(false)}
-        onNavigateToGame={(view) => {
-          setCurrentTouches([]);
-          setShowTeamLines(false);
-          setIsBottleSpinning(false);
-          setBottleSpinSpeed(0);
-          setRouletteGameState('waiting');
-          setCurrentView(view);
-        }}
+        onNavigateToGame={handleNavigateToGame}
         onEconomyUpdated={setEconomy}
       />
 
-      {/* Rankings Modal (Hall of Fame) */}
-      <RankingsModal
-        isOpen={isRankingsOpen}
-        onClose={() => setIsRankingsOpen(false)}
+      {/* Achievements / Trophy Gallery Modal */}
+      <AchievementsModal
+        isOpen={isAchievementsOpen}
+        onClose={() => setIsAchievementsOpen(false)}
+        stats={stats}
+        economy={economy}
+        onEconomyUpdated={setEconomy}
       />
 
       {/* Rewards Modal (Daily Login Streak) */}
@@ -423,8 +460,16 @@ export default function App() {
       {showSplash && (
         <SplashScreen
           onComplete={() => setShowSplash(false)}
+          onOpenVersionNotes={() => setIsVersionNotesOpen(true)}
         />
       )}
+
+      {/* Game File Preloader Overlay before entering game */}
+      <GamePreloader
+        game={preloadingGame}
+        progress={preloadProgress}
+        statusText={preloadStatus}
+      />
     </main>
   );
 }

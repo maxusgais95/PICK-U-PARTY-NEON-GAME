@@ -30,7 +30,6 @@ const CATEGORIES: { id: StoreCategory; label: string; icon: string }[] = [
   { id: 'bottles', label: 'BOTTLES', icon: '🍾' },
   { id: 'bombs', label: 'BOMBS', icon: '💣' },
   { id: 'balls', label: 'BALLS', icon: '⚽' },
-  { id: 'accessories', label: 'ACCESSORIES', icon: '✨' },
 ];
 
 export const StoreModal: React.FC<StoreModalProps> = ({

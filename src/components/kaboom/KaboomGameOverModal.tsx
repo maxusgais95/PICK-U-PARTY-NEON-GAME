@@ -6,6 +6,7 @@
 import React from 'react';
 import { Bomb, Flame, RotateCcw, Grid, Trophy, Sparkles, ShieldAlert } from 'lucide-react';
 import { SoundEngine, Haptics } from '../../lib/audio';
+import kaboomBombImg from '../../assets/images/kaboom_bomb_sprite.png';
 
 interface KaboomGameOverModalProps {
   detonatorName: string;
@@ -34,8 +35,12 @@ export const KaboomGameOverModal: React.FC<KaboomGameOverModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-sm rounded-3xl bg-gradient-to-b from-red-950 via-slate-950 to-black border-2 border-red-500/80 p-6 shadow-[0_0_60px_rgba(239,68,68,0.6)] text-center animate-screen-shake">
         {/* Floating Bomb Flame Icon */}
-        <div className="mx-auto -mt-14 mb-3 w-20 h-20 rounded-2xl bg-gradient-to-tr from-red-600 via-orange-500 to-amber-500 border-2 border-red-300 shadow-[0_0_35px_rgba(239,68,68,0.9)] flex items-center justify-center transform rotate-6">
-          <Bomb className="w-10 h-10 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" />
+        <div className="mx-auto -mt-14 mb-3 w-22 h-22 rounded-2xl bg-gradient-to-tr from-red-600 via-orange-500 to-amber-500 border-2 border-red-300 shadow-[0_0_35px_rgba(239,68,68,0.9)] flex items-center justify-center p-1 overflow-hidden transform rotate-6">
+          <img
+            src={kaboomBombImg}
+            alt="Detonated Bomb"
+            className="w-full h-full object-contain filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] brightness-110"
+          />
         </div>
 
         {/* Warning Tag */}

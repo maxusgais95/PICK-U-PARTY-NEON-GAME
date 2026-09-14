@@ -39,6 +39,11 @@
     touch-action: pan-y;
   }
 
+  .overflow-x-auto,
+  .overflow-x-auto * {
+    touch-action: pan-x;
+  }
+
   html, body, #root {
     width: 100%;
     height: 100%;
@@ -961,6 +966,103 @@
   will-change: opacity;
 }
 
+/* Finger placement bleed glow: Reduced, elegant Cyan, Blue, Magenta, Purple color gradient animations */
+@keyframes fingerBleedRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes fingerBleedPulse {
+  0%, 100% {
+    opacity: 0.7;
+    filter: blur(14px) saturate(1.8);
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    filter: blur(16px) saturate(2.2);
+    transform: scale(1.015);
+  }
+}
+
+@keyframes fingerBleedShimmer {
+  0%, 100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+@keyframes fingerBleedBorderFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fingerBleedGlowCycle {
+  0% {
+    box-shadow:
+      inset 0 0 16px 2px rgba(0, 240, 255, 0.45),
+      inset 0 0 32px 4px rgba(37, 99, 235, 0.22);
+  }
+  25% {
+    box-shadow:
+      inset 0 0 16px 2px rgba(37, 99, 235, 0.45),
+      inset 0 0 32px 4px rgba(236, 72, 153, 0.22);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 16px 2px rgba(236, 72, 153, 0.45),
+      inset 0 0 32px 4px rgba(139, 92, 246, 0.22);
+  }
+  75% {
+    box-shadow:
+      inset 0 0 16px 2px rgba(139, 92, 246, 0.45),
+      inset 0 0 32px 4px rgba(0, 240, 255, 0.22);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 16px 2px rgba(0, 240, 255, 0.45),
+      inset 0 0 32px 4px rgba(37, 99, 235, 0.22);
+  }
+}
+
+.animate-finger-bleed-rotate {
+  animation: fingerBleedRotate 6s linear infinite;
+  will-change: transform;
+}
+
+.animate-finger-bleed-pulse {
+  animation: fingerBleedPulse 2.4s ease-in-out infinite;
+  will-change: opacity, filter, transform;
+}
+
+.animate-finger-bleed-shimmer {
+  animation: fingerBleedShimmer 1.8s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.animate-finger-bleed-border {
+  background-size: 300% 300%;
+  animation: fingerBleedBorderFlow 4s ease infinite;
+}
+
+.animate-finger-bleed-glow {
+  animation: fingerBleedGlowCycle 6s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
 /* Splash Screen Pop Up & Zoom Out Launch Animations */
 @keyframes titlePopUp {
   0% {
@@ -1320,6 +1422,90 @@
   will-change: transform, filter;
 }
 
+@keyframes tileBreathingGray {
+  0%, 100% {
+    border-color: rgba(161, 161, 170, 0.65);
+    opacity: 0.95;
+  }
+  50% {
+    border-color: rgba(212, 212, 216, 0.95);
+    opacity: 1;
+  }
+}
+
+.animate-tile-breathing-gray {
+  opacity: 0.95;
+}
+
+.animate-tile-breathing-dark-gray {
+  opacity: 0.95;
+}
+
+/* Simulated Water Ripple for tiles and elements underneath */
+@keyframes waterTileRipple {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: brightness(1);
+  }
+  18% {
+    transform: translate3d(0, -9px, 0) scale(1.09);
+    filter: brightness(1.4) drop-shadow(0 8px 12px rgba(56, 189, 248, 0.25));
+  }
+  42% {
+    transform: translate3d(0, 5px, 0) scale(0.93);
+    filter: brightness(0.82) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  }
+  68% {
+    transform: translate3d(0, -3px, 0) scale(1.03);
+    filter: brightness(1.15);
+  }
+  86% {
+    transform: translate3d(0, 1px, 0) scale(0.99);
+    filter: brightness(0.96);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+.animate-water-tile-ripple {
+  animation: waterTileRipple 0.85s cubic-bezier(0.2, 0.7, 0.35, 1) both;
+  will-change: transform, filter;
+}
+
+@keyframes waterBasinSwell {
+  0% { transform: scale(1) translate3d(0, 0, 0); }
+  22% { transform: scale(1.025) translate3d(0, -3px, 0); }
+  48% { transform: scale(0.985) translate3d(0, 2px, 0); }
+  72% { transform: scale(1.008) translate3d(0, -1px, 0); }
+  100% { transform: scale(1) translate3d(0, 0, 0); }
+}
+
+.animate-water-basin-swell {
+  animation: waterBasinSwell 0.85s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+  will-change: transform;
+}
+
+@keyframes waterSurfaceWave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.05);
+    opacity: 0.95;
+  }
+  45% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.5);
+    opacity: 0;
+  }
+}
+
+.animate-water-surface-wave {
+  animation: waterSurfaceWave 1.05s cubic-bezier(0.12, 0.75, 0.35, 1) forwards;
+  will-change: transform, opacity;
+}
+
 @keyframes neonBreathingPink {
   0%, 100% {
     box-shadow: 0 0 12px rgba(255, 42, 133, 0.75), inset 0 0 8px rgba(255, 42, 133, 0.35);
@@ -1344,6 +1530,285 @@
 
 .animate-neon-breathing-cyan {
   animation: neonBreathingCyan 2.4s ease-in-out infinite;
+}
+
+/* ========================================================================= */
+/* KABOOM NEON BONUS TILE EFFECT & FLASHY SPRITE GLOW                        */
+/* ========================================================================= */
+
+@keyframes spriteSmoothGlow {
+  0%, 100% {
+    transform: scale(0.98) translateZ(0);
+    opacity: 0.94;
+    filter: brightness(1.04);
+  }
+  50% {
+    transform: scale(1.05) translateZ(0);
+    opacity: 1;
+    filter: brightness(1.24);
+  }
+}
+
+.animate-sprite-flashy-glow {
+  animation: spriteSmoothGlow 2.4s ease-in-out infinite;
+  will-change: transform, opacity, filter;
+  transform: translateZ(0);
+}
+
+@keyframes spriteHyperGlow {
+  0%, 100% {
+    transform: scale(0.97) translateZ(0);
+    opacity: 0.92;
+    filter: brightness(1.0);
+  }
+  50% {
+    transform: scale(1.06) translateZ(0);
+    opacity: 1;
+    filter: brightness(1.28);
+  }
+}
+
+.animate-sprite-hyper-glow {
+  animation: spriteHyperGlow 2.2s ease-in-out infinite;
+  will-change: transform, opacity, filter;
+  transform: translateZ(0);
+}
+
+@keyframes spriteAuraPulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.9) translateZ(0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.15) translateZ(0);
+  }
+}
+
+.animate-sprite-aura-pulse {
+  animation: spriteAuraPulse 2.4s ease-in-out infinite;
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+
+@keyframes spriteLightSweep {
+  0% {
+    transform: translate3d(-160%, 0, 0) skewX(-20deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.4;
+  }
+  35% {
+    transform: translate3d(160%, 0, 0) skewX(-20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(160%, 0, 0) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-sprite-sweep {
+  animation: spriteLightSweep 3.6s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+@keyframes softTierGlow {
+  0%, 100% {
+    opacity: 0.32;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 0.48;
+    transform: scale(1.02);
+  }
+}
+
+.animate-soft-tier-glow {
+  animation: softTierGlow 3s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes rainbowBorderGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.6))
+            drop-shadow(0 0 12px rgba(255, 234, 0, 0.45))
+            drop-shadow(0 0 16px rgba(255, 0, 127, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.8))
+            drop-shadow(0 0 18px rgba(255, 234, 0, 0.65))
+            drop-shadow(0 0 22px rgba(255, 0, 127, 0.7));
+  }
+}
+
+.animate-rainbow-border-glow {
+  animation: rainbowBorderGlow 2.5s ease-in-out infinite;
+  will-change: filter;
+}
+
+@keyframes bonusTileBounce {
+  0% {
+    transform: scale(0.35) rotate(-6deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.14) rotate(2.5deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.97) rotate(-0.5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-bonus-tile-bounce {
+  animation: bonusTileBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes bonusNeonRingBurst {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-bonus-ring-burst {
+  animation: bonusNeonRingBurst 0.65s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes goldPillPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 222, 89, 0.85), inset 0 0 4px rgba(255, 222, 89, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 222, 89, 1), 0 0 28px rgba(255, 190, 0, 0.55), inset 0 0 6px rgba(255, 222, 89, 0.6);
+  }
+}
+
+.animate-gold-pill-pulse {
+  animation: goldPillPulse 2s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
+/* ==========================================================================
+   Trophy Gallery Border Glow Effects & Utilities
+   ========================================================================== */
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes bronzeTrophyPulse {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(180, 83, 9, 0.4), inset 0 0 10px rgba(146, 64, 14, 0.25), 0 4px 18px rgba(0, 0, 0, 0.7);
+    border-color: rgba(217, 119, 6, 0.65);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(217, 119, 6, 0.6), inset 0 0 14px rgba(180, 83, 9, 0.4), 0 4px 22px rgba(0, 0, 0, 0.8);
+    border-color: rgba(245, 158, 11, 0.9);
+  }
+}
+
+@keyframes silverTrophyPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(203, 213, 225, 0.5), inset 0 0 12px rgba(148, 163, 184, 0.3), 0 4px 20px rgba(0, 0, 0, 0.75);
+    border-color: rgba(226, 232, 240, 0.75);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(241, 245, 249, 0.75), inset 0 0 16px rgba(203, 213, 225, 0.45), 0 4px 25px rgba(0, 0, 0, 0.85);
+    border-color: rgba(255, 255, 255, 0.95);
+  }
+}
+
+@keyframes goldTrophyPulse {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(250, 204, 21, 0.6), 0 0 40px rgba(234, 179, 8, 0.3), inset 0 0 14px rgba(234, 179, 8, 0.3), 0 4px 24px rgba(0, 0, 0, 0.8);
+    border-color: rgba(250, 204, 21, 0.85);
+  }
+  50% {
+    box-shadow: 0 0 32px rgba(250, 204, 21, 0.85), 0 0 55px rgba(234, 179, 8, 0.5), inset 0 0 18px rgba(253, 224, 71, 0.5), 0 4px 28px rgba(0, 0, 0, 0.9);
+    border-color: rgba(254, 240, 138, 1);
+  }
+}
+
+@keyframes platinumTrophyPulse {
+  0%, 100% {
+    box-shadow: 0 0 26px rgba(34, 211, 238, 0.75), 0 0 50px rgba(6, 182, 212, 0.4), inset 0 0 16px rgba(6, 182, 212, 0.45), 0 4px 28px rgba(0, 0, 0, 0.85);
+    border-color: rgba(103, 232, 249, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 38px rgba(56, 189, 248, 0.95), 0 0 70px rgba(14, 165, 233, 0.6), inset 0 0 22px rgba(103, 232, 249, 0.6), 0 4px 32px rgba(0, 0, 0, 0.95);
+    border-color: rgba(207, 250, 254, 1);
+  }
+}
+
+.trophy-card-bronze {
+  border: 1.5px solid rgba(217, 119, 6, 0.75);
+  box-shadow: 0 0 16px rgba(180, 83, 9, 0.4), inset 0 0 10px rgba(146, 64, 14, 0.25), 0 4px 20px rgba(0, 0, 0, 0.7);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trophy-card-bronze:hover {
+  border-color: rgba(245, 158, 11, 0.95);
+  box-shadow: 0 0 25px rgba(217, 119, 6, 0.65), inset 0 0 14px rgba(180, 83, 9, 0.4), 0 6px 24px rgba(0, 0, 0, 0.85);
+}
+
+.trophy-card-silver {
+  border: 1.5px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 0 20px rgba(203, 213, 225, 0.5), inset 0 0 12px rgba(148, 163, 184, 0.3), 0 4px 22px rgba(0, 0, 0, 0.75);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trophy-card-silver:hover {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 30px rgba(241, 245, 249, 0.8), inset 0 0 16px rgba(203, 213, 225, 0.45), 0 6px 26px rgba(0, 0, 0, 0.85);
+}
+
+.trophy-card-gold {
+  border: 1.5px solid rgba(250, 204, 21, 0.9);
+  animation: goldTrophyPulse 3.5s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trophy-card-gold:hover {
+  border-color: rgba(254, 240, 138, 1);
+  box-shadow: 0 0 36px rgba(250, 204, 21, 0.95), 0 0 65px rgba(234, 179, 8, 0.6), inset 0 0 20px rgba(253, 224, 71, 0.55), 0 8px 30px rgba(0, 0, 0, 0.95);
+}
+
+.trophy-card-platinum {
+  border: 1.5px solid rgba(103, 232, 249, 0.95);
+  animation: platinumTrophyPulse 3s ease-in-out infinite;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.trophy-card-platinum:hover {
+  border-color: rgba(207, 250, 254, 1);
+  box-shadow: 0 0 45px rgba(56, 189, 248, 1), 0 0 80px rgba(14, 165, 233, 0.75), inset 0 0 24px rgba(103, 232, 249, 0.65), 0 8px 34px rgba(0, 0, 0, 0.95);
+}
+
+.trophy-card-locked {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 16px rgba(0, 0, 0, 0.6);
+  transition: all 0.3s ease;
+}
+.trophy-card-locked:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 6px 20px rgba(0, 0, 0, 0.75);
 }
 
 

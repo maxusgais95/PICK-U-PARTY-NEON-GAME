@@ -5,9 +5,9 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Star } from 'lucide-react';
-import { SoundEngine } from '../../lib/audio';
+import { SoundEngine } from '../lib/audio';
 
-export interface FlyingStarBatch {
+export interface GlobalFlyingStarBatch {
   id: string;
   startX: number;
   startY: number;
@@ -15,11 +15,6 @@ export interface FlyingStarBatch {
   endY: number;
   amount: number;
   hudDisplayAmount?: number;
-}
-
-interface KaboomFlyingStarsProps {
-  batches: FlyingStarBatch[];
-  onBatchComplete: (batchId: string, amount: number) => void;
 }
 
 interface Particle {
@@ -35,26 +30,24 @@ interface Particle {
   size: number;
 }
 
-export const KaboomFlyingStars: React.FC<KaboomFlyingStarsProps> = ({
-  batches,
-  onBatchComplete,
-}) => {
+export const GlobalFlyingStars: React.FC = () => {
   const [activeBatches, setActiveBatches] = useState<
-    { batch: FlyingStarBatch; particles: Particle[] }[]
+    { batch: GlobalFlyingStarBatch; particles: Particle[] }[]
   >([]);
 
   useEffect(() => {
-    batches.forEach((batch) => {
-      // Check if batch is already generated
-      if (activeBatches.some((b) => b.batch.id === batch.id)) return;
+    const handleSpawn = (event: Event) => {
+      const customEvent = event as CustomEvent<GlobalFlyingStarBatch>;
+      const batch = customEvent.detail;
+      if (!batch || !batch.id) return;
 
-      const particleCount = 7;
+      const particleCount = 8;
       const particles: Particle[] = [];
 
       for (let i = 0; i < particleCount; i++) {
-        // Curve control point with spread
-        const spreadX = (Math.random() - 0.5) * 160;
-        const midY = (batch.startY + batch.endY) / 2 + (Math.random() - 0.5) * 60;
+        // Curve control point with random spread
+        const spreadX = (Math.random() - 0.5) * 180;
+        const midY = (batch.startY + batch.endY) / 2 + (Math.random() - 0.5) * 80;
         const midX = (batch.startX + batch.endX) / 2 + spreadX;
 
         particles.push({
@@ -65,18 +58,17 @@ export const KaboomFlyingStars: React.FC<KaboomFlyingStarsProps> = ({
           endY: batch.endY,
           controlX: midX,
           controlY: midY,
-          delayMs: i * 45,
-          durationMs: 500 + i * 25,
+          delayMs: i * 40,
+          durationMs: 480 + i * 25,
           size: 18 + Math.random() * 8,
         });
       }
 
       setActiveBatches((prev) => [...prev, { batch, particles }]);
 
-      // When the last particle hits the HUD
-      const totalTime = 45 * particleCount + 560;
+      // When the final particle hits the Currency HUD
+      const totalTime = 40 * particleCount + 540;
       setTimeout(() => {
-        // Trigger Currency HUD Beep sound & dispatch event for visual bounce
         SoundEngine.playHudCoinBeep();
         window.dispatchEvent(
           new CustomEvent('currency-hud-beep', {
@@ -86,23 +78,27 @@ export const KaboomFlyingStars: React.FC<KaboomFlyingStarsProps> = ({
             },
           })
         );
-        onBatchComplete(batch.id, batch.amount);
         setActiveBatches((prev) => prev.filter((b) => b.batch.id !== batch.id));
       }, totalTime);
-    });
-  }, [batches, onBatchComplete]);
+    };
+
+    window.addEventListener('global-spawn-flying-stars', handleSpawn);
+    return () => {
+      window.removeEventListener('global-spawn-flying-stars', handleSpawn);
+    };
+  }, []);
 
   if (activeBatches.length === 0) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 pointer-events-none overflow-hidden select-none"
+      className="fixed inset-0 z-[100] pointer-events-none overflow-hidden select-none"
       aria-hidden="true"
     >
       {activeBatches.map(({ batch, particles }) => (
         <React.Fragment key={batch.id}>
           {particles.map((p) => (
-            <FlyingStarParticleItem key={p.id} particle={p} />
+            <GlobalFlyingStarParticleItem key={p.id} particle={p} />
           ))}
         </React.Fragment>
       ))}
@@ -110,9 +106,7 @@ export const KaboomFlyingStars: React.FC<KaboomFlyingStarsProps> = ({
   );
 };
 
-const FlyingStarParticleItem: React.FC<{ particle: Particle }> = ({
-  particle,
-}) => {
+const GlobalFlyingStarParticleItem: React.FC<{ particle: Particle }> = ({ particle }) => {
   const itemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -129,7 +123,7 @@ const FlyingStarParticleItem: React.FC<{ particle: Particle }> = ({
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / particle.durationMs, 1);
 
-        // Quadratic Bezier interpolation with ease-in
+        // Quadratic Bezier interpolation with smooth ease-in
         const easeProgress = Math.pow(progress, 1.25);
         const t = easeProgress;
         const mt = 1 - t;
@@ -143,13 +137,12 @@ const FlyingStarParticleItem: React.FC<{ particle: Particle }> = ({
           2 * mt * t * particle.controlY +
           t * t * particle.endY;
 
-        // Scale starts small, peaks, then shrinks slightly as it enters HUD
         const scale =
           progress < 0.2
-            ? progress * 5 * 1.2
+            ? progress * 5 * 1.25
             : progress > 0.8
-            ? 1.2 - (progress - 0.8) * 3
-            : 1.2;
+            ? 1.25 - (progress - 0.8) * 3
+            : 1.25;
 
         if (el) {
           el.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${scale})`;
@@ -183,9 +176,9 @@ const FlyingStarParticleItem: React.FC<{ particle: Particle }> = ({
       <div className="relative flex items-center justify-center animate-spin-hyper">
         <Star
           style={{ width: particle.size, height: particle.size }}
-          className="fill-amber-300 text-amber-100 drop-shadow-[0_0_8px_rgba(251,191,36,1)]"
+          className="fill-amber-300 text-amber-100 drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
         />
-        {/* Shimmering core */}
+        {/* Shimmering white core */}
         <div className="absolute w-2 h-2 rounded-full bg-white blur-[1px] animate-ping" />
       </div>
     </div>

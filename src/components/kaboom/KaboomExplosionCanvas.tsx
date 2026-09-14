@@ -18,16 +18,6 @@ interface Particle {
   decay: number;
 }
 
-interface Ring {
-  x: number;
-  y: number;
-  radius: number;
-  maxRadius: number;
-  color: string;
-  lineWidth: number;
-  alpha: number;
-}
-
 interface KaboomExplosionCanvasProps {
   originX?: number; // Normalized 0..1 or client coordinates
   originY?: number;
@@ -67,15 +57,15 @@ export const KaboomExplosionCanvas: React.FC<KaboomExplosionCanvasProps> = ({
       '#fb923c',
     ];
 
-    // Generate 120 explosion debris and fire embers
+    // Generate 75 explosion debris and fire embers (optimized count with additive blending)
     const particles: Particle[] = [];
-    const particleCount = 130;
+    const particleCount = 75;
 
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 14 + 3;
-      const size = Math.random() * 9 + 4;
-      const maxLife = Math.random() * 45 + 35;
+      const speed = Math.random() * 12 + 3;
+      const size = Math.random() * 7 + 3;
+      const maxLife = Math.random() * 35 + 30;
       particles.push({
         x: centerX,
         y: centerY,
@@ -90,84 +80,45 @@ export const KaboomExplosionCanvas: React.FC<KaboomExplosionCanvasProps> = ({
       });
     }
 
-    // Shockwave rings
-    const rings: Ring[] = [
-      {
-        x: centerX,
-        y: centerY,
-        radius: 10,
-        maxRadius: Math.max(width, height) * 0.45,
-        color: '#ffedd5',
-        lineWidth: 8,
-        alpha: 1,
-      },
-      {
-        x: centerX,
-        y: centerY,
-        radius: 20,
-        maxRadius: Math.max(width, height) * 0.65,
-        color: '#f97316',
-        lineWidth: 14,
-        alpha: 0.9,
-      },
-      {
-        x: centerX,
-        y: centerY,
-        radius: 5,
-        maxRadius: Math.max(width, height) * 0.8,
-        color: '#ef4444',
-        lineWidth: 6,
-        alpha: 0.7,
-      },
-    ];
-
     let frame = 0;
-    const maxFrames = 75;
+    const maxFrames = 60;
 
     const render = () => {
       frame++;
       ctx.clearRect(0, 0, width, height);
 
-      // Draw shockwave rings
-      rings.forEach((ring) => {
-        if (ring.alpha <= 0.01) return;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(ring.x, ring.y, ring.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = ring.color;
-        ctx.lineWidth = ring.lineWidth;
-        ctx.globalAlpha = Math.max(0, ring.alpha);
-        ctx.shadowColor = ring.color;
-        ctx.shadowBlur = 20;
-        ctx.stroke();
-        ctx.restore();
+      // Enable GPU-accelerated additive blending:
+      ctx.globalCompositeOperation = 'lighter';
 
-        ring.radius += (ring.maxRadius - ring.radius) * 0.12;
-        ring.alpha *= 0.92;
-        ring.lineWidth *= 0.94;
-      });
-
-      // Draw particles
+      // Draw fiery explosion particles (batch render with zero shadowBlur)
       particles.forEach((p) => {
         if (p.alpha <= 0.01) return;
-        ctx.save();
+
+        // Outer glow
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.alpha * 0.4);
+        ctx.fill();
+
+        // Inner bright core
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
         ctx.globalAlpha = Math.max(0, p.alpha);
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 12;
         ctx.fill();
-        ctx.restore();
 
         p.x += p.vx;
         p.y += p.vy;
-        p.vx *= 0.94; // Air drag
-        p.vy *= 0.94;
-        p.vy += 0.18; // Slight gravity
-        p.size *= 0.97;
+        p.vx *= 0.93; // Air resistance
+        p.vy *= 0.93;
+        p.vy += 0.16; // Gravity
+        p.size *= 0.96;
         p.alpha -= p.decay;
       });
+
+      // Reset composite operation for cleanliness
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
 
       if (frame < maxFrames) {
         animId = requestAnimationFrame(render);

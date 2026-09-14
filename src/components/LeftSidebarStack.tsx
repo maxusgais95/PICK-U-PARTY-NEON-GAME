@@ -4,18 +4,18 @@
  */
 
 import React from 'react';
-import { ShoppingCart, Crown, Gift } from 'lucide-react';
+import { ShoppingCart, Trophy, Gift } from 'lucide-react';
 import { SoundEngine, Haptics } from '../lib/audio';
 
 interface LeftSidebarStackProps {
   onOpenStore: () => void;
-  onOpenRankings: () => void;
+  onOpenAchievements: () => void;
   onOpenRewards: () => void;
 }
 
 export const LeftSidebarStack: React.FC<LeftSidebarStackProps> = ({
   onOpenStore,
-  onOpenRankings,
+  onOpenAchievements,
   onOpenRewards,
 }) => {
   return (
@@ -43,26 +43,26 @@ export const LeftSidebarStack: React.FC<LeftSidebarStackProps> = ({
         </span>
       </button>
 
-      {/* 2. RANKINGS Button */}
+      {/* 2. ACHIEVEMENTS / TROPHIES Button */}
       <button
         type="button"
-        id="main-hub-btn-rankings"
+        id="main-hub-btn-achievements"
         onClick={() => {
           SoundEngine.playButtonClick();
           Haptics.buttonClick();
-          onOpenRankings();
+          onOpenAchievements();
         }}
-        aria-label="Open Rankings"
+        aria-label="Open Trophy Achievements"
         className="group relative w-14 h-15 sm:w-16 sm:h-17 rounded-[18px] sm:rounded-[20px] bg-black/50 backdrop-blur-md border border-amber-400/50 shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:border-amber-300 hover:shadow-[0_0_20px_rgba(245,158,11,0.5)] active:scale-95 transition-all flex flex-col items-center justify-center p-1.5 cursor-pointer text-center"
       >
         <div className="absolute -inset-0.5 rounded-[18px] sm:rounded-[20px] bg-amber-400/10 blur-sm pointer-events-none group-hover:bg-amber-400/25 transition-all" />
 
         <div className="relative z-10 flex items-center justify-center mb-1">
-          <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.9)] stroke-[2.2] group-hover:scale-110 transition-transform" />
+          <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.9)] stroke-[2.2] group-hover:scale-110 transition-transform" />
         </div>
 
         <span className="relative z-10 font-header font-bold text-[9px] sm:text-[10px] tracking-wider text-amber-100 uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] leading-tight">
-          RANKINGS
+          TROPHIES
         </span>
       </button>
 

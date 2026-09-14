@@ -25,7 +25,7 @@ interface LandingHubProps {
   onOpenVersionNotes?: () => void;
   onOpenStore?: () => void;
   onOpenDailyQuests?: () => void;
-  onOpenRankings?: () => void;
+  onOpenAchievements?: () => void;
   onOpenRewards?: () => void;
 }
 
@@ -53,7 +53,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
   onOpenVersionNotes,
   onOpenStore,
   onOpenDailyQuests,
-  onOpenRankings,
+  onOpenAchievements,
   onOpenRewards,
 }) => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -223,11 +223,11 @@ export const LandingHub: React.FC<LandingHubProps> = ({
       )}
 
       {/* Benchmark Reference UI (Improve_game_UI_layout_2K_202609091537.jpeg) Side Widgets */}
-      {/* 1. Left Sidebar Stack: STORE, RANKINGS, REWARDS */}
+      {/* 1. Left Sidebar Stack: STORE, TROPHIES, REWARDS */}
       <div className="absolute top-[max(4.75rem,calc(env(safe-area-inset-top)+3.5rem))] left-3 sm:left-4 z-30 flex flex-col">
         <LeftSidebarStack
           onOpenStore={onOpenStore || (() => {})}
-          onOpenRankings={onOpenRankings || (() => {})}
+          onOpenAchievements={onOpenAchievements || (() => {})}
           onOpenRewards={onOpenRewards || (() => {})}
         />
       </div>

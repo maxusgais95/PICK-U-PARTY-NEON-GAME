@@ -4,11 +4,11 @@
  */
 
 import { KaboomBonusItem, KaboomBonusSpriteId } from '../../types';
-import bonusMusicalNoteImg from '../../assets/images/bonus_musical_note.jpg';
-import bonusHeadsetImg from '../../assets/images/bonus_headset.jpg';
-import bonusCuteStarImg from '../../assets/images/bonus_cute_star.jpg';
-import bonusCrystalRoseImg from '../../assets/images/bonus_crystal_rose.jpg';
-import bonusDiamondKeyImg from '../../assets/images/bonus_diamond_key.jpg';
+import bonusMusicalNoteImg from '../../assets/images/bonus_musical_note.png';
+import bonusHeadsetImg from '../../assets/images/bonus_headset.png';
+import bonusCuteStarImg from '../../assets/images/bonus_cute_star.png';
+import bonusCrystalRoseImg from '../../assets/images/bonus_crystal_rose.png';
+import bonusDiamondKeyImg from '../../assets/images/bonus_diamond_key.png';
 
 export const KABOOM_BONUS_ITEMS: KaboomBonusItem[] = [
   {
@@ -19,10 +19,10 @@ export const KABOOM_BONUS_ITEMS: KaboomBonusItem[] = [
     starReward: 15,
     probability: 0.44, // 44% probability
     tagline: 'Skill: Tap 1 Ball',
-    description: 'Lowest tier bonus! Discovered skill automatically taps 1 safe ball and awards +15 Stars!',
+    description: 'Tier 1 bonus! Discovered skill automatically taps 1 safe ball and awards +15 Stars!',
     image: bonusMusicalNoteImg,
     accentColor: '#00f0ff',
-    glowColor: 'rgba(0, 240, 255, 0.7)',
+    glowColor: 'rgba(0, 240, 255, 0.8)',
     badgeBg: 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40',
     borderColor: 'border-[#00f0ff]',
   },
@@ -31,13 +31,13 @@ export const KABOOM_BONUS_ITEMS: KaboomBonusItem[] = [
     name: 'DJ Headset',
     rank: 2,
     rankName: 'Uncommon',
-    starReward: 35,
+    starReward: 25,
     probability: 0.26, // 26% probability
     tagline: 'Skill: Tap 2 Balls',
-    description: 'Tier 2 bonus! Discovered skill automatically taps 2 safe balls and awards +35 Stars!',
+    description: 'Tier 2 bonus! Discovered skill automatically taps 2 safe balls and awards +25 Stars!',
     image: bonusHeadsetImg,
     accentColor: '#38bdf8',
-    glowColor: 'rgba(56, 189, 248, 0.7)',
+    glowColor: 'rgba(56, 189, 248, 0.8)',
     badgeBg: 'bg-sky-500/20 text-sky-300 border-sky-400/40',
     borderColor: 'border-[#38bdf8]',
   },
@@ -46,13 +46,13 @@ export const KABOOM_BONUS_ITEMS: KaboomBonusItem[] = [
     name: 'Cute Star',
     rank: 3,
     rankName: 'Rare',
-    starReward: 75,
+    starReward: 35,
     probability: 0.16, // 16% probability
     tagline: 'Skill: Tap 3 Balls',
-    description: 'Tier 3 bonus! Discovered skill automatically taps 3 safe balls and awards +75 Stars!',
+    description: 'Tier 3 bonus! Discovered skill automatically taps 3 safe balls and awards +35 Stars!',
     image: bonusCuteStarImg,
     accentColor: '#f43f5e',
-    glowColor: 'rgba(244, 63, 94, 0.7)',
+    glowColor: 'rgba(244, 63, 94, 0.8)',
     badgeBg: 'bg-rose-500/20 text-rose-300 border-rose-400/40',
     borderColor: 'border-[#f43f5e]',
   },
@@ -61,13 +61,13 @@ export const KABOOM_BONUS_ITEMS: KaboomBonusItem[] = [
     name: 'Crystal Rose',
     rank: 4,
     rankName: 'Epic',
-    starReward: 150,
+    starReward: 50,
     probability: 0.10, // 10% probability
     tagline: 'Skill: Tap 4 Balls',
-    description: 'Tier 4 bonus! Discovered skill automatically taps 4 safe balls and awards +150 Stars!',
+    description: 'Tier 4 bonus! Discovered skill automatically taps 4 safe balls and awards +50 Stars!',
     image: bonusCrystalRoseImg,
     accentColor: '#c084fc',
-    glowColor: 'rgba(192, 132, 252, 0.75)',
+    glowColor: 'rgba(192, 132, 252, 0.85)',
     badgeBg: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
     borderColor: 'border-[#c084fc]',
   },
@@ -76,13 +76,13 @@ export const KABOOM_BONUS_ITEMS: KaboomBonusItem[] = [
     name: 'Diamond Key',
     rank: 5,
     rankName: 'Legendary',
-    starReward: 300,
+    starReward: 75,
     probability: 0.04, // 4% probability (highest rank, lowest probability)
     tagline: 'Skill: Tap 5 Balls',
-    description: 'Highest tier bonus! Discovered skill automatically taps 5 safe balls and awards +300 Stars!',
+    description: 'Highest tier bonus! Discovered skill automatically taps 5 safe balls and awards +75 Stars!',
     image: bonusDiamondKeyImg,
     accentColor: '#f59e0b',
-    glowColor: 'rgba(245, 158, 11, 0.85)',
+    glowColor: 'rgba(245, 158, 11, 0.9)',
     badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-400/50',
     borderColor: 'border-[#f59e0b]',
   },

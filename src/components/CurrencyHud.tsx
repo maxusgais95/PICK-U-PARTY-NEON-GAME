@@ -23,26 +23,37 @@ export const CurrencyHud: React.FC<CurrencyHudProps> = ({
   const [addedAmount, setAddedAmount] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    const handleBeep = (event: Event) => {
-      const customEvent = event as CustomEvent<{ stars?: number }>;
-      const amount = customEvent.detail?.stars || 0;
-      if (amount > 0) {
-        setAddedAmount(amount);
-      }
-      setIsBeeping(true);
+    let hideTimer: any = null;
+    let beepTimer: any = null;
 
-      setTimeout(() => {
+    const handleBeep = (event: Event) => {
+      const customEvent = event as CustomEvent<{ stars?: number; totalStars?: number }>;
+      const amount = customEvent.detail?.stars || 0;
+      const explicitTotal = customEvent.detail?.totalStars;
+
+      if (explicitTotal !== undefined && explicitTotal > 0) {
+        setAddedAmount(explicitTotal);
+      } else if (amount > 0) {
+        setAddedAmount((prev) => (prev !== null ? prev + amount : amount));
+      }
+
+      setIsBeeping(true);
+      clearTimeout(beepTimer);
+      beepTimer = setTimeout(() => {
         setIsBeeping(false);
       }, 550);
 
-      setTimeout(() => {
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
         setAddedAmount(null);
-      }, 1200);
+      }, 1600);
     };
 
     window.addEventListener('currency-hud-beep', handleBeep);
     return () => {
       window.removeEventListener('currency-hud-beep', handleBeep);
+      clearTimeout(hideTimer);
+      clearTimeout(beepTimer);
     };
   }, []);
 

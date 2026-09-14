@@ -73,11 +73,13 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
   // Flying star currency particles for bonus discoveries
   const [flyingStarBatches, setFlyingStarBatches] = useState<FlyingStarBatch[]>([]);
 
-  // Tiles array
+  // Tiles array & synchronous reference
   const [tiles, setTiles] = useState<KaboomTile[]>([]);
+  const tilesRef = useRef<KaboomTile[]>([]);
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isVictory, setIsVictory] = useState<boolean>(false);
   const [detonatedPlayerIndex, setDetonatedPlayerIndex] = useState<number>(0);
+  const [bombDetonationCoord, setBombDetonationCoord] = useState<{ row: number; col: number } | null>(null);
 
   // Toast notification state (replaces all popup windows, positioned absolutely so board never shifts)
   const [toast, setToast] = useState<KaboomToast | null>(null);
@@ -95,6 +97,18 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
 
   // Used command IDs in the current round to avoid duplicates
   const usedCommandIdsRef = useRef<Set<string>>(new Set());
+
+  // Mutable synchronous refs for instantaneous, stutter-free performance & zero-re-render tile taps
+  const activePlayerIndexRef = useRef(activePlayerIndex);
+  activePlayerIndexRef.current = activePlayerIndex;
+  const activeShieldPlayerRef = useRef(activeShieldPlayer);
+  activeShieldPlayerRef.current = activeShieldPlayer;
+  const isReverseOrderRef = useRef(isReverseOrder);
+  isReverseOrderRef.current = isReverseOrder;
+  const isGameOverRef = useRef(isGameOver);
+  isGameOverRef.current = isGameOver;
+  const selectedDimensionRef = useRef(selectedDimension);
+  selectedDimensionRef.current = selectedDimension;
 
   const isUnlimited = playerCount === 0;
 
@@ -210,9 +224,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         }
       }
 
+      tilesRef.current = newTiles;
       setTiles(newTiles);
       setIsGameOver(false);
       setIsVictory(false);
+      setBombDetonationCoord(null);
       setExplosionActive(false);
       setActivePlayerIndex(0);
       setIsReverseOrder(false);
@@ -248,292 +264,351 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
   const advanceToNextPlayer = useCallback(
     (skipCount: number = 1) => {
       setActivePlayerIndex((prev) => {
+        const reverse = isReverseOrderRef.current;
         if (isUnlimited) {
-          const next = prev + (isReverseOrder ? -skipCount : skipCount);
+          const next = prev + (reverse ? -skipCount : skipCount);
           return Math.max(0, next);
         }
-        const step = isReverseOrder ? -skipCount : skipCount;
+        const step = reverse ? -skipCount : skipCount;
         let next = (prev + step) % playerCount;
         if (next < 0) next += playerCount;
         return next;
       });
       setTurnCount((prev) => prev + 1);
     },
-    [isReverseOrder, playerCount, isUnlimited]
+    [playerCount, isUnlimited]
   );
 
   /**
    * Check victory condition:
-   * When only 1 tile remains unrevealed and that tile is the bomb,
-   * reveal the last bomb automatically and end the game as VICTORY!
+   * When all non-bomb tiles are revealed and only the bomb remains,
+   * safely reveal the bomb as defused and award stars:
+   * - Bonus awards x stars
+   * - Avoided safe bomb awards y stars
+   * - Total = x + y stars!
+   * (Only for safe reveal bomb, not the exploded bomb)
    */
-  const checkAndApplyVictory = (currentTiles: KaboomTile[], playerIndex: number): boolean => {
-    const unrevealed = currentTiles.filter((t) => !t.revealed);
-    if (unrevealed.length === 1 && unrevealed[0].type === 'bomb') {
-      const lastBomb = unrevealed[0];
-      const victoryTiles = currentTiles.map((t) =>
-        t.id === lastBomb.id
-          ? { ...t, revealed: true, isDefused: true, isDetonated: false }
-          : t
-      );
-      setTiles(victoryTiles);
-      setIsGameOver(true);
-      setIsVictory(true);
-      SoundEngine.playBonusFanfare();
-      Haptics.buttonClick();
+  const checkAndApplyVictory = useCallback(
+    (
+      currentTiles: KaboomTile[],
+      playerIndex: number,
+      triggeringBonus?: KaboomBonusItem
+    ): boolean => {
+      const unrevealed = currentTiles.filter((t) => !t.revealed);
+      const remainingBombs = unrevealed.filter((t) => t.type === 'bomb');
 
-      // Record round victory in persistent statistics
-      recordKaboomEvent({ type: 'victory' }).then((updatedStats) => {
-        if (onStatsUpdated) onStatsUpdated(updatedStats);
-      });
+      if (unrevealed.length > 0 && unrevealed.length === remainingBombs.length) {
+        const lastBomb = remainingBombs[0];
+        const victoryTiles = currentTiles.map((t) =>
+          t.type === 'bomb'
+            ? { ...t, revealed: true, isDefused: true, isDetonated: false }
+            : t
+        );
+        tilesRef.current = victoryTiles;
+        setTiles(victoryTiles);
+        setIsGameOver(true);
+        setIsVictory(true);
+        SoundEngine.playBonusFanfare();
+        Haptics.buttonClick();
 
-      // Award stars for Bomb Game Victory!
-      const victoryStars = Math.max(20, selectedDimension * 10);
-      const nextEco = addStars(victoryStars);
-      if (onEconomyUpdated) onEconomyUpdated(nextEco);
+        // Record round victory in persistent statistics
+        recordKaboomEvent({ type: 'victory' }).then((updatedStats) => {
+          if (onStatsUpdated) onStatsUpdated(updatedStats);
+        });
 
-      const hudEl = document.getElementById('star-currency-hud');
-      const hudRect = hudEl?.getBoundingClientRect();
-      const endX = hudRect ? hudRect.left + hudRect.width / 2 : window.innerWidth / 2;
-      const endY = hudRect ? hudRect.top + hudRect.height / 2 : 28;
+        // Star calculation:
+        // Bonus awards x stars, Avoided safe bomb awards y stars -> Total = x + y stars
+        const avoidedBombStars = Math.max(20, selectedDimensionRef.current * 10);
+        const bonusStars = triggeringBonus ? triggeringBonus.starReward : 0;
+        const totalStarsEarned = bonusStars + avoidedBombStars;
 
-      setFlyingStarBatches((prev) => [
-        ...prev,
-        {
-          id: `batch-victory-${Date.now()}`,
-          startX: window.innerWidth / 2,
-          startY: window.innerHeight / 2,
-          endX,
-          endY,
-          amount: victoryStars,
-        },
-      ]);
+        // Launch flying stars from the safe revealed bomb tile to the currency HUD (+y stars)
+        const bombTileEl = document.getElementById(`kaboom-tile-${lastBomb.id}`);
+        const bombRect = bombTileEl?.getBoundingClientRect();
+        const hudEl = document.getElementById('star-currency-hud');
+        const hudRect = hudEl?.getBoundingClientRect();
+        const startX = bombRect ? bombRect.left + bombRect.width / 2 : window.innerWidth / 2;
+        const startY = bombRect ? bombRect.top + bombRect.height / 2 : window.innerHeight / 2;
+        const endX = hudRect ? hudRect.left + hudRect.width / 2 : window.innerWidth / 2;
+        const endY = hudRect ? hudRect.top + hudRect.height / 2 : 28;
 
-      // Update Star Earrings condition: Bomb Game Victory
-      const { updatedState: updatedEconomy, newlyUnlocked: earringsUnlocked } =
-        recordStarEarringsCondition('bombVictory');
-      if (onEconomyUpdated) onEconomyUpdated(updatedEconomy);
+        setFlyingStarBatches((prev) => [
+          ...prev,
+          {
+            id: `batch-victory-${Date.now()}-${Math.random()}`,
+            startX,
+            startY,
+            endX,
+            endY,
+            amount: avoidedBombStars,
+            hudDisplayAmount: totalStarsEarned,
+          },
+        ]);
 
-      addLog(
-        'safe',
-        playerIndex,
-        earringsUnlocked
-          ? `🏆 Bomb avoided till the game end! Victory! (+${victoryStars}★) ⭐ Star Earrings Unlocked!`
-          : `🏆 Bomb avoided till the game end! Victory! (+${victoryStars}★)`
-      );
+        // Update Star Earrings condition: Bomb Game Victory
+        const { updatedState: updatedEconomy, newlyUnlocked: earringsUnlocked } =
+          recordStarEarringsCondition('bombVictory');
+        if (onEconomyUpdated) onEconomyUpdated(updatedEconomy);
 
-      showToast(
-        'bonus',
-        '🏆 VICTORY!',
-        earringsUnlocked
-          ? `Bomb avoided till the game end and Victory! (+${victoryStars}★) ⭐ Star Earrings Unlocked!`
-          : `Bomb avoided till the game end and Victory! (+${victoryStars}★)`,
-        0 // Stays visible until Next Round is clicked
-      );
-      return true;
-    }
-    return false;
-  };
+        if (triggeringBonus) {
+          const victoryMsg = `Safe bomb revealed! Bonus (+${bonusStars}★) + Avoided Bomb (+${avoidedBombStars}★) = +${totalStarsEarned} Stars!`;
+          addLog(
+            'bonus',
+            playerIndex,
+            earringsUnlocked
+              ? `🏆 Victory! Discovered ${triggeringBonus.name} (+${bonusStars}★) & safely avoided bomb (+${avoidedBombStars}★) = Total +${totalStarsEarned}★! ⭐ Star Earrings Unlocked!`
+              : `🏆 Victory! Discovered ${triggeringBonus.name} (+${bonusStars}★) & safely avoided bomb (+${avoidedBombStars}★) = Total +${totalStarsEarned}★!`
+          );
+
+          showToast(
+            'bonus',
+            '🏆 VICTORY! SAFE BOMB REVEALED',
+            earringsUnlocked
+              ? `${victoryMsg} ⭐ Star Earrings Unlocked!`
+              : victoryMsg,
+            0 // Stays visible until Next Round is clicked
+          );
+        } else {
+          const victoryMsg = `Safe bomb revealed! Bomb avoided till the game end (+${avoidedBombStars}★)!`;
+          addLog(
+            'safe',
+            playerIndex,
+            earringsUnlocked
+              ? `🏆 Safe bomb revealed! Bomb avoided till the game end! Victory! (+${avoidedBombStars}★) ⭐ Star Earrings Unlocked!`
+              : `🏆 Safe bomb revealed! Bomb avoided till the game end! Victory! (+${avoidedBombStars}★)`
+          );
+
+          showToast(
+            'bonus',
+            '🏆 VICTORY! BOMB AVOIDED',
+            earringsUnlocked
+              ? `${victoryMsg} ⭐ Star Earrings Unlocked!`
+              : victoryMsg,
+            0 // Stays visible until Next Round is clicked
+          );
+        }
+        return true;
+      }
+      return false;
+    },
+    [addLog, onEconomyUpdated, onStatsUpdated, showToast]
+  );
 
   // Handle tile tap outcome
-  const handleTileTap = (tile: KaboomTile, event: React.MouseEvent | React.TouchEvent) => {
-    if (tile.revealed || isGameOver) return;
+  const handleTileTap = useCallback(
+    (tile: KaboomTile, event: React.MouseEvent | React.TouchEvent) => {
+      if (isGameOverRef.current) return;
 
-    // Get click coords for explosion canvas if bomb
-    const clientX = 'clientX' in event ? event.clientX : (event.touches[0]?.clientX || window.innerWidth / 2);
-    const clientY = 'clientY' in event ? event.clientY : (event.touches[0]?.clientY || window.innerHeight / 2);
+      const currentTiles = tilesRef.current;
+      const liveTile = currentTiles.find((t) => t.id === tile.id);
+      if (!liveTile || liveTile.revealed) return;
 
-    const currentPlayer = activePlayerIndex;
-    const playerName = getPlayerName(currentPlayer);
+      // Get click coords for explosion canvas if bomb
+      const clientX = 'clientX' in event ? event.clientX : (event.touches?.[0]?.clientX || window.innerWidth / 2);
+      const clientY = 'clientY' in event ? event.clientY : (event.touches?.[0]?.clientY || window.innerHeight / 2);
 
-    // ========================================================================
-    // OUTCOME 1: BOMB (KABOOM! - GAME OVER LOSS FOR THIS ROUND)
-    // ========================================================================
-    if (tile.type === 'bomb') {
-      // Check if player has Immunity Shield
-      if (activeShieldPlayer === currentPlayer) {
-        // Shield saves the player!
-        SoundEngine.playSafePop();
-        setActiveShieldPlayer(null);
+      const currentPlayer = activePlayerIndexRef.current;
+
+      // ========================================================================
+      // OUTCOME 1: BOMB (KABOOM! - GAME OVER LOSS FOR THIS ROUND)
+      // ========================================================================
+      if (liveTile.type === 'bomb') {
+        // Check if player has Immunity Shield
+        if (activeShieldPlayerRef.current === currentPlayer) {
+          // Shield saves the player!
+          SoundEngine.playSafePop();
+          setActiveShieldPlayer(null);
+          showToast(
+            'info',
+            '🛡️ DEFUSED',
+            'Immunity Shield absorbed the blast! Bomb defused!',
+            3000
+          );
+          addLog(
+            'safe',
+            currentPlayer,
+            `🛡️ Immunity Shield absorbed the blast! Bomb defused!`
+          );
+          // Mark tile safe
+          const nextTiles = currentTiles.map((t) =>
+            t.id === liveTile.id ? { ...t, revealed: true, type: 'safe' as const } : t
+          );
+          tilesRef.current = nextTiles;
+          setTiles(nextTiles);
+
+          // Check if this was the last non-bomb
+          if (!checkAndApplyVictory(nextTiles, currentPlayer)) {
+            advanceToNextPlayer();
+          }
+          return;
+        }
+
+        // Detonation! Game Over for this round.
+        SoundEngine.playBombExplosion();
+        setDetonatedPlayerIndex(currentPlayer);
+        setExplosionCoords({ x: clientX, y: clientY });
+        setBombDetonationCoord({ row: liveTile.row, col: liveTile.col });
+        setExplosionActive(true);
+        setIsGameOver(true);
+        setIsVictory(false);
+
+        // Record bomb hit in persistent statistics
+        recordKaboomEvent({ type: 'bomb_hit' }).then((updatedStats) => {
+          if (onStatsUpdated) onStatsUpdated(updatedStats);
+        });
+
+        // Reveal bomb and all tiles on the board
+        const detonatedTiles = currentTiles.map((t) =>
+          t.id === liveTile.id
+            ? { ...t, revealed: true, isDetonated: true }
+            : { ...t, revealed: true }
+        );
+        tilesRef.current = detonatedTiles;
+        setTiles(detonatedTiles);
+
+        addLog('bomb', currentPlayer, `💥 Bomb was tapped!`);
+
+        // Pop up toast message: no player order number
         showToast(
-          'info',
-          '🛡️ DEFUSED',
-          'Immunity Shield absorbed the blast! Bomb defused!',
+          'bomb',
+          '💥 BOMB TAPPED',
+          'The bomb was tapped! Round over.',
+          0 // Stays visible until Next Round is clicked
+        );
+        return;
+      }
+
+      // ========================================================================
+      // OUTCOME 2: BONUS SPRITE DISCOVERY (FLYING STARS TO HUD + BEEP, NO MODAL)
+      // ========================================================================
+      if (liveTile.type === 'bonus') {
+        SoundEngine.playBonusFanfare();
+        Haptics.bonusClaim();
+
+        // Trigger subtle rainbow neon bonus discovery ambiance
+        setBonusFlickerActive(true);
+        setTimeout(() => setBonusFlickerActive(false), 700);
+
+        const maxTier = getMaxBonusTierForDimension(selectedDimensionRef.current);
+        const bonusItem = liveTile.bonusItem || getRandomBonusItem(maxTier);
+        const command = liveTile.bonusCommand || getRandomCommand();
+
+        // Calculate tile position to fly stars smoothly to #star-currency-hud
+        const tileEl = document.getElementById(`kaboom-tile-${liveTile.id}`);
+        const tileRect = tileEl?.getBoundingClientRect();
+        const hudEl = document.getElementById('star-currency-hud');
+        const hudRect = hudEl?.getBoundingClientRect();
+
+        const startX = tileRect ? tileRect.left + tileRect.width / 2 : window.innerWidth / 2;
+        const startY = tileRect ? tileRect.top + tileRect.height / 2 : window.innerHeight / 2;
+        const endX = hudRect ? hudRect.left + hudRect.width / 2 : window.innerWidth / 2;
+        const endY = hudRect ? hudRect.top + hudRect.height / 2 : 28;
+
+        setFlyingStarBatches((prev) => [
+          ...prev,
+          {
+            id: `batch-${Date.now()}-${Math.random()}`,
+            startX,
+            startY,
+            endX,
+            endY,
+            amount: bonusItem.starReward,
+          },
+        ]);
+
+        // Record bonus collected in persistent statistics
+        recordKaboomEvent({ type: 'bonus' }).then((updatedStats) => {
+          if (onStatsUpdated) onStatsUpdated(updatedStats);
+        });
+
+        // Apply instant bonus mechanics if tactical
+        if (command.id === 'uno_reverse') {
+          setIsReverseOrder((prev) => !prev);
+        } else if (command.id === 'immunity_shield') {
+          setActiveShieldPlayer(currentPlayer);
+        }
+
+        // Reveal this tapped bonus tile
+        let updatedTiles = currentTiles.map((t) =>
+          t.id === liveTile.id
+            ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
+            : t
+        );
+
+        // Bonus Discovered Skill:
+        // Auto-taps unrevealed safe balls based on bonus tier rank (Rank 1 = 1 ball, up to Rank 5 = 5 balls)
+        const ballsToTap = Math.max(1, Math.min(5, bonusItem.rank));
+        const unrevealedSafe = updatedTiles.filter(
+          (t) => !t.revealed && t.id !== liveTile.id && t.type === 'safe'
+        );
+
+        // Randomly pick unrevealed safe balls to assist the player
+        const shuffledSafe = [...unrevealedSafe].sort(() => Math.random() - 0.5);
+        const toReveal = shuffledSafe.slice(0, ballsToTap);
+        const tappedCount = toReveal.length;
+
+        if (tappedCount > 0) {
+          updatedTiles = updatedTiles.map((t) =>
+            toReveal.some((r) => r.id === t.id)
+              ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
+              : t
+          );
+          SoundEngine.playSafePop();
+        }
+
+        tilesRef.current = updatedTiles;
+        setTiles(updatedTiles);
+
+        addLog(
+          'bonus',
+          currentPlayer,
+          `⭐ Discovered ${bonusItem.name}! Auto-tapped ${tappedCount} ball${tappedCount === 1 ? '' : 's'} (+${bonusItem.starReward}★)`
+        );
+
+        showToast(
+          'bonus',
+          `✨ BONUS DISCOVERED (RANK ${bonusItem.rank})`,
+          `${bonusItem.name}: Auto-cleared ${tappedCount} ball${tappedCount === 1 ? '' : 's'} (+${bonusItem.starReward}★)!`,
           3000
         );
-        addLog(
-          'safe',
-          currentPlayer,
-          `🛡️ Immunity Shield absorbed the blast! Bomb defused!`
-        );
-        // Mark tile safe
-        const nextTiles = tiles.map((t) =>
-          t.id === tile.id ? { ...t, revealed: true, type: 'safe' as const } : t
-        );
-        setTiles(nextTiles);
 
-        // Check if this was the last non-bomb
-        if (!checkAndApplyVictory(nextTiles, currentPlayer)) {
+        // Check if this bonus tap leaves only the bomb remaining -> AUTOMATIC VICTORY!
+        if (checkAndApplyVictory(updatedTiles, currentPlayer, bonusItem)) {
+          return;
+        }
+
+        if (command.id === 'skip_turn') {
+          advanceToNextPlayer(2); // Skip next player
+        } else {
           advanceToNextPlayer();
         }
         return;
       }
 
-      // Detonation! Game Over for this round.
-      SoundEngine.playBombExplosion();
-      setDetonatedPlayerIndex(currentPlayer);
-      setExplosionCoords({ x: clientX, y: clientY });
-      setExplosionActive(true);
-      setIsGameOver(true);
-      setIsVictory(false);
+      // ========================================================================
+      // OUTCOME 3: SAFE BALL
+      // ========================================================================
+      SoundEngine.playSafePop();
 
-      // Record bomb hit in persistent statistics
-      recordKaboomEvent({ type: 'bomb_hit' }).then((updatedStats) => {
-        if (onStatsUpdated) onStatsUpdated(updatedStats);
-      });
-
-      // Reveal bomb and all tiles on the board
-      setTiles((prev) =>
-        prev.map((t) =>
-          t.id === tile.id
-            ? { ...t, revealed: true, isDetonated: true }
-            : { ...t, revealed: true }
-        )
-      );
-
-      addLog('bomb', currentPlayer, `💥 Bomb was tapped!`);
-
-      // Pop up toast message: no player order number
-      showToast(
-        'bomb',
-        '💥 BOMB TAPPED',
-        'The bomb was tapped! Round over.',
-        0 // Stays visible until Next Round is clicked
-      );
-      return;
-    }
-
-    // ========================================================================
-    // OUTCOME 2: BONUS SPRITE DISCOVERY (FLYING STARS TO HUD + BEEP, NO MODAL)
-    // ========================================================================
-    if (tile.type === 'bonus') {
-      SoundEngine.playBonusFanfare();
-
-      // Trigger subtle bonus discovery indicator
-      setBonusFlickerActive(true);
-      setTimeout(() => setBonusFlickerActive(false), 600);
-
-      const maxTier = getMaxBonusTierForDimension(selectedDimension);
-      const bonusItem = tile.bonusItem || getRandomBonusItem(maxTier);
-      const command = tile.bonusCommand || getRandomCommand();
-
-      // Calculate tile position to fly stars smoothly to #star-currency-hud
-      const tileEl = document.getElementById(`kaboom-tile-${tile.id}`);
-      const tileRect = tileEl?.getBoundingClientRect();
-      const hudEl = document.getElementById('star-currency-hud');
-      const hudRect = hudEl?.getBoundingClientRect();
-
-      const startX = tileRect ? tileRect.left + tileRect.width / 2 : window.innerWidth / 2;
-      const startY = tileRect ? tileRect.top + tileRect.height / 2 : window.innerHeight / 2;
-      const endX = hudRect ? hudRect.left + hudRect.width / 2 : window.innerWidth / 2;
-      const endY = hudRect ? hudRect.top + hudRect.height / 2 : 28;
-
-      setFlyingStarBatches((prev) => [
-        ...prev,
-        {
-          id: `batch-${Date.now()}-${Math.random()}`,
-          startX,
-          startY,
-          endX,
-          endY,
-          amount: bonusItem.starReward,
-        },
-      ]);
-
-      // Record bonus collected in persistent statistics
-      recordKaboomEvent({ type: 'bonus' }).then((updatedStats) => {
-        if (onStatsUpdated) onStatsUpdated(updatedStats);
-      });
-
-      // Apply instant bonus mechanics if tactical
-      if (command.id === 'uno_reverse') {
-        setIsReverseOrder((prev) => !prev);
-      } else if (command.id === 'immunity_shield') {
-        setActiveShieldPlayer(currentPlayer);
-      }
-
-      // Prepare updated tiles with this bonus tile revealed
-      let updatedTiles = tiles.map((t) =>
-        t.id === tile.id
+      // Reveal ONLY this tapped safe tile
+      const updatedTiles = currentTiles.map((t) =>
+        t.id === liveTile.id
           ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
           : t
       );
-
-      // Bonus Discovered Skill:
-      // Lowest bonus tier (rank 1) = tap 1 ball, highest bonus tier (rank 5) = tap 5 balls
-      const ballsToTap = Math.max(1, Math.min(5, bonusItem.rank));
-      const unrevealedSafe = updatedTiles.filter(
-        (t) => !t.revealed && t.id !== tile.id && t.type === 'safe'
-      );
-      const toReveal = unrevealedSafe.slice(0, ballsToTap);
-      const tappedCount = toReveal.length;
-
-      if (tappedCount > 0) {
-        updatedTiles = updatedTiles.map((t) =>
-          toReveal.some((r) => r.id === t.id)
-            ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
-            : t
-        );
-      }
-
+      tilesRef.current = updatedTiles;
       setTiles(updatedTiles);
 
-      addLog(
-        'bonus',
-        currentPlayer,
-        `⭐ Discovered ${bonusItem.name}! ${tappedCount} ball${tappedCount === 1 ? '' : 's'} tapped by bonus (+${bonusItem.starReward}★)!`
-      );
-
-      showToast(
-        'bonus',
-        `✨ BONUS DISCOVERED`,
-        `${tappedCount} ball${tappedCount === 1 ? '' : 's'} tapped by discovered bonus (+${bonusItem.starReward}★)!`,
-        3000
-      );
-
-      // Check if this bonus tap leaves only the bomb remaining -> AUTOMATIC VICTORY!
+      // Check if only the bomb remains unrevealed -> AUTOMATIC VICTORY!
       if (checkAndApplyVictory(updatedTiles, currentPlayer)) {
         return;
       }
 
-      if (command.id === 'skip_turn') {
-        advanceToNextPlayer(2); // Skip next player
-      } else {
-        advanceToNextPlayer();
-      }
-      return;
-    }
-
-    // ========================================================================
-    // OUTCOME 3: SAFE BALL
-    // ========================================================================
-    SoundEngine.playSafePop();
-
-    const updatedTiles = tiles.map((t) =>
-      t.id === tile.id
-        ? { ...t, revealed: true, revealedByPlayerIndex: currentPlayer }
-        : t
-    );
-    setTiles(updatedTiles);
-
-    // Check if only the bomb remains unrevealed -> AUTOMATIC VICTORY!
-    if (checkAndApplyVictory(updatedTiles, currentPlayer)) {
-      return;
-    }
-
-    addLog('safe', currentPlayer, `Safe ball tapped.`);
-    advanceToNextPlayer();
-  };
+      addLog('safe', currentPlayer, `Safe ball tapped.`);
+      advanceToNextPlayer();
+    },
+    [advanceToNextPlayer, checkAndApplyVictory, addLog, showToast, onStatsUpdated]
+  );
 
   // Called when flying stars reach the currency HUD and trigger the beep
   const handleBatchComplete = useCallback(
@@ -549,6 +624,15 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
 
   // Start a new round directly
   const handleNextRound = () => {
+    // Flush any pending flying stars to economy so nothing is lost on quick restarts
+    if (flyingStarBatches.length > 0) {
+      const pendingStars = flyingStarBatches.reduce((acc, b) => acc + b.amount, 0);
+      if (pendingStars > 0) {
+        const nextEco = addStars(pendingStars);
+        if (onEconomyUpdated) onEconomyUpdated(nextEco);
+      }
+      setFlyingStarBatches([]);
+    }
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
     initializeBoard(selectedDimension);
@@ -618,9 +702,12 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           <div className="fixed inset-0 bg-red-600/30 z-40 pointer-events-none animate-explosion-flash" />
         )}
 
-        {/* Bonus Discovery Screen Overlay (Very gentle, non-blinding) */}
+        {/* Bonus Discovery Screen Overlay with subtle rainbow neon edge bloom */}
         {bonusFlickerActive && (
-          <div className="fixed inset-0 bg-amber-400/[0.04] z-40 pointer-events-none transition-opacity duration-300" />
+          <div className="fixed inset-0 z-40 pointer-events-none transition-opacity duration-500">
+            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-amber-400/10 to-pink-500/10" />
+            <div className="absolute inset-0 shadow-[inset_0_0_80px_rgba(0,240,255,0.25),inset_0_0_120px_rgba(255,0,127,0.2)]" />
+          </div>
         )}
 
         {/* 60FPS Explosion Particle & Shockwave Canvas */}
@@ -639,11 +726,19 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
             id="kaboom-back-to-selection-button"
             type="button"
             onClick={() => {
+              if (flyingStarBatches.length > 0) {
+                const pendingStars = flyingStarBatches.reduce((acc, b) => acc + b.amount, 0);
+                if (pendingStars > 0) {
+                  const nextEco = addStars(pendingStars);
+                  if (onEconomyUpdated) onEconomyUpdated(nextEco);
+                }
+                setFlyingStarBatches([]);
+              }
               SoundEngine.playButtonClick();
               Haptics.buttonClick();
               setCurrentScreen('selection');
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-md border border-purple-400/40 text-purple-200 text-xs font-bold hover:border-purple-300 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(168,85,247,0.25)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-zinc-700/60 text-zinc-300 text-xs font-bold hover:border-zinc-500 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(0,0,0,0.6)]"
           >
             <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             <span>Select Board</span>
@@ -655,7 +750,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
             type="button"
             onClick={handleNextRound}
             title="Restart round"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/50 backdrop-blur-md border border-orange-500/40 text-orange-300 text-xs font-bold hover:border-orange-400 active:scale-95 transition-all cursor-pointer shadow-[0_0_10px_rgba(249,115,22,0.25)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-zinc-700/60 text-zinc-300 text-xs font-bold hover:border-zinc-500 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(0,0,0,0.6)]"
           >
             <RotateCcw className="w-3.5 h-3.5 stroke-[2.2]" />
             <span>Restart</span>
@@ -711,22 +806,62 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         </div>
       </div>
 
-      {/* Center: Tactile Cyber Neon Grid Board - LOCKED IN PLACE */}
+      {/* Center: Tactile Cyber Gray Grid Board - LOCKED IN PLACE */}
       <div className="flex-1 flex items-center justify-center w-full max-w-lg mx-auto my-auto py-1">
         <div
           id="kaboom-grid-board"
-          className={`grid ${getGridColsClass()} ${getBoardContainerClass()} rounded-2xl sm:rounded-3xl bg-[#03010a]/85 backdrop-blur-xl border border-purple-500/30 shadow-[0_0_45px_rgba(168,85,247,0.22)] justify-items-center items-center transition-all duration-300`}
+          className={`relative overflow-visible grid ${getGridColsClass()} ${getBoardContainerClass()} rounded-2xl sm:rounded-3xl bg-zinc-950/95 border border-zinc-700/60 shadow-[0_0_40px_rgba(0,0,0,0.85),inset_0_0_25px_rgba(255,255,255,0.03)] justify-items-center items-center transition-all duration-300 ${
+            isGameOver && !isVictory ? 'animate-water-basin-swell' : ''
+          }`}
         >
-          {tiles.map((tile) => (
-            <KaboomBall
-              key={tile.id}
-              tile={tile}
-              dimension={selectedDimension}
-              disabled={isGameOver}
-              onTap={handleTileTap}
-              isGameOver={isGameOver}
-            />
-          ))}
+          {tiles.map((tile) => {
+            const rippleDelay = bombDetonationCoord
+              ? Math.hypot(tile.row - bombDetonationCoord.row, tile.col - bombDetonationCoord.col) * 70
+              : undefined;
+
+            return (
+              <KaboomBall
+                key={tile.id}
+                tile={tile}
+                dimension={selectedDimension}
+                disabled={isGameOver}
+                onTap={handleTileTap}
+                isGameOver={isGameOver}
+                rippleDelay={rippleDelay}
+              />
+            );
+          })}
+
+          {/* Liquid water surface refraction waves across the board underneath */}
+          {bombDetonationCoord && (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[inherit] z-20">
+              {/* Primary water surface swell */}
+              <div
+                className="absolute rounded-full animate-water-surface-wave pointer-events-none"
+                style={{
+                  left: `${((bombDetonationCoord.col + 0.5) / selectedDimension) * 100}%`,
+                  top: `${((bombDetonationCoord.row + 0.5) / selectedDimension) * 100}%`,
+                  width: '180%',
+                  height: '180%',
+                  background:
+                    'radial-gradient(circle, transparent 34%, rgba(255, 255, 255, 0.22) 46%, rgba(186, 230, 253, 0.15) 50%, rgba(0, 0, 0, 0.22) 54%, transparent 64%)',
+                }}
+              />
+              {/* Secondary trailing wave */}
+              <div
+                className="absolute rounded-full animate-water-surface-wave pointer-events-none"
+                style={{
+                  left: `${((bombDetonationCoord.col + 0.5) / selectedDimension) * 100}%`,
+                  top: `${((bombDetonationCoord.row + 0.5) / selectedDimension) * 100}%`,
+                  width: '130%',
+                  height: '130%',
+                  animationDelay: '140ms',
+                  background:
+                    'radial-gradient(circle, transparent 36%, rgba(255, 255, 255, 0.15) 47%, rgba(0, 0, 0, 0.18) 53%, transparent 62%)',
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 

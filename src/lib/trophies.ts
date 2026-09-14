@@ -1,0 +1,560 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+export type TrophyTier = 'locked' | 'bronze' | 'silver' | 'gold' | 'platinum';
+
+export interface TrophyTierConfig {
+  tier: TrophyTier;
+  threshold: number;
+  title: string;
+  badgeName: string;
+  colorName: string;
+  textColor: string;
+  gradient: string;
+  borderColor: string;
+  glowColor: string;
+  starBonus: number;
+}
+
+export interface AchievementTrophy {
+  id: string;
+  title: string;
+  category: 'roulette' | 'bottle' | 'kaboom' | 'collector' | 'party';
+  categoryLabel: string;
+  description: string;
+  metricLabel: string;
+  iconType: 'trophy' | 'flame' | 'bomb' | 'sparkles' | 'crown' | 'target' | 'star';
+  tiers: {
+    bronze: TrophyTierConfig;
+    silver: TrophyTierConfig;
+    gold: TrophyTierConfig;
+    platinum: TrophyTierConfig;
+  };
+}
+
+export interface TrophyClaimState {
+  claimedTiers: TrophyTier[]; // e.g. ['bronze', 'silver']
+}
+
+export interface TrophyProgress {
+  trophyId: string;
+  currentValue: number;
+  currentTier: TrophyTier;
+  nextTier: TrophyTier | null;
+  currentTierConfig: TrophyTierConfig | null;
+  nextTierConfig: TrophyTierConfig | null;
+  progressPercent: number;
+  isMaxTier: boolean;
+  unclaimedTiers: TrophyTier[];
+}
+
+export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
+  {
+    id: 'roulette_master',
+    title: 'Roulette Virtuoso',
+    category: 'roulette',
+    categoryLabel: 'Finger Roulette',
+    description: 'Survive and conquer dramatic finger roulette showdowns.',
+    metricLabel: 'Rounds Won',
+    iconType: 'target',
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 3,
+        title: 'Novice Finger',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 50,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 15,
+        title: 'Steady Hand',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 150,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 40,
+        title: 'Voltage Maestro',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 400,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 100,
+        title: 'Omnipotent Lightning',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1000,
+      },
+    },
+  },
+  {
+    id: 'bottle_twister',
+    title: 'Vortex Dynamo',
+    category: 'bottle',
+    categoryLabel: 'Spin Bottle',
+    description: 'Spin high-velocity deciders and light up party circles.',
+    metricLabel: 'Spins Completed',
+    iconType: 'sparkles',
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 5,
+        title: 'Warm-up Spinner',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 50,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 25,
+        title: 'Centrifugal Force',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 150,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 75,
+        title: 'Cyclone Champion',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 400,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 200,
+        title: 'Eternal Orbit',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1000,
+      },
+    },
+  },
+  {
+    id: 'bomb_defuser',
+    title: 'Bomb Defuser Grandmaster',
+    category: 'kaboom',
+    categoryLabel: 'Kaboom Party',
+    description: 'Clear tactical party minefields without triggering bombs.',
+    metricLabel: 'Safe Victories',
+    iconType: 'bomb',
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 3,
+        title: 'Lucky Dodger',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 60,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 12,
+        title: 'Hazmat Specialist',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 180,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 30,
+        title: 'Tactical Demolitionist',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 500,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 80,
+        title: 'Zero-Detonation Legend',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1200,
+      },
+    },
+  },
+  {
+    id: 'bonus_hunter',
+    title: 'Relic Archeologist',
+    category: 'kaboom',
+    categoryLabel: 'Kaboom Party',
+    description: 'Unearth secret party power-ups and musical treasures.',
+    metricLabel: 'Relics Discovered',
+    iconType: 'star',
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 5,
+        title: 'Curio Seeker',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 40,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 20,
+        title: 'Loot Enthusiast',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 120,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 50,
+        title: 'Treasure Sovereign',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 350,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 120,
+        title: 'Neon Hoarder King',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 900,
+      },
+    },
+  },
+  {
+    id: 'party_legend',
+    title: 'Party Monarch',
+    category: 'party',
+    categoryLabel: 'Party Life',
+    description: 'Total games hosted and celebrated with friends across all modes.',
+    metricLabel: 'Total Games Played',
+    iconType: 'crown',
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 10,
+        title: 'Host Apprentice',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 100,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 50,
+        title: 'VIP Life of the Party',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 250,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 150,
+        title: 'Festival Headliner',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 600,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 400,
+        title: 'Mythic Party Overlord',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1500,
+      },
+    },
+  },
+  {
+    id: 'collector_wardrobe',
+    title: 'Cyber Couture Icon',
+    category: 'collector',
+    categoryLabel: 'Store Collection',
+    description: 'Unlock custom neon bottles, bombs, and exclusive skins.',
+    metricLabel: 'Skins Unlocked',
+    iconType: 'flame',
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 2,
+        title: 'Trendy Patron',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 75,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 5,
+        title: 'Runway Stylist',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 200,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 10,
+        title: 'Vault Connoisseur',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 500,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 16,
+        title: 'Neon Royal Curator',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1200,
+      },
+    },
+  },
+];
+
+const TROPHY_CLAIM_STORAGE_KEY = 'picku_party_trophy_claims_v1';
+
+export function getTrophyClaimMap(): Record<string, TrophyTier[]> {
+  try {
+    if (typeof localStorage === 'undefined') return {};
+    const raw = localStorage.getItem(TROPHY_CLAIM_STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch (e) {
+    return {};
+  }
+}
+
+export function saveTrophyClaimMap(map: Record<string, TrophyTier[]>): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(TROPHY_CLAIM_STORAGE_KEY, JSON.stringify(map));
+  } catch (e) {}
+}
+
+export function claimTrophyReward(
+  trophyId: string,
+  tier: TrophyTier
+): { success: boolean; starsAwarded: number } {
+  const trophy = TROPHY_DEFINITIONS.find((t) => t.id === trophyId);
+  if (!trophy || tier === 'locked') return { success: false, starsAwarded: 0 };
+
+  const tierCfg = trophy.tiers[tier as keyof typeof trophy.tiers];
+  if (!tierCfg) return { success: false, starsAwarded: 0 };
+
+  const claims = getTrophyClaimMap();
+  const currentClaims = claims[trophyId] || [];
+
+  if (currentClaims.includes(tier)) {
+    return { success: false, starsAwarded: 0 };
+  }
+
+  claims[trophyId] = [...currentClaims, tier];
+  saveTrophyClaimMap(claims);
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('picku_trophy_claimed', {
+        detail: { trophyId, tier, starBonus: tierCfg.starBonus },
+      })
+    );
+  }
+
+  return { success: true, starsAwarded: tierCfg.starBonus };
+}
+
+export function calculateTrophyProgress(
+  trophy: AchievementTrophy,
+  stats: {
+    totalRouletteRounds: number;
+    totalBottleSpins: number;
+    totalKaboomRounds: number;
+    kaboomVictories: number;
+    kaboomBonusCollected: number;
+    unlockedItemCount: number;
+  },
+  claims: Record<string, TrophyTier[]>
+): TrophyProgress {
+  let currentValue = 0;
+
+  switch (trophy.id) {
+    case 'roulette_master':
+      currentValue = stats.totalRouletteRounds;
+      break;
+    case 'bottle_twister':
+      currentValue = stats.totalBottleSpins;
+      break;
+    case 'bomb_defuser':
+      currentValue = stats.kaboomVictories;
+      break;
+    case 'bonus_hunter':
+      currentValue = stats.kaboomBonusCollected;
+      break;
+    case 'party_legend':
+      currentValue =
+        stats.totalRouletteRounds +
+        stats.totalBottleSpins +
+        stats.totalKaboomRounds;
+      break;
+    case 'collector_wardrobe':
+      currentValue = stats.unlockedItemCount;
+      break;
+    default:
+      currentValue = 0;
+  }
+
+  const { bronze, silver, gold, platinum } = trophy.tiers;
+  let currentTier: TrophyTier = 'locked';
+  let nextTier: TrophyTier | null = 'bronze';
+
+  if (currentValue >= platinum.threshold) {
+    currentTier = 'platinum';
+    nextTier = null;
+  } else if (currentValue >= gold.threshold) {
+    currentTier = 'gold';
+    nextTier = 'platinum';
+  } else if (currentValue >= silver.threshold) {
+    currentTier = 'silver';
+    nextTier = 'gold';
+  } else if (currentValue >= bronze.threshold) {
+    currentTier = 'bronze';
+    nextTier = 'silver';
+  } else {
+    currentTier = 'locked';
+    nextTier = 'bronze';
+  }
+
+  const currentTierConfig =
+    currentTier === 'locked' ? null : trophy.tiers[currentTier];
+  const nextTierConfig = nextTier ? trophy.tiers[nextTier] : null;
+
+  let progressPercent = 0;
+  if (!nextTierConfig) {
+    progressPercent = 100;
+  } else {
+    const prevThreshold = currentTierConfig ? currentTierConfig.threshold : 0;
+    const range = nextTierConfig.threshold - prevThreshold;
+    const progressIntoRange = Math.max(0, currentValue - prevThreshold);
+    progressPercent = Math.min(
+      100,
+      Math.max(0, Math.round((progressIntoRange / range) * 100))
+    );
+  }
+
+  // Calculate unclaimed completed tiers
+  const claimedList = claims[trophy.id] || [];
+  const achievedTiers: TrophyTier[] = [];
+  if (currentValue >= bronze.threshold) achievedTiers.push('bronze');
+  if (currentValue >= silver.threshold) achievedTiers.push('silver');
+  if (currentValue >= gold.threshold) achievedTiers.push('gold');
+  if (currentValue >= platinum.threshold) achievedTiers.push('platinum');
+
+  const unclaimedTiers = achievedTiers.filter((t) => !claimedList.includes(t));
+
+  return {
+    trophyId: trophy.id,
+    currentValue,
+    currentTier,
+    nextTier,
+    currentTierConfig,
+    nextTierConfig,
+    progressPercent,
+    isMaxTier: currentTier === 'platinum',
+    unclaimedTiers,
+  };
+}

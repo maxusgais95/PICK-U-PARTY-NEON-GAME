@@ -78,8 +78,13 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         {/* Top Header Bar */}
         <div className="relative px-5 pt-5 pb-3 border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-300/60">
-              <Gift className="w-5 h-5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
+            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 to-purple-950 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400/50 overflow-hidden">
+              <img
+                src="/rave-crate.png"
+                alt="Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className="w-9 h-9 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]"
+              />
             </div>
             <div>
               <h2 className="font-header text-xl sm:text-2xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-300 to-fuchsia-300 leading-none">
@@ -109,7 +114,13 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         {/* Milestone Progress Banner */}
         <div className="p-4 bg-cyan-950/30 border-b border-cyan-500/10">
           <div className="flex items-center justify-between text-xs font-header mb-1.5">
-            <span className="text-cyan-200 tracking-wider uppercase">
+            <span className="text-cyan-200 tracking-wider uppercase flex items-center gap-1.5">
+              <img
+                src="/rave-crate.png"
+                alt="Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className="w-4 h-4 object-contain inline-block"
+              />
               MILESTONE CHEST REWARD
             </span>
             <span className="text-cyan-400 font-bold">
@@ -124,13 +135,23 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
             />
           </div>
 
-          <p className="text-[11px] text-gray-300 mt-2 flex items-center justify-between">
-            <span>Complete all 5 daily quests to unlock the Grand Party Chest!</span>
-            <span className="font-header font-bold text-amber-300 flex items-center gap-1 shrink-0 ml-2">
+          <div className="flex items-center justify-between mt-2.5 gap-2">
+            <div className="flex items-center gap-2">
+              <img
+                src="/rave-crate.png"
+                alt="Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] shrink-0"
+              />
+              <span className="text-[11px] text-gray-300 leading-tight">
+                Complete all 5 daily quests to unlock the <strong className="text-cyan-200">Rave Crate Chest</strong>!
+              </span>
+            </div>
+            <span className="font-header font-bold text-amber-300 flex items-center gap-1 shrink-0 ml-2 text-xs bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-400/30">
               <Star className="w-3 h-3 fill-amber-400 text-amber-300" />
               +250 ⭐
             </span>
-          </p>
+          </div>
         </div>
 
         {/* Quests Scrollable List */}
