@@ -80,7 +80,7 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
           <div className="flex items-center gap-2.5">
             <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 to-purple-950 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400/50 overflow-hidden">
               <img
-                src="/rave-crate.png"
+                src="src/assets/images/Chest Sprite.png"
                 alt="Rave Crate Chest"
                 referrerPolicy="no-referrer"
                 className="w-9 h-9 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]"
@@ -116,7 +116,7 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
           <div className="flex items-center justify-between text-xs font-header mb-1.5">
             <span className="text-cyan-200 tracking-wider uppercase flex items-center gap-1.5">
               <img
-                src="/rave-crate.png"
+                src="src/assets/images/Chest Sprite.png"
                 alt="Rave Crate Chest"
                 referrerPolicy="no-referrer"
                 className="w-4 h-4 object-contain inline-block"
@@ -138,7 +138,7 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
           <div className="flex items-center justify-between mt-2.5 gap-2">
             <div className="flex items-center gap-2">
               <img
-                src="/rave-crate.png"
+                src="src/assets/images/Chest Sprite.png"
                 alt="Rave Crate Chest"
                 referrerPolicy="no-referrer"
                 className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] shrink-0"

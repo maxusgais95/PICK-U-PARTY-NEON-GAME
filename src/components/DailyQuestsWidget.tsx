@@ -60,7 +60,7 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
           {/* Animated Neon Rave Crate Chest */}
           <div className="relative w-7 h-7 -my-1 flex items-center justify-center transform group-hover:scale-115 group-hover:rotate-6 transition-all duration-300">
             <img
-              src="/rave-crate.png"
+              src="src/assets/images/Chest Sprite.png"
               alt="Rave Crate Chest"
               referrerPolicy="no-referrer"
               className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"
