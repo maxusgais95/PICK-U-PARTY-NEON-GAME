@@ -165,8 +165,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeIn">
-      <div className="glass-panel relative w-full max-w-md max-h-[88vh] flex flex-col overflow-hidden shadow-2xl"
+    <div className="fixed inset-0 z-50 flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/85 backdrop-blur-xl animate-fadeIn">
+      <div className="glass-panel relative w-full max-w-md max-h-full flex flex-col overflow-hidden shadow-2xl"
         style={{
           boxShadow: '0 24px 60px -10px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 42, 133, 0.25)',
         }}

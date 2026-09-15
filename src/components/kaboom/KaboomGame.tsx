@@ -693,7 +693,7 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       {/* ========================================================================== */}
       <div
         id="kaboom-game-container"
-        className={`w-full h-full flex flex-col justify-between overflow-hidden px-2.5 sm:px-4 pt-[max(5.75rem,calc(env(safe-area-inset-top)+4.25rem))] pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.75rem))] select-none ${
+        className={`w-full h-full flex flex-col justify-between overflow-hidden px-2.5 sm:px-4 pt-[max(6.25rem,calc(env(safe-area-inset-top)+4.75rem))] pb-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.75rem))] select-none ${
           currentScreen === 'gameplay' ? 'flex' : 'hidden'
         } ${explosionActive ? 'animate-screen-shake' : ''}`}
       >

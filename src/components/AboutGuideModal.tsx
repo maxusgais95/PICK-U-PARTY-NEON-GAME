@@ -60,9 +60,9 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-xl animate-fadeIn select-none">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-xl animate-fadeIn select-none">
       <div
-        className="relative w-full max-w-md max-h-[90vh] rounded-[28px] bg-slate-950/95 border border-cyan-500/40 p-4 sm:p-5 shadow-[0_0_50px_rgba(6,182,212,0.35)] flex flex-col text-white overflow-hidden"
+        className="relative w-full max-w-md max-h-full rounded-[28px] bg-slate-950/95 border border-cyan-500/40 p-4 sm:p-5 shadow-[0_0_50px_rgba(6,182,212,0.35)] flex flex-col text-white overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header */}

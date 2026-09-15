@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 pt-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] pb-2 pointer-events-none">
+    <header className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-3 sm:px-4 pt-[max(1.25rem,calc(env(safe-area-inset-top)+0.85rem))] pb-2 pointer-events-none">
       {/* Left Action Buttons (Compact, non-overlapping) */}
       <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto z-40">
         {currentView !== 'hub' ? (
@@ -173,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Locked Center Currency HUD - Mathematically locked to horizontal center on all pages */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-[max(0.75rem,calc(env(safe-area-inset-top)+0.5rem))] pointer-events-auto z-50 flex items-center justify-center">
+      <div className="absolute left-1/2 -translate-x-1/2 top-[max(1.25rem,calc(env(safe-area-inset-top)+0.85rem))] pointer-events-auto z-50 flex items-center justify-center">
         <CurrencyHud
           stars={stars}
           onOpenStore={onOpenStore || (() => onOpenSettings('bottle'))}

@@ -163,13 +163,13 @@ export const StoreModal: React.FC<StoreModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-md animate-fade-in select-none"
       onClick={onClose}
     >
       <div
         id="party-store-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg max-h-[92vh] flex flex-col rounded-[28px] bg-gradient-to-b from-[#160b29]/95 via-[#0d071a]/95 to-black/95 border-2 border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.3)] overflow-hidden text-white"
+        className="relative w-full max-w-lg max-h-full flex flex-col rounded-[28px] bg-gradient-to-b from-[#160b29]/95 via-[#0d071a]/95 to-black/95 border-2 border-purple-500/40 shadow-[0_0_50px_rgba(168,85,247,0.3)] overflow-hidden text-white"
       >
         {/* Toast Notification */}
         {notification && (

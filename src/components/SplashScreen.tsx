@@ -219,7 +219,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
       </div>
 
       {/* ZONE 1: TOP AMBIENT STATUS HEADER */}
-      <header className="relative z-20 w-full max-w-lg px-4 sm:px-6 pt-safe pt-4 sm:pt-6 flex items-center justify-between pointer-events-auto">
+      <header className="relative z-20 w-full max-w-lg px-4 sm:px-6 pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] flex items-center justify-between pointer-events-auto">
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/70 border border-cyan-500/30 backdrop-blur-md shadow-[0_0_12px_rgba(0,240,255,0.2)]">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#00f0ff]" />
           <span className="font-header text-[11px] sm:text-xs text-cyan-200 tracking-wider font-bold uppercase">

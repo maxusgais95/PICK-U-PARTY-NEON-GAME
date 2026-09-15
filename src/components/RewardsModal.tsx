@@ -54,13 +54,13 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-md animate-fade-in select-none"
       onClick={onClose}
     >
       <div
         id="rewards-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-[28px] bg-gradient-to-b from-[#24081c]/95 via-[#140410]/95 to-black/95 border-2 border-pink-500/40 shadow-[0_0_40px_rgba(236,72,153,0.3)] overflow-hidden text-white"
+        className="relative w-full max-w-md max-h-full flex flex-col rounded-[28px] bg-gradient-to-b from-[#24081c]/95 via-[#140410]/95 to-black/95 border-2 border-pink-500/40 shadow-[0_0_40px_rgba(236,72,153,0.3)] overflow-hidden text-white"
       >
         {/* Top Header Bar */}
         <div className="relative px-5 pt-4 pb-3 border-b border-pink-500/20 flex items-center justify-between">

@@ -77,7 +77,7 @@ export const GamePreloader: React.FC<GamePreloaderProps> = ({
   return (
     <aside
       aria-label="Loading Game Mode"
-      className="fixed inset-0 z-[120] flex flex-col items-center justify-between overflow-hidden select-none touch-none p-6 sm:p-8 animate-fade-in"
+      className="fixed inset-0 z-[120] flex flex-col items-center justify-between overflow-hidden select-none touch-none pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-6 sm:px-8 animate-fade-in"
     >
       {/* 1. Fullscreen Game Thumbnail Background with Dim & Blur */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">

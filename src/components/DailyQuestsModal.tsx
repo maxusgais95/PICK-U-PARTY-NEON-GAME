@@ -67,13 +67,13 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/75 backdrop-blur-md animate-fade-in"
       onClick={onClose}
     >
       <div
         id="daily-quests-modal-container"
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md max-h-[90vh] flex flex-col rounded-[28px] bg-gradient-to-b from-neutral-900/95 via-[#120824]/95 to-black/95 border-2 border-cyan-400/50 shadow-[0_0_40px_rgba(6,182,212,0.35)] overflow-hidden text-white"
+        className="relative w-full max-w-md max-h-full flex flex-col rounded-[28px] bg-gradient-to-b from-neutral-900/95 via-[#120824]/95 to-black/95 border-2 border-cyan-400/50 shadow-[0_0_40px_rgba(6,182,212,0.35)] overflow-hidden text-white"
       >
         {/* Top Header Bar */}
         <div className="relative px-5 pt-5 pb-3 border-b border-cyan-500/20 flex items-center justify-between">
