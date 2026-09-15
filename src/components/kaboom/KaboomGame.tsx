@@ -36,7 +36,7 @@ import { KaboomBall } from './KaboomBall';
 import { KaboomExplosionCanvas } from './KaboomExplosionCanvas';
 import { SoundEngine, Haptics } from '../../lib/audio';
 import { recordKaboomEvent } from '../../lib/db';
-import { addStars, EconomyState, recordStarEarringsCondition } from '../../lib/economy';
+import { addStars, EconomyState, recordStarEarringsCondition, recordDailyQuestProgress } from '../../lib/economy';
 
 interface KaboomGameProps {
   settings: AppSettings;
@@ -603,6 +603,9 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
       if (checkAndApplyVictory(updatedTiles, currentPlayer)) {
         return;
       }
+
+      // Record safe tile reveal towards daily quest
+      recordDailyQuestProgress('kaboom_tile', 1);
 
       addLog('safe', currentPlayer, `Safe ball tapped.`);
       advanceToNextPlayer();

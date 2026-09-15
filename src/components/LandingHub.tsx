@@ -13,7 +13,7 @@ import { AppSettings } from '../types';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { LeftSidebarStack } from './LeftSidebarStack';
 import { DailyQuestsWidget } from './DailyQuestsWidget';
-import { EconomyState } from '../lib/economy';
+import { EconomyState, getDailyRewardStatus } from '../lib/economy';
 
 interface LandingHubProps {
   settings: AppSettings;
@@ -215,7 +215,7 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-[max(4.75rem,calc(env(safe-area-inset-top)+3.75rem))] left-1/2 -translate-x-1/2 z-50 animate-bounce">
+        <div className="fixed top-[max(5.75rem,calc(env(safe-area-inset-top)+4.75rem))] left-1/2 -translate-x-1/2 z-50 animate-bounce">
           <div className="px-4 py-2 rounded-full bg-orange-600/90 text-white font-bold text-xs shadow-[0_0_20px_rgba(249,115,22,0.6)] border border-orange-300/80 backdrop-blur-md flex items-center gap-2">
             <span>{toastMessage}</span>
           </div>
@@ -224,19 +224,21 @@ export const LandingHub: React.FC<LandingHubProps> = ({
 
       {/* Benchmark Reference UI (Improve_game_UI_layout_2K_202609091537.jpeg) Side Widgets */}
       {/* 1. Left Sidebar Stack: STORE, TROPHIES, REWARDS */}
-      <div className="absolute top-[max(5.5rem,calc(env(safe-area-inset-top)+4.25rem))] left-3 sm:left-4 z-30 flex flex-col">
+      <div className="absolute top-[max(6.25rem,calc(env(safe-area-inset-top)+5rem))] left-3 sm:left-4 z-30 flex flex-col">
         <LeftSidebarStack
           onOpenStore={onOpenStore || (() => {})}
           onOpenAchievements={onOpenAchievements || (() => {})}
           onOpenRewards={onOpenRewards || (() => {})}
+          hasDailyRewardReady={economy ? getDailyRewardStatus(economy).canClaimToday : false}
         />
       </div>
 
       {/* 2. Top-Right Daily Quests Widget */}
       {economy && (
-        <div className="absolute top-[max(5.5rem,calc(env(safe-area-inset-top)+4.25rem))] right-3 sm:right-4 z-30 flex flex-col items-end">
+        <div className="absolute top-[max(6.25rem,calc(env(safe-area-inset-top)+5rem))] right-3 sm:right-4 z-30 flex flex-col items-end">
           <DailyQuestsWidget
             quests={economy.dailyQuests}
+            milestoneChestClaimed={economy.milestoneChestClaimed}
             onOpenQuests={onOpenDailyQuests || (() => {})}
           />
         </div>

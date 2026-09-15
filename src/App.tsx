@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppSettings, AppStats, CustomBottleSprite, ScreenView, TouchPlayer, BottleBuiltinStyle, ThemeId } from './types';
 import { THEMES } from './lib/themes';
-import { getSettings, saveSettings, getStats, getAllCustomSprites, saveCustomSprite } from './lib/db';
+import { getSettings, saveSettings, getStats, getAllCustomSprites, saveCustomSprite, getEconomyFromDB, getTrophiesFromDB } from './lib/db';
 import { SoundEngine, Haptics } from './lib/audio';
 import { processSpriteImage } from './lib/imageProcessing';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
@@ -25,7 +25,7 @@ import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { KaboomGame } from './components/kaboom/KaboomGame';
-import { getEconomyState, EconomyState } from './lib/economy';
+import { getEconomyState, EconomyState, STORE_CATALOGUE, equipItem } from './lib/economy';
 import { StoreModal } from './components/StoreModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { AchievementsModal } from './components/AchievementsModal';

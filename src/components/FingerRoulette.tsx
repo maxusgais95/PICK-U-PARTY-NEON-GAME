@@ -427,7 +427,7 @@ export const FingerRoulette: React.FC<FingerRouletteProps> = ({
     >
       {/* Game Resolved Banner Notice */}
       {gameState === 'resolved' && (
-        <div className="absolute top-[max(5.5rem,calc(env(safe-area-inset-top)+4.25rem))] left-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none select-none animate-fadeIn">
+        <div className="absolute top-[max(6.25rem,calc(env(safe-area-inset-top)+4.75rem))] left-1/2 -translate-x-1/2 z-40 flex flex-col items-center pointer-events-none select-none animate-fadeIn">
           <div className="px-4 py-1.5 rounded-full bg-black/75 backdrop-blur-md border border-rose-500/80 shadow-[0_0_24px_rgba(244,63,94,0.5)] flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
             <span className="font-header text-xs sm:text-sm font-bold uppercase tracking-wider text-white">

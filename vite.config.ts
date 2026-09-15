@@ -5,9 +5,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
-  // Correct base path matching your actual repository name
-  const repoName = 'PICK-U-PARTY-NEON-GAME';
-  const base = process.env.NODE_ENV === 'development' ? '/' : (process.env.VITE_BASE || `/${repoName}/`);
+  // Base path defaults to root, customizable via VITE_BASE if hosted on a sub-path
+  const base = process.env.VITE_BASE || '/';
 
   return {
     base,
@@ -24,9 +23,10 @@ export default defineConfig(() => {
           'icon-maskable-512.png',
           'app-icon.jpeg',
           'icon.svg',
+          'manifest.json',
         ],
         manifest: {
-          id: `./`,
+          id: '/',
           name: "PICK'U PARTY",
           short_name: "PICK'U PARTY",
           description: 'Multiplayer Finger Roulette, Team Splitter, and Swipe Bottle Spin for Mobile Parties',
@@ -34,8 +34,8 @@ export default defineConfig(() => {
           background_color: '#030712',
           display: 'standalone',
           orientation: 'portrait',
-          start_url: `./`,
-          scope: `./`,
+          start_url: '/',
+          scope: '/',
           icons: [
             {
               src: 'icon-192.png',
@@ -70,8 +70,9 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpeg,jpg,webp,mp3,wav,mp4,woff,woff2}'],
-          maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpeg,jpg,webp,mp3,wav,mp4,mov,woff,woff2}'],
+          maximumFileSizeToCacheInBytes: 35 * 1024 * 1024,
+          navigateFallback: '/index.html',
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -104,7 +105,7 @@ export default defineConfig(() => {
           ],
         },
         devOptions: {
-          enabled: false,
+          enabled: true,
           type: 'module',
         },
       }),
@@ -112,6 +113,19 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+      },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          assetFileNames: (assetInfo) => {
+            // Replace spaces and unusual chars to guarantee safe offline URLs without %20 cache mismatches
+            const name = (assetInfo.name || 'asset')
+              .replace(/\s+/g, '_')
+              .replace(/[^a-zA-Z0-9._-]/g, '_');
+            return `assets/${name}-[hash][extname]`;
+          },
+        },
       },
     },
     server: {

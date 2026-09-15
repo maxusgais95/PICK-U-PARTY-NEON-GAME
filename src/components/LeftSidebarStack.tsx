@@ -11,12 +11,14 @@ interface LeftSidebarStackProps {
   onOpenStore: () => void;
   onOpenAchievements: () => void;
   onOpenRewards: () => void;
+  hasDailyRewardReady?: boolean;
 }
 
 export const LeftSidebarStack: React.FC<LeftSidebarStackProps> = ({
   onOpenStore,
   onOpenAchievements,
   onOpenRewards,
+  hasDailyRewardReady = false,
 }) => {
   return (
     <div className="flex flex-col gap-3 pointer-events-auto select-none">
@@ -79,6 +81,14 @@ export const LeftSidebarStack: React.FC<LeftSidebarStackProps> = ({
         className="group relative w-14 h-15 sm:w-16 sm:h-17 rounded-[18px] sm:rounded-[20px] bg-black/50 backdrop-blur-md border border-pink-400/50 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:border-pink-300 hover:shadow-[0_0_20px_rgba(236,72,153,0.5)] active:scale-95 transition-all flex flex-col items-center justify-center p-1.5 cursor-pointer text-center"
       >
         <div className="absolute -inset-0.5 rounded-[18px] sm:rounded-[20px] bg-pink-400/10 blur-sm pointer-events-none group-hover:bg-pink-400/25 transition-all" />
+
+        {/* Unclaimed Reward Ping */}
+        {hasDailyRewardReady && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3 z-20">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400 border-2 border-black" />
+          </span>
+        )}
 
         <div className="relative z-10 flex items-center justify-center mb-1">
           <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-pink-300 drop-shadow-[0_0_8px_rgba(236,72,153,0.9)] stroke-[2.2] group-hover:scale-110 transition-transform" />

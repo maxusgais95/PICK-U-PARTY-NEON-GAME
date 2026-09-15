@@ -3,11 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
-import { X, Check, Star, Clock, Gift, ArrowRight, Sparkles } from 'lucide-react';
-import { DailyQuest, claimQuestReward, EconomyState, equipStarEarrings } from '../lib/economy';
+import React, { useState, useEffect } from 'react';
+import { X, Check, Star, Clock, ArrowRight, Sparkles, Trophy, RotateCcw, Gift } from 'lucide-react';
+import {
+  DailyQuest,
+  claimQuestReward,
+  claimMilestoneChest,
+  resetDailyQuestsForTesting,
+  EconomyState,
+  getTimeUntilMidnight,
+  MILESTONE_CHEST_REWARD,
+} from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { ScreenView } from '../types';
+import chestSpriteImg from '../assets/images/Chest_Sprite.png';
+import { getAssetUrl } from '../lib/assetPreloader';
 
 interface DailyQuestsModalProps {
   isOpen: boolean;
@@ -26,21 +36,26 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
   onNavigateToGame,
   onEconomyUpdated,
 }) => {
+  const [timeLeftStr, setTimeLeftStr] = useState<string>(() => getTimeUntilMidnight().formatted);
+  const [claimingChest, setClaimingChest] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const interval = window.setInterval(() => {
+      setTimeLeftStr(getTimeUntilMidnight().formatted);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const completedCount = quests.filter((q) => q.currentCount >= q.targetCount).length;
   const totalCount = quests.length || 5;
   const progressPercent = Math.min(100, Math.round((completedCount / totalCount) * 100));
+  const isMilestoneClaimed = Boolean(economy?.milestoneChestClaimed);
+  const canClaimMilestone = completedCount >= totalCount && !isMilestoneClaimed;
 
-  const earringsProgress = economy?.starEarrings || {
-    bombVictory: false,
-    bottleSpin: false,
-    fingerGame: false,
-    unlocked: false,
-  };
-  const isEarringsEquipped = economy?.equippedSkins?.accessories === 'accessory_star_earrings';
-
-  const handleClaim = (questId: string) => {
+  const handleClaimQuest = (questId: string) => {
     SoundEngine.playTeamDivisionChime();
     Haptics.touchSuccess();
     const res = claimQuestReward(questId);
@@ -49,11 +64,20 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
     }
   };
 
-  const handleToggleEarrings = () => {
-    SoundEngine.playButtonClick();
-    Haptics.buttonClick();
-    const updated = equipStarEarrings(!isEarringsEquipped);
-    onEconomyUpdated(updated);
+  const handleClaimMilestone = () => {
+    if (!canClaimMilestone || claimingChest) return;
+    setClaimingChest(true);
+    SoundEngine.playTeamDivisionChime();
+    Haptics.touchSuccess();
+
+    const res = claimMilestoneChest();
+    if (res.success) {
+      onEconomyUpdated(res.updatedState);
+    }
+
+    setTimeout(() => {
+      setClaimingChest(false);
+    }, 1200);
   };
 
   const handleGoToQuest = (gameMode?: ScreenView) => {
@@ -65,9 +89,16 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
     }
   };
 
+  const handleDevResetQuests = () => {
+    SoundEngine.playButtonClick();
+    Haptics.buttonClick();
+    const updated = resetDailyQuestsForTesting();
+    onEconomyUpdated(updated);
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/75 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(2.25rem,calc(env(safe-area-inset-top)+1.25rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/75 backdrop-blur-md animate-fade-in select-none"
       onClick={onClose}
     >
       <div
@@ -76,15 +107,23 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         className="relative w-full max-w-md max-h-full flex flex-col rounded-[28px] bg-gradient-to-b from-neutral-900/95 via-[#120824]/95 to-black/95 border-2 border-cyan-400/50 shadow-[0_0_40px_rgba(6,182,212,0.35)] overflow-hidden text-white"
       >
         {/* Top Header Bar */}
-        <div className="relative px-5 pt-5 pb-3 border-b border-cyan-500/20 flex items-center justify-between">
+        <div className="relative px-5 pt-4 pb-3 border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 to-purple-950 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400/50 overflow-hidden">
+            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 via-purple-950 to-black flex items-center justify-center shadow-[0_0_16px_rgba(6,182,212,0.4)] border border-cyan-400/40 shrink-0 p-1.5 overflow-hidden">
               <img
-                src="src/assets/images/Chest Sprite.png"
-                alt="Rave Crate Chest"
+                src={getAssetUrl(chestSpriteImg)}
+                alt="Daily Quests Rave Crate Chest"
                 referrerPolicy="no-referrer"
-                className="w-9 h-9 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]"
+                className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.85)] pointer-events-none"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  const fb = e.currentTarget.parentElement?.querySelector('.header-chest-fallback');
+                  if (fb) (fb as HTMLElement).classList.remove('hidden');
+                }}
               />
+              <div className="header-chest-fallback hidden flex items-center justify-center w-full h-full text-amber-300">
+                <Gift className="w-6 h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+              </div>
             </div>
             <div>
               <h2 className="font-header text-xl sm:text-2xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-300 to-fuchsia-300 leading-none">
@@ -92,7 +131,7 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
               </h2>
               <div className="flex items-center gap-1.5 text-[11px] text-cyan-200/70 mt-1 font-body">
                 <Clock className="w-3 h-3 text-cyan-400" />
-                <span>Resets in 14h 22m</span>
+                <span>Resets in {timeLeftStr}</span>
               </div>
             </div>
           </div>
@@ -111,23 +150,19 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
           </button>
         </div>
 
-        {/* Milestone Progress Banner */}
-        <div className="p-4 bg-cyan-950/30 border-b border-cyan-500/10">
+        {/* Milestone Chest Progress Banner */}
+        <div className="p-4 bg-cyan-950/30 border-b border-cyan-500/20">
           <div className="flex items-center justify-between text-xs font-header mb-1.5">
-            <span className="text-cyan-200 tracking-wider uppercase flex items-center gap-1.5">
-              <img
-                src="src/assets/images/Chest Sprite.png"
-                alt="Rave Crate Chest"
-                referrerPolicy="no-referrer"
-                className="w-4 h-4 object-contain inline-block"
-              />
-              MILESTONE CHEST REWARD
+            <span className="text-cyan-200 tracking-wider uppercase flex items-center gap-1.5 font-bold">
+              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              DAILY COMPLETION BONUS
             </span>
-            <span className="text-cyan-400 font-bold">
+            <span className="text-cyan-300 font-bold">
               {completedCount} / {totalCount} Completed
             </span>
           </div>
 
+          {/* Progress bar */}
           <div className="relative w-full h-3 rounded-full bg-black/60 border border-cyan-500/40 overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400 shadow-[0_0_12px_rgba(6,182,212,0.8)] transition-all duration-500"
@@ -135,129 +170,91 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-between mt-2.5 gap-2">
-            <div className="flex items-center gap-2">
-              <img
-                src="src/assets/images/Chest Sprite.png"
-                alt="Rave Crate Chest"
-                referrerPolicy="no-referrer"
-                className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] shrink-0"
-              />
-              <span className="text-[11px] text-gray-300 leading-tight">
-                Complete all 5 daily quests to unlock the <strong className="text-cyan-200">Rave Crate Chest</strong>!
+          {/* Chest Action or Info Row */}
+          <div className="flex items-center justify-between mt-3 gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+                <img
+                  src={getAssetUrl(chestSpriteImg)}
+                  alt="Rave Crate Chest"
+                  referrerPolicy="no-referrer"
+                  className={`w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] shrink-0 transition-transform ${
+                    canClaimMilestone ? 'scale-115 animate-bounce' : ''
+                  }`}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = 'none';
+                    const fallback = e.currentTarget.parentElement?.querySelector('.chest-fallback');
+                    if (fallback) (fallback as HTMLElement).classList.remove('hidden');
+                  }}
+                />
+                <div className="chest-fallback hidden text-amber-400">
+                  <Gift className="w-6 h-6 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+                </div>
+              </div>
+              <span className="text-[11px] text-gray-300 leading-tight truncate">
+                {isMilestoneClaimed
+                  ? 'Today’s milestone reward claimed! Resets at midnight.'
+                  : canClaimMilestone
+                  ? 'All 5 daily quests complete! Claim your Rave Crate!'
+                  : `Complete all 5 daily quests to unlock Rave Crate!`}
               </span>
             </div>
-            <span className="font-header font-bold text-amber-300 flex items-center gap-1 shrink-0 ml-2 text-xs bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-400/30">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-300" />
-              +250 ⭐
-            </span>
+
+            {/* Milestone Button / Status */}
+            <div className="shrink-0">
+              {isMilestoneClaimed ? (
+                <span className="flex items-center gap-1 text-[11px] font-header font-bold text-emerald-400 bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-500/30">
+                  <Check className="w-3.5 h-3.5" /> CLAIMED (+{MILESTONE_CHEST_REWARD} ⭐)
+                </span>
+              ) : canClaimMilestone ? (
+                <button
+                  type="button"
+                  onClick={handleClaimMilestone}
+                  disabled={claimingChest}
+                  className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-black font-header font-bold text-xs uppercase tracking-wider shadow-[0_0_16px_rgba(245,158,11,0.8)] border border-yellow-200 active:scale-95 transition-all flex items-center gap-1 animate-pulse cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>CLAIM +{MILESTONE_CHEST_REWARD} ⭐</span>
+                </button>
+              ) : (
+                <span className="font-header font-bold text-amber-300 flex items-center gap-1 text-xs bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-400/30">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-300" />
+                  +{MILESTONE_CHEST_REWARD} ⭐
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Quests Scrollable List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-          {/* SPECIAL LEGENDARY MASTERY CONDITION: STAR EARRINGS */}
-          <div className="relative rounded-2xl p-3.5 border border-amber-400/60 bg-gradient-to-r from-amber-950/60 via-purple-950/60 to-black/60 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-header text-sm font-bold tracking-wide text-amber-200 truncate flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-amber-300" />
-                    <span>Star Earrings (Triple Mastery)</span>
-                  </h4>
-                  <span className="px-1.5 py-0.5 rounded-full text-[9px] font-header font-bold bg-amber-500/20 text-amber-300 border border-amber-400/50 uppercase tracking-widest shrink-0">
-                    SPECIAL
-                  </span>
-                </div>
-                <p className="text-xs text-gray-300 font-body mt-1 leading-snug">
-                  Unlock radiant celestial Star Earrings by completing all 3 party feats:
-                </p>
-              </div>
-
-              {earringsProgress.unlocked ? (
-                <button
-                  type="button"
-                  onClick={handleToggleEarrings}
-                  className={`shrink-0 px-3 py-1.5 rounded-full font-header font-bold text-xs tracking-wider transition-all active:scale-95 border ${
-                    isEarringsEquipped
-                      ? 'bg-cyan-950/80 border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
-                      : 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-400 text-amber-200'
-                  }`}
-                >
-                  {isEarringsEquipped ? 'EQUIPPED' : 'EQUIP'}
-                </button>
-              ) : (
-                <span className="shrink-0 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-header text-gray-400">
-                  {[earringsProgress.bombVictory, earringsProgress.bottleSpin, earringsProgress.fingerGame].filter(Boolean).length}/3 Done
-                </span>
-              )}
-            </div>
-
-            {/* Condition Checkboxes */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 pt-1 border-t border-amber-400/20">
-              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-black/40 border border-white/5 text-[11px]">
-                <span className="text-gray-300">💣 Bomb Victory</span>
-                {earringsProgress.bombVictory ? (
-                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                    <Check className="w-3 h-3" /> Done
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleGoToQuest('kaboom')}
-                    className="text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
-                  >
-                    Play
-                  </button>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-black/40 border border-white/5 text-[11px]">
-                <span className="text-gray-300">🍾 Bottle Spin</span>
-                {earringsProgress.bottleSpin ? (
-                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                    <Check className="w-3 h-3" /> Done
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleGoToQuest('bottle')}
-                    className="text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
-                  >
-                    Play
-                  </button>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-black/40 border border-white/5 text-[11px]">
-                <span className="text-gray-300">☝️ Finger Game</span>
-                {earringsProgress.fingerGame ? (
-                  <span className="text-emerald-400 font-bold flex items-center gap-0.5">
-                    <Check className="w-3 h-3" /> Done
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => handleGoToQuest('roulette')}
-                    className="text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
-                  >
-                    Play
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
+        <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
           {quests.map((quest) => {
             const isCompleted = quest.currentCount >= quest.targetCount;
             const canClaim = isCompleted && !quest.isClaimed;
+
+            // Category tag style
+            let badgeText = 'PARTY';
+            let badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-400/40';
+            if (quest.gameMode === 'bottle') {
+              badgeText = 'BOTTLE';
+              badgeColor = 'bg-teal-500/20 text-teal-300 border-teal-400/40';
+            } else if (quest.gameMode === 'roulette') {
+              badgeText = 'ROULETTE';
+              badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-400/40';
+            } else if (quest.gameMode === 'kaboom') {
+              badgeText = 'KABOOM';
+              badgeColor = 'bg-rose-500/20 text-rose-300 border-rose-400/40';
+            } else if (quest.gameMode === 'hub') {
+              badgeText = 'DAILY CHECK-IN';
+              badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-400/40';
+            }
 
             return (
               <div
                 key={quest.id}
                 className={`relative rounded-2xl p-3.5 border transition-all ${
                   quest.isClaimed
-                    ? 'bg-neutral-900/40 border-white/5 opacity-70'
+                    ? 'bg-neutral-900/40 border-white/5 opacity-65'
                     : canClaim
                     ? 'bg-gradient-to-r from-cyan-950/60 to-purple-950/60 border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
                     : 'bg-black/40 border-white/10'
@@ -265,7 +262,12 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[9px] font-header font-bold border uppercase tracking-wider ${badgeColor}`}
+                      >
+                        {badgeText}
+                      </span>
                       <h4 className="font-header text-sm font-bold tracking-wide text-white truncate">
                         {quest.title}
                       </h4>
@@ -275,16 +277,16 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
                       </span>
                     </div>
 
-                    <p className="text-xs text-gray-300/90 font-body mt-0.5 leading-snug">
+                    <p className="text-xs text-gray-300 font-body mt-1 leading-snug">
                       {quest.description}
                     </p>
 
                     {/* Progress indicator */}
                     <div className="flex items-center gap-2 mt-2">
-                      <div className="w-24 h-1.5 rounded-full bg-black/70 border border-white/10 overflow-hidden">
+                      <div className="w-28 h-1.5 rounded-full bg-black/70 border border-white/10 overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${
-                            isCompleted ? 'bg-cyan-400' : 'bg-purple-500'
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            isCompleted ? 'bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.8)]' : 'bg-purple-500'
                           }`}
                           style={{
                             width: `${Math.min(
@@ -310,23 +312,25 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
                     ) : canClaim ? (
                       <button
                         type="button"
-                        onClick={() => handleClaim(quest.id)}
-                        className="relative px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-black font-header font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.6)] border border-yellow-200 active:scale-95 transition-all flex items-center gap-1 animate-pulse"
+                        onClick={() => handleClaimQuest(quest.id)}
+                        className="relative px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-black font-header font-bold text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(245,158,11,0.6)] border border-yellow-200 active:scale-95 transition-all flex items-center gap-1 animate-pulse cursor-pointer"
                       >
                         <Sparkles className="w-3 h-3" />
                         <span>CLAIM</span>
                       </button>
-                    ) : quest.gameMode ? (
+                    ) : quest.gameMode && quest.gameMode !== 'hub' ? (
                       <button
                         type="button"
                         onClick={() => handleGoToQuest(quest.gameMode)}
-                        className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 font-header font-bold text-xs tracking-wider border border-cyan-400/40 active:scale-95 transition-all flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 font-header font-bold text-xs tracking-wider border border-cyan-400/40 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
                       >
                         <span>GO</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
                     ) : (
-                      <span className="text-xs text-gray-500 font-header">0/{quest.targetCount}</span>
+                      <span className="text-xs text-gray-500 font-header">
+                        {quest.currentCount}/{quest.targetCount}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -336,10 +340,17 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 bg-black/60 border-t border-white/10 text-center">
-          <p className="text-[11px] text-gray-400">
-            Quests refresh every 24 hours. Play party rounds to earn Star currency!
-          </p>
+        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-400">
+          <span>Quests reset daily at 00:00 midnight local time.</span>
+          <button
+            type="button"
+            onClick={handleDevResetQuests}
+            title="Reset quests for testing"
+            className="text-[10px] text-gray-500 hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-2.5 h-2.5" />
+            <span>Test Reset</span>
+          </button>
         </div>
       </div>
     </div>

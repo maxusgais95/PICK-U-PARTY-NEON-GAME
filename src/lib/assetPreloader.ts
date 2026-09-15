@@ -33,6 +33,7 @@ import bonusHeadsetImg from '../assets/images/Headsets Sprite.png';
 import bonusCuteStarImg from '../assets/images/Star Sprite.png';
 import bonusCrystalRoseImg from '../assets/images/Crystal Rose Sprite.png';
 import bonusDiamondKeyImg from '../assets/images/Key Sprite.png';
+import chestSpriteImg from '../assets/images/Chest_Sprite.png';
 import { preloadTransparentImages } from './bottleAlphaCache';
 import { AudioManager } from './audioManager';
 
@@ -278,6 +279,12 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     url: bonusDiamondKeyImg,
     type: 'image',
     description: 'Decoding Bonus Diamond Key Sprite...',
+  },
+  {
+    name: 'Rave Crate Chest',
+    url: chestSpriteImg,
+    type: 'image',
+    description: 'Decoding Rave Crate Chest Sprite...',
   },
 ];
 

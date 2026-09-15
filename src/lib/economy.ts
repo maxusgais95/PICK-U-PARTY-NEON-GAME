@@ -5,6 +5,9 @@
 
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
+import { saveEconomyToDB } from './db';
+import bombSpriteImg from '../assets/images/Bomb Detonated Sprite.png';
+import ballSpriteImg from '../assets/images/Ball Sprite.png';
 
 export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';
 
@@ -32,6 +35,11 @@ export interface StarEarringsProgress {
   unlockedAt?: number;
 }
 
+export interface DailyLoginRewards {
+  claimedDays: number[]; // [1, 2, ...] up to [1..7]. Each day 1-7 can be claimed just once.
+  lastClaimDate: string; // 'YYYY-MM-DD' of the last day claimed
+}
+
 export interface DailyQuest {
   id: string;
   title: string;
@@ -40,7 +48,7 @@ export interface DailyQuest {
   currentCount: number;
   starReward: number;
   isClaimed: boolean;
-  gameMode?: 'roulette' | 'bottle' | 'kaboom' | 'settings';
+  gameMode?: 'roulette' | 'bottle' | 'kaboom' | 'hub' | 'settings';
 }
 
 export interface EconomyState {
@@ -54,8 +62,11 @@ export interface EconomyState {
   };
   starEarrings: StarEarringsProgress;
   dailyQuests: DailyQuest[];
-  lastDailyReset: number;
-  claimedLoginDay: number;
+  milestoneChestClaimed: boolean;
+  lastDailyResetDate: string; // 'YYYY-MM-DD'
+  lastDailyReset: number; // Unix timestamp
+  dailyLoginRewards: DailyLoginRewards;
+  claimedLoginDay?: number; // Kept for backwards compatibility
 }
 
 const STORAGE_KEY = 'picku_party_economy_v1';
@@ -126,105 +137,32 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
     {
       id: 'bomb_classic_tnt',
       category: 'bombs',
-      name: 'Chibi TNT Explosive',
-      subtitle: 'Classic Boom Box',
-      description: 'The iconic chibi bomb character with a sizzling party fuse.',
+      name: 'Cyber Detonator Bomb',
+      subtitle: 'Kaboom High-Explosive Core',
+      description: 'The authentic in-game cyber bomb with animated detonation sparks, high-voltage core, and electric party fuse.',
       price: 0,
       rarity: 'Common',
-      badge: 'DEFAULT',
-      accentGradient: 'from-red-500 to-orange-600',
+      badge: 'EQUIPPED',
+      accentGradient: 'from-rose-500 via-red-600 to-amber-500',
       borderGlow: 'border-red-400/60 shadow-[0_0_15px_rgba(239,68,68,0.4)]',
       iconType: 'bomb',
-    },
-    {
-      id: 'bomb_plasma_core',
-      category: 'bombs',
-      name: 'Neon Plasma Core',
-      subtitle: 'High Voltage Reactor',
-      description: 'An unstable sci-fi plasma reactor that pulses to the party bass.',
-      price: 300,
-      rarity: 'Rare',
-      accentGradient: 'from-cyan-400 to-blue-600',
-      borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
-      iconType: 'bomb',
-    },
-    {
-      id: 'bomb_disco_mirror',
-      category: 'bombs',
-      name: 'Disco Mirror Sphere',
-      subtitle: 'Sparkling Party Bomb',
-      description: 'Reflects laser spotlights in every direction until the grand detonation.',
-      price: 550,
-      rarity: 'Epic',
-      badge: 'PARTY',
-      accentGradient: 'from-pink-400 via-purple-400 to-cyan-400',
-      borderGlow: 'border-pink-400/70 shadow-[0_0_18px_rgba(236,72,153,0.5)]',
-      iconType: 'bomb',
-    },
-    {
-      id: 'bomb_molten_magma',
-      category: 'bombs',
-      name: 'Molten Magma Core',
-      subtitle: 'Volcanic Blast',
-      description: 'Crackling volcanic rock oozing incandescent lava ready to erupt.',
-      price: 850,
-      rarity: 'Legendary',
-      badge: 'HOT',
-      accentGradient: 'from-amber-400 via-orange-500 to-red-600',
-      borderGlow: 'border-orange-500/80 shadow-[0_0_22px_rgba(249,115,22,0.6)]',
-      iconType: 'bomb',
+      image: bombSpriteImg,
     },
   ],
   balls: [
     {
       id: 'ball_cyan_orbs',
       category: 'balls',
-      name: 'Cyan Pulse Spheres',
-      subtitle: 'Standard Grid Tiles',
-      description: 'Vibrant neon blue kinetic orbs with tactile impact feedback.',
+      name: 'Tactile Cyber Orb',
+      subtitle: 'Kaboom Grid Spheres',
+      description: 'The authentic tactile 3D party sphere with cyan neon ring contours and kinetic touch feedback.',
       price: 0,
       rarity: 'Common',
-      badge: 'DEFAULT',
-      accentGradient: 'from-cyan-400 to-teal-500',
+      badge: 'EQUIPPED',
+      accentGradient: 'from-cyan-400 via-sky-500 to-blue-600',
       borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
       iconType: 'ball',
-    },
-    {
-      id: 'ball_golden_sparkle',
-      category: 'balls',
-      name: 'Golden Disco Orbs',
-      subtitle: 'VIP Gilded Spheres',
-      description: 'Polished brass and gold spheres with shimmering glitter particles.',
-      price: 300,
-      rarity: 'Rare',
-      accentGradient: 'from-amber-300 to-yellow-500',
-      borderGlow: 'border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
-      iconType: 'ball',
-    },
-    {
-      id: 'ball_hologram_crystal',
-      category: 'balls',
-      name: 'Prism Hologram Bubbles',
-      subtitle: 'Crystal Refraction',
-      description: 'Translucent diamond facets splitting nightclub lights into rainbow spectrums.',
-      price: 550,
-      rarity: 'Epic',
-      badge: 'NEW',
-      accentGradient: 'from-fuchsia-400 via-purple-400 to-indigo-500',
-      borderGlow: 'border-fuchsia-400/70 shadow-[0_0_18px_rgba(217,70,239,0.5)]',
-      iconType: 'ball',
-    },
-    {
-      id: 'ball_retro_pixel',
-      category: 'balls',
-      name: 'Retro 8-Bit Cubes',
-      subtitle: 'Arcade Nostalgia',
-      description: 'Isometric pixel blocks with authentic 90s arcade sound aesthetics.',
-      price: 800,
-      rarity: 'Legendary',
-      accentGradient: 'from-emerald-400 via-teal-400 to-cyan-500',
-      borderGlow: 'border-emerald-400/80 shadow-[0_0_20px_rgba(52,211,153,0.5)]',
-      iconType: 'ball',
+      image: ballSpriteImg,
     },
   ],
   accessories: [
@@ -244,57 +182,103 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
   ],
 };
 
-const DEFAULT_QUESTS: DailyQuest[] = [
-  {
-    id: 'quest_bottle_spin',
-    title: 'Bottle Spin Party',
-    description: 'Spin the bottle 3 times with friends at the party table.',
-    targetCount: 3,
-    currentCount: 3,
-    starReward: 50,
-    isClaimed: false,
-    gameMode: 'bottle',
-  },
-  {
-    id: 'quest_roulette_picker',
-    title: 'Finger Picker Host',
-    description: 'Complete 2 rounds of Finger Roulette selection.',
-    targetCount: 2,
-    currentCount: 2,
-    starReward: 50,
-    isClaimed: false,
-    gameMode: 'roulette',
-  },
-  {
-    id: 'quest_kaboom_tiles',
-    title: 'Bomb Defusal Safe Zone',
-    description: 'Reveal 5 safe ball tiles in KABOOM mode without exploding.',
-    targetCount: 5,
-    currentCount: 5,
-    starReward: 75,
-    isClaimed: false,
-    gameMode: 'kaboom',
-  },
-  {
-    id: 'quest_extreme_gauntlet',
-    title: 'Extreme Board Challenger',
-    description: 'Survive or complete a round on 4×4 Extreme or 5×5 Chaos board.',
-    targetCount: 1,
-    currentCount: 0,
-    starReward: 100,
-    isClaimed: false,
-    gameMode: 'kaboom',
-  },
-  {
-    id: 'quest_daily_party',
-    title: 'Party Attendance',
-    description: 'Join the party today and visit the store or check settings.',
-    targetCount: 1,
-    currentCount: 1,
-    starReward: 50,
-    isClaimed: true,
-    gameMode: 'settings',
-  },
+export function getTodayDateString(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function getTimeUntilMidnight(): {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  totalMs: number;
+  formatted: string;
+} {
+  const now = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+  const diffMs = Math.max(0, midnight.getTime() - now.getTime());
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+  const formatted = `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+  return { hours, minutes, seconds, totalMs: diffMs, formatted };
+}
+
+export function createDefaultQuests(): DailyQuest[] {
+  return [
+    {
+      id: 'quest_daily_party',
+      title: 'Party Attendance',
+      description: 'Check in to the party club today to earn daily stars.',
+      targetCount: 1,
+      currentCount: 1, // Ready to claim immediately on daily login!
+      starReward: 50,
+      isClaimed: false,
+      gameMode: 'hub',
+    },
+    {
+      id: 'quest_bottle_spin',
+      title: 'Bottle Spin Party',
+      description: 'Spin the bottle 3 times with party friends.',
+      targetCount: 3,
+      currentCount: 0,
+      starReward: 50,
+      isClaimed: false,
+      gameMode: 'bottle',
+    },
+    {
+      id: 'quest_roulette_picker',
+      title: 'Finger Picker Host',
+      description: 'Complete 2 rounds of Finger Roulette selection.',
+      targetCount: 2,
+      currentCount: 0,
+      starReward: 50,
+      isClaimed: false,
+      gameMode: 'roulette',
+    },
+    {
+      id: 'quest_kaboom_tiles',
+      title: 'Safe Tile Sweeper',
+      description: 'Reveal 5 safe ball tiles in KABOOM mode without detonating.',
+      targetCount: 5,
+      currentCount: 0,
+      starReward: 75,
+      isClaimed: false,
+      gameMode: 'kaboom',
+    },
+    {
+      id: 'quest_kaboom_victory',
+      title: 'Kaboom Champion',
+      description: 'Safely clear a board or avoid bombs to win 1 KABOOM round.',
+      targetCount: 1,
+      currentCount: 0,
+      starReward: 100,
+      isClaimed: false,
+      gameMode: 'kaboom',
+    },
+  ];
+}
+
+export const MILESTONE_CHEST_REWARD = 250;
+
+export interface DailyLoginRewardTier {
+  day: number;
+  stars: number;
+  label: string;
+  isGrand?: boolean;
+}
+
+export const DAILY_LOGIN_REWARDS: DailyLoginRewardTier[] = [
+  { day: 1, stars: 100, label: 'Day 1' },
+  { day: 2, stars: 150, label: 'Day 2' },
+  { day: 3, stars: 200, label: 'Day 3' },
+  { day: 4, stars: 250, label: 'Day 4' },
+  { day: 5, stars: 300, label: 'Day 5' },
+  { day: 6, stars: 400, label: 'Day 6' },
+  { day: 7, stars: 750, label: 'Grand Day 7', isGrand: true },
 ];
 
 const DEFAULT_STATE: EconomyState = {
@@ -316,8 +300,14 @@ const DEFAULT_STATE: EconomyState = {
     fingerGame: false,
     unlocked: false,
   },
-  dailyQuests: DEFAULT_QUESTS,
+  dailyQuests: createDefaultQuests(),
+  milestoneChestClaimed: false,
+  lastDailyResetDate: getTodayDateString(),
   lastDailyReset: Date.now(),
+  dailyLoginRewards: {
+    claimedDays: [],
+    lastClaimDate: '',
+  },
   claimedLoginDay: 1,
 };
 
@@ -330,6 +320,7 @@ export function getEconomyState(): EconomyState {
       return DEFAULT_STATE;
     }
     const parsed = JSON.parse(raw);
+    const todayStr = getTodayDateString();
     
     // Ensure default unlocked bottle is present
     let rawUnlocked: string[] = Array.isArray(parsed.unlockedItems) ? parsed.unlockedItems : DEFAULT_STATE.unlockedItems;
@@ -370,7 +361,50 @@ export function getEconomyState(): EconomyState {
       equippedBottles = 'bottle_btl_001';
     }
 
-    return {
+    // Daily reset check: compare stored reset date with today's local date
+    const lastResetDate = typeof parsed.lastDailyResetDate === 'string' ? parsed.lastDailyResetDate : '';
+    const isNewDay = lastResetDate !== todayStr;
+
+    let dailyQuests: DailyQuest[];
+    let milestoneChestClaimed = Boolean(parsed.milestoneChestClaimed);
+
+    if (isNewDay) {
+      // It's a new day! Reset all quests and milestone chest
+      dailyQuests = createDefaultQuests();
+      milestoneChestClaimed = false;
+    } else {
+      // Same day: ensure standard 5 quests exist and keep progress
+      const defaultQuests = createDefaultQuests();
+      const existingQuests: DailyQuest[] = Array.isArray(parsed.dailyQuests) ? parsed.dailyQuests : [];
+      
+      dailyQuests = defaultQuests.map((defQ) => {
+        const found = existingQuests.find((q) => q.id === defQ.id);
+        if (found) {
+          return {
+            ...defQ,
+            currentCount: typeof found.currentCount === 'number' ? found.currentCount : defQ.currentCount,
+            isClaimed: Boolean(found.isClaimed),
+          };
+        }
+        return defQ;
+      });
+    }
+
+    // Daily Login Rewards normalization
+    const rawDailyRewards = parsed.dailyLoginRewards || {};
+    const claimedDays: number[] = Array.isArray(rawDailyRewards.claimedDays)
+      ? rawDailyRewards.claimedDays.filter((d: any) => typeof d === 'number' && d >= 1 && d <= 7)
+      : [];
+    const lastClaimDate: string = typeof rawDailyRewards.lastClaimDate === 'string'
+      ? rawDailyRewards.lastClaimDate
+      : '';
+
+    const dailyLoginRewards: DailyLoginRewards = {
+      claimedDays,
+      lastClaimDate,
+    };
+
+    const currentState: EconomyState = {
       stars: typeof parsed.stars === 'number' ? parsed.stars : DEFAULT_STATE.stars,
       unlockedItems: cleanUnlocked.length > 0 ? cleanUnlocked : DEFAULT_STATE.unlockedItems,
       equippedSkins: {
@@ -380,10 +414,20 @@ export function getEconomyState(): EconomyState {
         accessories: parsed.equippedSkins?.accessories || (isUnlocked ? 'accessory_star_earrings' : ''),
       },
       starEarrings,
-      dailyQuests: Array.isArray(parsed.dailyQuests) && parsed.dailyQuests.length > 0 ? parsed.dailyQuests : DEFAULT_QUESTS,
-      lastDailyReset: parsed.lastDailyReset || Date.now(),
-      claimedLoginDay: parsed.claimedLoginDay || 1,
+      dailyQuests,
+      milestoneChestClaimed,
+      lastDailyResetDate: todayStr,
+      lastDailyReset: isNewDay ? Date.now() : (parsed.lastDailyReset || Date.now()),
+      dailyLoginRewards,
+      claimedLoginDay: claimedDays.length,
     };
+
+    if (isNewDay) {
+      // Persist the reset state immediately
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentState));
+    }
+
+    return currentState;
   } catch (e) {
     return DEFAULT_STATE;
   }
@@ -393,8 +437,265 @@ export function saveEconomyState(state: EconomyState): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    saveEconomyToDB(state).catch(() => {});
     window.dispatchEvent(new CustomEvent('picku_economy_updated', { detail: state }));
   } catch (e) {}
+}
+
+export function checkAndResetDailyQuests(): EconomyState {
+  const current = getEconomyState();
+  const today = getTodayDateString();
+  if (current.lastDailyResetDate !== today) {
+    const updated: EconomyState = {
+      ...current,
+      dailyQuests: createDefaultQuests(),
+      milestoneChestClaimed: false,
+      lastDailyResetDate: today,
+      lastDailyReset: Date.now(),
+    };
+    saveEconomyState(updated);
+    return updated;
+  }
+  return current;
+}
+
+export function recordDailyQuestProgress(
+  type: 'bottle_spin' | 'roulette_round' | 'kaboom_tile' | 'kaboom_victory',
+  amount: number = 1
+): { updatedState: EconomyState; completedQuests: DailyQuest[] } {
+  const state = checkAndResetDailyQuests();
+
+  const idMap: Record<string, string> = {
+    bottle_spin: 'quest_bottle_spin',
+    roulette_round: 'quest_roulette_picker',
+    kaboom_tile: 'quest_kaboom_tiles',
+    kaboom_victory: 'quest_kaboom_victory',
+  };
+
+  const targetId = idMap[type];
+  if (!targetId) return { updatedState: state, completedQuests: [] };
+
+  const questIndex = state.dailyQuests.findIndex((q) => q.id === targetId);
+  if (questIndex === -1) return { updatedState: state, completedQuests: [] };
+
+  const quest = state.dailyQuests[questIndex];
+  if (quest.currentCount >= quest.targetCount) {
+    return { updatedState: state, completedQuests: [] };
+  }
+
+  const nextCount = Math.min(quest.targetCount, quest.currentCount + amount);
+  const updatedQuests = [...state.dailyQuests];
+  updatedQuests[questIndex] = {
+    ...quest,
+    currentCount: nextCount,
+  };
+
+  const updatedState: EconomyState = {
+    ...state,
+    dailyQuests: updatedQuests,
+  };
+
+  saveEconomyState(updatedState);
+
+  const completedNow = nextCount >= quest.targetCount && quest.currentCount < quest.targetCount;
+  return {
+    updatedState,
+    completedQuests: completedNow ? [updatedQuests[questIndex]] : [],
+  };
+}
+
+export function claimMilestoneChest(): {
+  success: boolean;
+  starsAdded: number;
+  updatedState: EconomyState;
+  message: string;
+} {
+  const state = getEconomyState();
+  if (state.milestoneChestClaimed) {
+    return {
+      success: false,
+      starsAdded: 0,
+      updatedState: state,
+      message: 'Milestone chest already claimed today!',
+    };
+  }
+
+  const allCompleted =
+    state.dailyQuests.length > 0 &&
+    state.dailyQuests.every((q) => q.currentCount >= q.targetCount);
+
+  if (!allCompleted) {
+    return {
+      success: false,
+      starsAdded: 0,
+      updatedState: state,
+      message: 'Complete all 5 daily quests to open the chest!',
+    };
+  }
+
+  const updatedState: EconomyState = {
+    ...state,
+    stars: state.stars + MILESTONE_CHEST_REWARD,
+    milestoneChestClaimed: true,
+  };
+
+  saveEconomyState(updatedState);
+  return {
+    success: true,
+    starsAdded: MILESTONE_CHEST_REWARD,
+    updatedState,
+    message: 'Rave Crate opened! +250 Stars claimed!',
+  };
+}
+
+export function resetDailyQuestsForTesting(): EconomyState {
+  const state = getEconomyState();
+  const updated: EconomyState = {
+    ...state,
+    dailyQuests: createDefaultQuests(),
+    milestoneChestClaimed: false,
+    lastDailyResetDate: getTodayDateString(),
+    lastDailyReset: Date.now(),
+  };
+  saveEconomyState(updated);
+  return updated;
+}
+
+// 7-DAY LOGIN REWARDS LOGIC (From Day 1 to Day 7, each day can be claimed just once)
+export function getDailyRewardStatus(customState?: EconomyState): {
+  claimedDays: number[];
+  currentAvailableDay: number | null;
+  canClaimToday: boolean;
+  allDaysClaimed: boolean;
+  nextDay: number | null;
+  nextDayUnlocksAtMidnight: boolean;
+} {
+  const state = customState || getEconomyState();
+  const today = getTodayDateString();
+  const claimed = Array.isArray(state.dailyLoginRewards?.claimedDays)
+    ? [...state.dailyLoginRewards.claimedDays]
+    : [];
+  const lastDate = state.dailyLoginRewards?.lastClaimDate || '';
+
+  const totalClaimed = claimed.length;
+
+  if (totalClaimed >= 7) {
+    return {
+      claimedDays: claimed,
+      currentAvailableDay: null,
+      canClaimToday: false,
+      allDaysClaimed: true,
+      nextDay: null,
+      nextDayUnlocksAtMidnight: false,
+    };
+  }
+
+  // If already claimed today:
+  if (lastDate === today) {
+    const nextDay = totalClaimed + 1;
+    return {
+      claimedDays: claimed,
+      currentAvailableDay: null,
+      canClaimToday: false,
+      allDaysClaimed: false,
+      nextDay: nextDay <= 7 ? nextDay : null,
+      nextDayUnlocksAtMidnight: true,
+    };
+  }
+
+  // Not claimed today yet: next sequential day (1..7) is available
+  const nextDay = totalClaimed + 1;
+  return {
+    claimedDays: claimed,
+    currentAvailableDay: nextDay <= 7 ? nextDay : null,
+    canClaimToday: nextDay <= 7,
+    allDaysClaimed: false,
+    nextDay: nextDay <= 7 ? nextDay : null,
+    nextDayUnlocksAtMidnight: false,
+  };
+}
+
+export function claimDailyLoginReward(day: number): {
+  success: boolean;
+  starsAdded: number;
+  updatedState: EconomyState;
+  message: string;
+} {
+  const state = getEconomyState();
+  const today = getTodayDateString();
+  const claimed = state.dailyLoginRewards?.claimedDays || [];
+  const lastDate = state.dailyLoginRewards?.lastClaimDate || '';
+
+  if (day < 1 || day > 7) {
+    return { success: false, starsAdded: 0, updatedState: state, message: 'Invalid reward day.' };
+  }
+
+  // "From day 1 to day 7, the rewards can be claimed just once."
+  if (claimed.includes(day)) {
+    return {
+      success: false,
+      starsAdded: 0,
+      updatedState: state,
+      message: `Day ${day} reward has already been claimed! Each day can only be claimed once.`,
+    };
+  }
+
+  if (lastDate === today) {
+    return {
+      success: false,
+      starsAdded: 0,
+      updatedState: state,
+      message: 'You have already claimed today’s reward! Come back tomorrow for the next day.',
+    };
+  }
+
+  const expectedDay = claimed.length + 1;
+  if (day !== expectedDay) {
+    return {
+      success: false,
+      starsAdded: 0,
+      updatedState: state,
+      message: `Please claim Day ${expectedDay} first.`,
+    };
+  }
+
+  const tier = DAILY_LOGIN_REWARDS.find((t) => t.day === day);
+  const starAmount = tier ? tier.stars : 100;
+
+  const updatedClaimedDays = [...claimed, day];
+  const updatedLoginRewards: DailyLoginRewards = {
+    claimedDays: updatedClaimedDays,
+    lastClaimDate: today,
+  };
+
+  const updatedState: EconomyState = {
+    ...state,
+    stars: state.stars + starAmount,
+    dailyLoginRewards: updatedLoginRewards,
+    claimedLoginDay: updatedClaimedDays.length,
+  };
+
+  saveEconomyState(updatedState);
+  return {
+    success: true,
+    starsAdded: starAmount,
+    updatedState,
+    message: `Day ${day} reward claimed! +${starAmount} Stars!`,
+  };
+}
+
+export function resetDailyLoginRewardsForTesting(): EconomyState {
+  const state = getEconomyState();
+  const updated: EconomyState = {
+    ...state,
+    dailyLoginRewards: {
+      claimedDays: [],
+      lastClaimDate: '',
+    },
+    claimedLoginDay: 0,
+  };
+  saveEconomyState(updated);
+  return updated;
 }
 
 export function purchaseItem(itemId: string): { success: boolean; message: string; updatedState: EconomyState } {

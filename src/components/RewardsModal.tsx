@@ -3,10 +3,17 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { X, Gift, Star, Check, Sparkles, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Gift, Star, Check, Sparkles, Calendar, Clock, RotateCcw } from 'lucide-react';
 import { SoundEngine, Haptics } from '../lib/audio';
-import { EconomyState, addStars, saveEconomyState } from '../lib/economy';
+import {
+  EconomyState,
+  claimDailyLoginReward,
+  getDailyRewardStatus,
+  getTimeUntilMidnight,
+  DAILY_LOGIN_REWARDS,
+  resetDailyLoginRewardsForTesting,
+} from '../lib/economy';
 
 interface RewardsModalProps {
   isOpen: boolean;
@@ -15,46 +22,61 @@ interface RewardsModalProps {
   onEconomyUpdated: (state: EconomyState) => void;
 }
 
-const DAILY_LOGIN_REWARDS = [
-  { day: 1, stars: 100, label: 'Day 1' },
-  { day: 2, stars: 150, label: 'Day 2' },
-  { day: 3, stars: 200, label: 'Day 3' },
-  { day: 4, stars: 250, label: 'Day 4' },
-  { day: 5, stars: 300, label: 'Day 5' },
-  { day: 6, stars: 400, label: 'Day 6' },
-  { day: 7, stars: 750, label: 'Grand Day 7', isGrand: true },
-];
-
 export const RewardsModal: React.FC<RewardsModalProps> = ({
   isOpen,
   economy,
   onClose,
   onEconomyUpdated,
 }) => {
-  const [claimedDays, setClaimedDays] = useState<number[]>([1]); // Day 1 default claimed
-  const [justClaimed, setJustClaimed] = useState<number | null>(null);
+  const [timeLeftStr, setTimeLeftStr] = useState<string>(() => getTimeUntilMidnight().formatted);
+  const [justClaimedDay, setJustClaimedDay] = useState<number | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const interval = window.setInterval(() => {
+      setTimeLeftStr(getTimeUntilMidnight().formatted);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const currentLoginDay = 2; // Simulating day 2 ready to claim
+  const status = getDailyRewardStatus(economy);
+  const claimedDays = status.claimedDays;
+  const currentAvailableDay = status.currentAvailableDay;
 
-  const handleClaim = (day: number, stars: number) => {
+  const handleClaim = (day: number) => {
     SoundEngine.playTeamDivisionChime();
     Haptics.touchSuccess();
-    setClaimedDays((prev) => [...prev, day]);
-    setJustClaimed(day);
 
-    const updated = addStars(stars);
+    const res = claimDailyLoginReward(day);
+    if (res.success) {
+      setJustClaimedDay(day);
+      setToastMsg(`Claimed Day ${day} (+${res.starsAdded} ⭐)!`);
+      onEconomyUpdated(res.updatedState);
+      setTimeout(() => {
+        setJustClaimedDay(null);
+        setToastMsg(null);
+      }, 3000);
+    } else {
+      setToastMsg(res.message);
+      setTimeout(() => setToastMsg(null), 3000);
+    }
+  };
+
+  const handleDevResetRewards = () => {
+    SoundEngine.playButtonClick();
+    Haptics.buttonClick();
+    const updated = resetDailyLoginRewardsForTesting();
     onEconomyUpdated(updated);
-
-    setTimeout(() => {
-      setJustClaimed(null);
-    }, 2500);
+    setToastMsg('7-Day Login calendar reset for testing.');
+    setTimeout(() => setToastMsg(null), 2500);
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-md animate-fade-in select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center pt-[max(2.25rem,calc(env(safe-area-inset-top)+1.25rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-md animate-fade-in select-none"
       onClick={onClose}
     >
       <div
@@ -72,8 +94,9 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
               <h2 className="font-header text-xl sm:text-2xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-rose-300 to-amber-300 leading-none">
                 PARTY REWARDS
               </h2>
-              <div className="text-[11px] text-pink-200/70 mt-1 font-body">
-                Daily Check-in & Login Streak
+              <div className="flex items-center gap-1.5 text-[11px] text-pink-200/70 mt-1 font-body">
+                <Calendar className="w-3 h-3 text-pink-400" />
+                <span>7-Day Login Streak (Claim Once Each)</span>
               </div>
             </div>
           </div>
@@ -101,40 +124,68 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
           </div>
         </div>
 
+        {/* Next Unlock Banner */}
+        <div className="px-5 py-2 bg-black/40 border-b border-white/5 flex items-center justify-between text-xs">
+          {status.allDaysClaimed ? (
+            <span className="text-emerald-300 font-header font-bold flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" /> All 7 Days Claimed! Mastery Achieved!
+            </span>
+          ) : status.canClaimToday && currentAvailableDay ? (
+            <span className="text-amber-300 font-header font-bold flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> Day {currentAvailableDay} Reward is Ready to Claim!
+            </span>
+          ) : (
+            <div className="flex items-center gap-1.5 text-gray-300 font-body">
+              <Clock className="w-3.5 h-3.5 text-pink-400" />
+              <span>
+                Today claimed! Day {(claimedDays.length + 1)} unlocks in <strong className="text-pink-300 font-mono">{timeLeftStr}</strong>
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Toast Feedback */}
+        {toastMsg && (
+          <div className="px-4 py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-header font-bold text-center tracking-wide animate-pulse">
+            {toastMsg}
+          </div>
+        )}
+
         {/* 7-Day Calendar Grid */}
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          <div className="flex items-center gap-2 mb-3">
-            <Calendar className="w-4 h-4 text-pink-400" />
-            <h3 className="font-header text-xs font-bold uppercase tracking-wider text-pink-200">
-              7-Day Party Starter Streak
-            </h3>
-          </div>
-
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
             {DAILY_LOGIN_REWARDS.map((reward) => {
               const isClaimed = claimedDays.includes(reward.day);
-              const isReady = reward.day === currentLoginDay && !isClaimed;
-              const isLocked = reward.day > currentLoginDay;
+              const isReady = reward.day === currentAvailableDay && status.canClaimToday;
+              const isUpcoming = reward.day > claimedDays.length && !isReady;
+              const isGrand = reward.isGrand;
 
               return (
                 <div
                   key={reward.day}
                   className={`relative rounded-2xl p-3 flex flex-col items-center justify-between border transition-all text-center ${
-                    reward.isGrand ? 'col-span-3 sm:col-span-2' : 'col-span-1'
+                    isGrand ? 'col-span-3 sm:col-span-2' : 'col-span-1'
                   } ${
                     isClaimed
                       ? 'bg-neutral-900/40 border-white/5 opacity-60'
                       : isReady
-                      ? 'bg-gradient-to-b from-pink-950/80 to-purple-950/80 border-pink-400/80 shadow-[0_0_18px_rgba(236,72,153,0.4)] animate-pulse'
-                      : 'bg-black/40 border-white/10'
+                      ? 'bg-gradient-to-b from-pink-950/80 to-purple-950/80 border-pink-400/80 shadow-[0_0_18px_rgba(236,72,153,0.4)]'
+                      : 'bg-black/40 border-white/10 opacity-75'
                   }`}
                 >
-                  <span className="font-header text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-                    {reward.label}
-                  </span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-header text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                      {reward.label}
+                    </span>
+                    {isClaimed && (
+                      <span className="text-[9px] font-header font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
+                        CLAIMED
+                      </span>
+                    )}
+                  </div>
 
                   <div className="my-2 relative flex items-center justify-center">
-                    {reward.isGrand ? (
+                    {isGrand ? (
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-pink-500 to-purple-600 flex items-center justify-center shadow-lg border border-yellow-200">
                         <Gift className="w-6 h-6 text-white" />
                       </div>
@@ -144,7 +195,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
                           isClaimed
                             ? 'text-gray-500'
                             : isReady
-                            ? 'text-amber-300 fill-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]'
+                            ? 'text-amber-300 fill-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse'
                             : 'text-amber-500/40'
                         }`}
                       />
@@ -162,13 +213,15 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
                   ) : isReady ? (
                     <button
                       type="button"
-                      onClick={() => handleClaim(reward.day, reward.stars)}
-                      className="w-full py-1 rounded-full bg-gradient-to-r from-pink-500 to-amber-500 text-white font-header font-bold text-[10px] uppercase tracking-wider shadow-md active:scale-95 transition-all"
+                      onClick={() => handleClaim(reward.day)}
+                      className="w-full py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 text-black font-header font-bold text-[11px] uppercase tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.6)] border border-yellow-200 active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer animate-pulse"
                     >
-                      CLAIM
+                      <Sparkles className="w-3 h-3" /> CLAIM
                     </button>
                   ) : (
-                    <span className="text-[10px] font-header text-gray-500">LOCKED</span>
+                    <span className="text-[10px] font-header text-gray-500 uppercase tracking-wider">
+                      {isUpcoming ? (reward.day === claimedDays.length + 1 ? 'TOMORROW' : 'LOCKED') : 'LOCKED'}
+                    </span>
                   )}
                 </div>
               );
@@ -176,8 +229,18 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
           </div>
         </div>
 
-        <div className="p-3 bg-black/60 border-t border-white/10 text-center text-[11px] text-gray-400">
-          Check in every day to claim bonus Stars for party skins!
+        {/* Modal Footer */}
+        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-400">
+          <span>From Day 1 to Day 7, each reward can be claimed once.</span>
+          <button
+            type="button"
+            onClick={handleDevResetRewards}
+            title="Reset rewards for testing"
+            className="text-[10px] text-gray-500 hover:text-pink-300 flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-2.5 h-2.5" />
+            <span>Test Reset</span>
+          </button>
         </div>
       </div>
     </div>

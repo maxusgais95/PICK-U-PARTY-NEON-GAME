@@ -4,25 +4,31 @@
  */
 
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Target, CheckCircle2, Gift } from 'lucide-react';
 import { DailyQuest } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
+import chestSpriteImg from '../assets/images/Chest_Sprite.png';
+import { getAssetUrl } from '../lib/assetPreloader';
 
 interface DailyQuestsWidgetProps {
   quests: DailyQuest[];
+  milestoneChestClaimed?: boolean;
   onOpenQuests: () => void;
 }
 
 export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
   quests,
+  milestoneChestClaimed = false,
   onOpenQuests,
 }) => {
   const total = quests.length || 5;
   const completed = quests.filter((q) => q.currentCount >= q.targetCount).length;
   const progressPercent = Math.min(100, Math.round((completed / total) * 100));
-  const hasUnclaimed = quests.some(
+  const hasUnclaimedQuest = quests.some(
     (q) => q.currentCount >= q.targetCount && !q.isClaimed
   );
+  const hasUnclaimedMilestone = completed >= total && !milestoneChestClaimed;
+  const hasUnclaimed = hasUnclaimedQuest || hasUnclaimedMilestone;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -50,24 +56,45 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
         </span>
       )}
 
-      {/* Top Row: Progress Count & Chest Icon */}
+      {/* Top Row: Progress Count & Dynamic State Icon */}
       <div className="relative z-10 flex items-center justify-between w-full mb-1">
         <span className="font-header font-bold text-xs sm:text-sm text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] leading-none">
           {completed}/{total}
         </span>
 
         <div className="relative flex items-center justify-center">
-          {/* Animated Neon Rave Crate Chest */}
-          <div className="relative w-7 h-7 -my-1 flex items-center justify-center transform group-hover:scale-115 group-hover:rotate-6 transition-all duration-300">
-            <img
-              src="src/assets/images/Chest Sprite.png"
-              alt="Rave Crate Chest"
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"
-            />
-          </div>
-          {hasUnclaimed && (
-            <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
+          {hasUnclaimedMilestone ? (
+            /* Animated Rave Crate ready to claim when all 5 completed */
+            <div className="relative w-6 h-6 flex items-center justify-center transform group-hover:scale-115 transition-all duration-300">
+              <img
+                src={getAssetUrl(chestSpriteImg)}
+                alt="Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-bounce"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
+                  if (fallback) (fallback as HTMLElement).classList.remove('hidden');
+                }}
+              />
+              <div className="widget-fallback hidden text-amber-300">
+                <Gift className="w-5 h-5 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+              </div>
+              <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
+            </div>
+          ) : milestoneChestClaimed ? (
+            /* All claimed for the day: clean emerald checkmark */
+            <div className="w-5 h-5 flex items-center justify-center text-emerald-400">
+              <CheckCircle2 className="w-4 h-4 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            </div>
+          ) : (
+            /* In progress: sleek neon target icon */
+            <div className="w-5 h-5 flex items-center justify-center text-cyan-300">
+              <Target className="w-4 h-4 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] group-hover:rotate-12 transition-transform" />
+              {hasUnclaimedQuest && (
+                <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
+              )}
+            </div>
           )}
         </div>
       </div>

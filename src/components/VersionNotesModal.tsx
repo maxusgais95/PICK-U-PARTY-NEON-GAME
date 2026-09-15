@@ -28,7 +28,7 @@ export const VersionNotesModal: React.FC<VersionNotesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center pt-[max(1.5rem,calc(env(safe-area-inset-top)+1rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-xl animate-fadeIn select-none">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center pt-[max(2.25rem,calc(env(safe-area-inset-top)+1.25rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/80 backdrop-blur-xl animate-fadeIn select-none">
       <div
         className="relative w-full max-w-md max-h-full rounded-[28px] bg-slate-950/95 border border-purple-500/40 p-4 sm:p-5 shadow-[0_0_50px_rgba(168,85,247,0.35)] flex flex-col text-white overflow-hidden"
         onClick={(e) => e.stopPropagation()}
