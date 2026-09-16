@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppSettings, AppStats, CustomBottleSprite, ScreenView, TouchPlayer, BottleBuiltinStyle, ThemeId } from './types';
 import { THEMES } from './lib/themes';
-import { getSettings, saveSettings, getStats, getAllCustomSprites, saveCustomSprite } from './lib/db';
+import { getSettings, saveSettings, getStats, getAllCustomSprites, saveCustomSprite, DEFAULT_STATS } from './lib/db';
 import { SoundEngine, Haptics } from './lib/audio';
 import { processSpriteImage } from './lib/imageProcessing';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
@@ -25,7 +25,7 @@ import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { KaboomGame } from './components/kaboom/KaboomGame';
-import { getEconomyState, EconomyState } from './lib/economy';
+import { getEconomyState, EconomyState, STORE_CATALOGUE, equipItem } from './lib/economy';
 import { StoreModal } from './components/StoreModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { AchievementsModal } from './components/AchievementsModal';
@@ -61,11 +61,7 @@ export default function App() {
     hapticsEnabled: true,
   });
 
-  const [stats, setStats] = useState<AppStats>({
-    totalRouletteRounds: 0,
-    totalBottleSpins: 0,
-    lastPlayedAt: Date.now(),
-  });
+  const [stats, setStats] = useState<AppStats>(DEFAULT_STATS);
 
   const [customSprites, setCustomSprites] = useState<CustomBottleSprite[]>([]);
   const [currentTouches, setCurrentTouches] = useState<TouchPlayer[]>([]);
@@ -188,14 +184,37 @@ export default function App() {
   const currentTheme = THEMES['cyber-neon'];
 
   // Quick bottle sprite cycle for header action (only appears in bottle spinning game mode)
+  // Switches between bottles that are already purchased in the store
   const handleCycleBottleSprite = useCallback(() => {
-    const presetIds: BottleBuiltinStyle[] = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
+    // Only include bottles that are already unlocked / purchased in the store
+    const unlockedBottleItems = STORE_CATALOGUE.bottles.filter(
+      (item) =>
+        economy.unlockedItems.includes(item.id) ||
+        item.price === 0 ||
+        (item.builtInBottleStyle && economy.unlockedItems.includes(item.builtInBottleStyle))
+    );
 
-    type SpriteOption = { style: BottleBuiltinStyle | 'custom'; spriteId: string | null };
-    const options: SpriteOption[] = presetIds.map((id) => ({ style: id, spriteId: null }));
+    const purchasedBottles =
+      unlockedBottleItems.length > 0 ? unlockedBottleItems : [STORE_CATALOGUE.bottles[0]];
+
+    type SpriteOption = {
+      style: BottleBuiltinStyle | 'custom';
+      spriteId: string | null;
+      storeItemId?: string;
+    };
+
+    const options: SpriteOption[] = purchasedBottles.map((item) => ({
+      style: item.builtInBottleStyle || 'btl_e_001',
+      spriteId: null,
+      storeItemId: item.id,
+    }));
+
+    // If user has uploaded any custom sprites, include them as well
     customSprites.forEach((s) => {
       options.push({ style: 'custom', spriteId: s.id });
     });
+
+    if (options.length === 0) return;
 
     const currentIndex = options.findIndex((opt) => {
       if (opt.style === 'custom') {
@@ -211,9 +230,24 @@ export default function App() {
       bottleStyle: nextOpt.style,
       selectedCustomSpriteId: nextOpt.spriteId,
     });
+
+    // Also sync the equipped skin in the store economy
+    if (nextOpt.storeItemId) {
+      const res = equipItem('bottles', nextOpt.storeItemId);
+      if (res.success) {
+        setEconomy(res.updatedState);
+      }
+    }
+
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
-  }, [settings.bottleStyle, settings.selectedCustomSpriteId, customSprites, handleUpdateSettings]);
+  }, [
+    economy.unlockedItems,
+    settings.bottleStyle,
+    settings.selectedCustomSpriteId,
+    customSprites,
+    handleUpdateSettings,
+  ]);
 
   const handleNavigateToGame = useCallback((targetView: ScreenView) => {
     setCurrentTouches([]);
@@ -310,8 +344,6 @@ export default function App() {
         theme={settings.theme}
         touches={currentTouches}
         showTeamLines={showTeamLines}
-        isBottleSpinning={isBottleSpinning}
-        bottleSpinSpeed={bottleSpinSpeed}
       />
 
       {/* Persistent Mobile Top Action Header */}

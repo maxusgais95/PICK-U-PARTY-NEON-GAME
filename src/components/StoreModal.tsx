@@ -120,6 +120,19 @@ export const StoreModal: React.FC<StoreModalProps> = ({
           </div>
         );
       case 'bomb':
+        if (item.image) {
+          return (
+            <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
+              <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-lg`} />
+              <img
+                src={item.image}
+                alt={item.name}
+                referrerPolicy="no-referrer"
+                className="max-h-20 w-auto object-contain drop-shadow-[0_0_16px_rgba(239,68,68,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+              />
+            </div>
+          );
+        }
         return (
           <div className="relative flex items-center justify-center w-full h-full">
             <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
@@ -129,6 +142,19 @@ export const StoreModal: React.FC<StoreModalProps> = ({
           </div>
         );
       case 'ball':
+        if (item.image) {
+          return (
+            <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
+              <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-lg`} />
+              <img
+                src={item.image}
+                alt={item.name}
+                referrerPolicy="no-referrer"
+                className="max-h-20 w-auto object-contain rounded-full drop-shadow-[0_0_16px_rgba(6,182,212,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+              />
+            </div>
+          );
+        }
         return (
           <div className="relative flex items-center justify-center w-full h-full">
             <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
@@ -325,14 +351,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Item Visual Display Pedestal (Prototype Frame) */}
+                  {/* Item Visual Display Pedestal */}
                   <div className="relative w-full h-24 sm:h-28 rounded-xl bg-black/40 border border-white/10 overflow-hidden flex flex-col items-center justify-center p-2 mb-2 group-hover:border-white/25 transition-all">
                     {renderItemVisual(item)}
-
-                    {/* Subtle Prototype Tag Overlay */}
-                    <div className="absolute bottom-1 right-1 text-[8px] font-mono text-gray-500 bg-black/60 px-1 rounded">
-                      Proto
-                    </div>
                   </div>
 
                   {/* Name & Flavor text */}
