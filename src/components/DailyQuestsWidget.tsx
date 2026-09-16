@@ -83,14 +83,41 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
               <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
             </div>
           ) : milestoneChestClaimed ? (
-            /* All claimed for the day: clean emerald checkmark */
-            <div className="w-5 h-5 flex items-center justify-center text-emerald-400">
-              <CheckCircle2 className="w-4 h-4 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            /* All claimed for the day: chest icon with emerald checkmark */
+            <div className="relative w-6 h-6 flex items-center justify-center">
+              <img
+                src={getAssetUrl(chestSpriteImg)}
+                alt="Claimed Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain opacity-75 filter grayscale-[30%] drop-shadow-[0_0_6px_rgba(52,211,153,0.6)]"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
+                  if (fallback) (fallback as HTMLElement).classList.remove('hidden');
+                }}
+              />
+              <div className="widget-fallback hidden text-emerald-400">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)] absolute -bottom-1 -right-1 bg-black rounded-full" />
             </div>
           ) : (
-            /* In progress: sleek neon target icon */
-            <div className="w-5 h-5 flex items-center justify-center text-cyan-300">
-              <Target className="w-4 h-4 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] group-hover:rotate-12 transition-transform" />
+            /* In progress: sleek neon chest icon */
+            <div className="relative w-6 h-6 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300">
+              <img
+                src={getAssetUrl(chestSpriteImg)}
+                alt="Daily Quests Chest"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] group-hover:drop-shadow-[0_0_10px_rgba(6,182,212,1)]"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
+                  if (fallback) (fallback as HTMLElement).classList.remove('hidden');
+                }}
+              />
+              <div className="widget-fallback hidden text-cyan-300">
+                <Gift className="w-5 h-5 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+              </div>
               {hasUnclaimedQuest && (
                 <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
               )}
