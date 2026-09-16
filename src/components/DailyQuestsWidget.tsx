@@ -83,13 +83,13 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
               <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
             </div>
           ) : milestoneChestClaimed ? (
-            /* All claimed for the day: chest with emerald checkmark badge */
+            /* All claimed for the day: chest icon with emerald checkmark */
             <div className="relative w-6 h-6 flex items-center justify-center">
               <img
                 src={getAssetUrl(chestSpriteImg)}
-                alt="Rave Crate Chest Claimed"
+                alt="Claimed Rave Crate Chest"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-contain filter grayscale opacity-75 drop-shadow-[0_0_4px_rgba(52,211,153,0.5)]"
+                className="w-full h-full object-contain opacity-75 filter grayscale-[30%] drop-shadow-[0_0_6px_rgba(52,211,153,0.6)]"
                 onError={(e) => {
                   (e.currentTarget as HTMLElement).style.display = 'none';
                   const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
@@ -97,20 +97,18 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
                 }}
               />
               <div className="widget-fallback hidden text-emerald-400">
-                <CheckCircle2 className="w-4 h-4 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                <CheckCircle2 className="w-4 h-4" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-black/90 border border-emerald-400 flex items-center justify-center text-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-              </div>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)] absolute -bottom-1 -right-1 bg-black rounded-full" />
             </div>
           ) : (
-            /* In progress: glowing chest icon on daily quests panel */
+            /* In progress: sleek neon chest icon */
             <div className="relative w-6 h-6 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300">
               <img
                 src={getAssetUrl(chestSpriteImg)}
                 alt="Daily Quests Chest"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.85)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] group-hover:drop-shadow-[0_0_10px_rgba(6,182,212,1)]"
                 onError={(e) => {
                   (e.currentTarget as HTMLElement).style.display = 'none';
                   const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
@@ -118,7 +116,7 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
                 }}
               />
               <div className="widget-fallback hidden text-cyan-300">
-                <Gift className="w-5 h-5 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+                <Gift className="w-5 h-5 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
               </div>
               {hasUnclaimedQuest && (
                 <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />

@@ -6,7 +6,17 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppSettings, AppStats, CustomBottleSprite, ScreenView, TouchPlayer, BottleBuiltinStyle, ThemeId } from './types';
 import { THEMES } from './lib/themes';
-import { getSettings, saveSettings, getStats, getAllCustomSprites, saveCustomSprite, DEFAULT_STATS } from './lib/db';
+import {
+  getSettings,
+  saveSettings,
+  getStats,
+  getAllCustomSprites,
+  saveCustomSprite,
+  getEconomyFromDB,
+  saveEconomyToDB,
+  getTrophiesFromDB,
+  saveTrophiesToDB,
+} from './lib/db';
 import { SoundEngine, Haptics } from './lib/audio';
 import { processSpriteImage } from './lib/imageProcessing';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
@@ -61,7 +71,11 @@ export default function App() {
     hapticsEnabled: true,
   });
 
-  const [stats, setStats] = useState<AppStats>(DEFAULT_STATS);
+  const [stats, setStats] = useState<AppStats>({
+    totalRouletteRounds: 0,
+    totalBottleSpins: 0,
+    lastPlayedAt: Date.now(),
+  });
 
   const [customSprites, setCustomSprites] = useState<CustomBottleSprite[]>([]);
   const [currentTouches, setCurrentTouches] = useState<TouchPlayer[]>([]);
@@ -91,6 +105,29 @@ export default function App() {
 
       setSettings(loadedSettings);
       setStats(loadedStats);
+
+      // Restore or synchronize Economy from IndexedDB & LocalStorage
+      try {
+        const dbEconomy = await getEconomyFromDB();
+        const currentEco = getEconomyState();
+        if (dbEconomy && (!localStorage.getItem('picku_party_economy_v1') || (dbEconomy.stars > currentEco.stars))) {
+          localStorage.setItem('picku_party_economy_v1', JSON.stringify(dbEconomy));
+          setEconomy(getEconomyState());
+        } else {
+          saveEconomyToDB(currentEco).catch(() => {});
+        }
+      } catch (err) {}
+
+      // Restore or synchronize Trophies from IndexedDB & LocalStorage
+      try {
+        const dbTrophies = await getTrophiesFromDB();
+        const rawClaims = localStorage.getItem('picku_party_trophy_claims_v1');
+        if (dbTrophies && !rawClaims) {
+          localStorage.setItem('picku_party_trophy_claims_v1', JSON.stringify(dbTrophies));
+        } else if (rawClaims) {
+          saveTrophiesToDB(JSON.parse(rawClaims)).catch(() => {});
+        }
+      } catch (err) {}
 
       // Auto-upgrade any existing custom sprites
       const upgradedSprites = await Promise.all(
@@ -140,6 +177,20 @@ export default function App() {
     return () => window.removeEventListener('picku_economy_updated', handleEconomyEvent);
   }, []);
 
+  // Sync stats reactively across games and modals
+  useEffect(() => {
+    const handleStatsEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<AppStats>;
+      if (customEvent.detail) {
+        setStats(customEvent.detail);
+      } else {
+        getStats().then(setStats);
+      }
+    };
+    window.addEventListener('picku_stats_updated', handleStatsEvent);
+    return () => window.removeEventListener('picku_stats_updated', handleStatsEvent);
+  }, []);
+
   const refreshSprites = useCallback(async () => {
     const sprites = await getAllCustomSprites();
     setCustomSprites(sprites);
@@ -183,35 +234,35 @@ export default function App() {
 
   const currentTheme = THEMES['cyber-neon'];
 
-  // Quick bottle sprite cycle for header action (only appears in bottle spinning game mode)
-  // Switches between bottles that are already purchased in the store
+  // Quick bottle sprite cycle for header action:
+  // Switches ONLY between bottles that are already purchased in the store (or custom uploaded bottles)
   const handleCycleBottleSprite = useCallback(() => {
-    // Only include bottles that are already unlocked / purchased in the store
-    const unlockedBottleItems = STORE_CATALOGUE.bottles.filter(
-      (item) =>
-        economy.unlockedItems.includes(item.id) ||
-        item.price === 0 ||
-        (item.builtInBottleStyle && economy.unlockedItems.includes(item.builtInBottleStyle))
+    // 1. Gather all store bottles that are unlocked/purchased in the user's economy
+    const purchasedStoreBottles = STORE_CATALOGUE.bottles.filter(
+      (b) => economy.unlockedItems.includes(b.id) || b.id === 'bottle_btl_001'
     );
-
-    const purchasedBottles =
-      unlockedBottleItems.length > 0 ? unlockedBottleItems : [STORE_CATALOGUE.bottles[0]];
 
     type SpriteOption = {
       style: BottleBuiltinStyle | 'custom';
       spriteId: string | null;
-      storeItemId?: string;
+      itemId?: string;
+      name: string;
     };
 
-    const options: SpriteOption[] = purchasedBottles.map((item) => ({
-      style: item.builtInBottleStyle || 'btl_e_001',
+    const options: SpriteOption[] = purchasedStoreBottles.map((b) => ({
+      style: (b.builtInBottleStyle || 'btl_e_001') as BottleBuiltinStyle,
       spriteId: null,
-      storeItemId: item.id,
+      itemId: b.id,
+      name: b.name,
     }));
 
-    // If user has uploaded any custom sprites, include them as well
+    // Include custom uploaded sprites if available
     customSprites.forEach((s) => {
-      options.push({ style: 'custom', spriteId: s.id });
+      options.push({
+        style: 'custom',
+        spriteId: s.id,
+        name: s.name,
+      });
     });
 
     if (options.length === 0) return;
@@ -231,9 +282,9 @@ export default function App() {
       selectedCustomSpriteId: nextOpt.spriteId,
     });
 
-    // Also sync the equipped skin in the store economy
-    if (nextOpt.storeItemId) {
-      const res = equipItem('bottles', nextOpt.storeItemId);
+    // Also equip in economy so the store's equipped indicator reflects the active bottle
+    if (nextOpt.itemId) {
+      const res = equipItem('bottles', nextOpt.itemId);
       if (res.success) {
         setEconomy(res.updatedState);
       }
@@ -241,13 +292,7 @@ export default function App() {
 
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
-  }, [
-    economy.unlockedItems,
-    settings.bottleStyle,
-    settings.selectedCustomSpriteId,
-    customSprites,
-    handleUpdateSettings,
-  ]);
+  }, [economy.unlockedItems, settings.bottleStyle, settings.selectedCustomSpriteId, customSprites, handleUpdateSettings]);
 
   const handleNavigateToGame = useCallback((targetView: ScreenView) => {
     setCurrentTouches([]);
@@ -344,6 +389,8 @@ export default function App() {
         theme={settings.theme}
         touches={currentTouches}
         showTeamLines={showTeamLines}
+        isBottleSpinning={isBottleSpinning}
+        bottleSpinSpeed={bottleSpinSpeed}
       />
 
       {/* Persistent Mobile Top Action Header */}

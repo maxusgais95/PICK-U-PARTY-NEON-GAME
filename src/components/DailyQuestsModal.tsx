@@ -109,13 +109,21 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         {/* Top Header Bar */}
         <div className="relative px-5 pt-4 pb-3 border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 via-purple-950 to-black flex items-center justify-center shadow-[0_0_16px_rgba(6,182,212,0.4)] border border-cyan-400/40 shrink-0 p-1.5">
+            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 via-purple-950 to-black flex items-center justify-center shadow-[0_0_16px_rgba(6,182,212,0.4)] border border-cyan-400/40 shrink-0 p-1.5 overflow-hidden">
               <img
                 src={getAssetUrl(chestSpriteImg)}
-                alt="Daily Quests Chest"
+                alt="Daily Quests Rave Crate Chest"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]"
+                className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.85)] pointer-events-none"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = 'none';
+                  const fb = e.currentTarget.parentElement?.querySelector('.header-chest-fallback');
+                  if (fb) (fb as HTMLElement).classList.remove('hidden');
+                }}
               />
+              <div className="header-chest-fallback hidden flex items-center justify-center w-full h-full text-amber-300">
+                <Gift className="w-6 h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+              </div>
             </div>
             <div>
               <h2 className="font-header text-xl sm:text-2xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-300 to-fuchsia-300 leading-none">

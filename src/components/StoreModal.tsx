@@ -16,6 +16,8 @@ import {
 } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { AppSettings, BottleBuiltinStyle } from '../types';
+import bombSpriteImg from '../assets/images/Bomb Detonated Sprite.png';
+import ballSpriteImg from '../assets/images/Ball Sprite.png';
 
 interface StoreModalProps {
   isOpen: boolean;
@@ -120,47 +122,27 @@ export const StoreModal: React.FC<StoreModalProps> = ({
           </div>
         );
       case 'bomb':
-        if (item.image) {
-          return (
-            <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
-              <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-lg`} />
-              <img
-                src={item.image}
-                alt={item.name}
-                referrerPolicy="no-referrer"
-                className="max-h-20 w-auto object-contain drop-shadow-[0_0_16px_rgba(239,68,68,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
-              />
-            </div>
-          );
-        }
         return (
-          <div className="relative flex items-center justify-center w-full h-full">
-            <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
-            <div className="relative text-4xl transform group-hover:scale-110 transition-transform duration-300">
-              💣
-            </div>
+          <div className="relative flex items-center justify-center w-full h-full p-2">
+            <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-lg`} />
+            <img
+              src={item.image || bombSpriteImg}
+              alt={item.name}
+              referrerPolicy="no-referrer"
+              className="max-h-20 w-auto object-contain drop-shadow-[0_8px_16px_rgba(239,68,68,0.9)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+            />
           </div>
         );
       case 'ball':
-        if (item.image) {
-          return (
-            <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
-              <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-lg`} />
-              <img
-                src={item.image}
-                alt={item.name}
-                referrerPolicy="no-referrer"
-                className="max-h-20 w-auto object-contain rounded-full drop-shadow-[0_0_16px_rgba(6,182,212,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
-              />
-            </div>
-          );
-        }
         return (
-          <div className="relative flex items-center justify-center w-full h-full">
-            <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-white/90 to-cyan-300 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.7)] flex items-center justify-center transform group-hover:scale-105 transition-transform">
-              <Sparkles className="w-6 h-6 text-cyan-700" />
-            </div>
+          <div className="relative flex items-center justify-center w-full h-full p-2">
+            <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-lg`} />
+            <img
+              src={item.image || ballSpriteImg}
+              alt={item.name}
+              referrerPolicy="no-referrer"
+              className="max-h-20 w-auto object-contain drop-shadow-[0_8px_16px_rgba(6,182,212,0.9)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+            />
           </div>
         );
       case 'accessory':

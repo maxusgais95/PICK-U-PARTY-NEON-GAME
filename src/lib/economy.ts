@@ -5,8 +5,9 @@
 
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
-import kaboomBombImg from '../assets/images/Bomb Detonated Sprite.png';
-import kaboomBallImg from '../assets/images/Ball Sprite.png';
+import { saveEconomyToDB } from './db';
+import bombSpriteImg from '../assets/images/Bomb Detonated Sprite.png';
+import ballSpriteImg from '../assets/images/Ball Sprite.png';
 
 export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';
 
@@ -136,32 +137,32 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
     {
       id: 'bomb_classic_tnt',
       category: 'bombs',
-      name: 'Cyber Detonated Bomb',
-      subtitle: 'Official Game Sprite',
-      description: 'The authentic KABOOM cyber party bomb with crackling neon sparks, live fuse, and high-voltage detonation aura.',
+      name: 'Cyber Detonator Bomb',
+      subtitle: 'Kaboom High-Explosive Core',
+      description: 'The authentic in-game cyber bomb with animated detonation sparks, high-voltage core, and electric party fuse.',
       price: 0,
       rarity: 'Common',
-      badge: 'DEFAULT',
-      accentGradient: 'from-red-500 via-rose-500 to-orange-500',
+      badge: 'EQUIPPED',
+      accentGradient: 'from-rose-500 via-red-600 to-amber-500',
       borderGlow: 'border-red-400/60 shadow-[0_0_15px_rgba(239,68,68,0.4)]',
       iconType: 'bomb',
-      image: kaboomBombImg,
+      image: bombSpriteImg,
     },
   ],
   balls: [
     {
       id: 'ball_cyan_orbs',
       category: 'balls',
-      name: 'Cyber Neon Ball',
-      subtitle: 'Official Game Sprite',
-      description: 'The authentic 3D kinetic cyber ball with tactile neon cyan and magenta luminescent energy bands.',
+      name: 'Tactile Cyber Orb',
+      subtitle: 'Kaboom Grid Spheres',
+      description: 'The authentic tactile 3D party sphere with cyan neon ring contours and kinetic touch feedback.',
       price: 0,
       rarity: 'Common',
-      badge: 'DEFAULT',
-      accentGradient: 'from-cyan-400 via-teal-400 to-fuchsia-500',
+      badge: 'EQUIPPED',
+      accentGradient: 'from-cyan-400 via-sky-500 to-blue-600',
       borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
       iconType: 'ball',
-      image: kaboomBallImg,
+      image: ballSpriteImg,
     },
   ],
   accessories: [
@@ -360,16 +361,6 @@ export function getEconomyState(): EconomyState {
       equippedBottles = 'bottle_btl_001';
     }
 
-    let equippedBombs = parsed.equippedSkins?.bombs;
-    if (!validBombIds.includes(equippedBombs)) {
-      equippedBombs = DEFAULT_STATE.equippedSkins.bombs;
-    }
-
-    let equippedBalls = parsed.equippedSkins?.balls;
-    if (!validBallIds.includes(equippedBalls)) {
-      equippedBalls = DEFAULT_STATE.equippedSkins.balls;
-    }
-
     // Daily reset check: compare stored reset date with today's local date
     const lastResetDate = typeof parsed.lastDailyResetDate === 'string' ? parsed.lastDailyResetDate : '';
     const isNewDay = lastResetDate !== todayStr;
@@ -418,8 +409,8 @@ export function getEconomyState(): EconomyState {
       unlockedItems: cleanUnlocked.length > 0 ? cleanUnlocked : DEFAULT_STATE.unlockedItems,
       equippedSkins: {
         bottles: equippedBottles,
-        bombs: equippedBombs,
-        balls: equippedBalls,
+        bombs: parsed.equippedSkins?.bombs || DEFAULT_STATE.equippedSkins.bombs,
+        balls: parsed.equippedSkins?.balls || DEFAULT_STATE.equippedSkins.balls,
         accessories: parsed.equippedSkins?.accessories || (isUnlocked ? 'accessory_star_earrings' : ''),
       },
       starEarrings,
@@ -446,6 +437,7 @@ export function saveEconomyState(state: EconomyState): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    saveEconomyToDB(state).catch(() => {});
     window.dispatchEvent(new CustomEvent('picku_economy_updated', { detail: state }));
   } catch (e) {}
 }
