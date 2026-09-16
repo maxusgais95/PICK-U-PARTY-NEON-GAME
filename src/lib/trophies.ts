@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { saveTrophiesToDB } from './db';
-
 export type TrophyTier = 'locked' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
 export interface TrophyTierConfig {
@@ -426,7 +424,6 @@ export function saveTrophyClaimMap(map: Record<string, TrophyTier[]>): void {
   try {
     if (typeof localStorage === 'undefined') return;
     localStorage.setItem(TROPHY_CLAIM_STORAGE_KEY, JSON.stringify(map));
-    saveTrophiesToDB(map).catch(() => {});
   } catch (e) {}
 }
 

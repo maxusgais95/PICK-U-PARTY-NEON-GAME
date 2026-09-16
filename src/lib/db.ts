@@ -7,7 +7,7 @@ import { AppSettings, AppStats, CustomBottleSprite, KaboomStats } from '../types
 import { recordDailyQuestProgress } from './economy';
 
 const DB_NAME = 'NeonPartyHubDB_v1';
-const DB_VERSION = 2;
+const DB_VERSION = 1;
 
 const DEFAULT_SETTINGS: AppSettings = {
   minPlayers: 2,
@@ -108,12 +108,6 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains('stats')) {
         db.createObjectStore('stats');
       }
-      if (!db.objectStoreNames.contains('economy')) {
-        db.createObjectStore('economy');
-      }
-      if (!db.objectStoreNames.contains('trophies')) {
-        db.createObjectStore('trophies');
-      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -207,9 +201,6 @@ export async function saveStats(stats: AppStats): Promise<void> {
   try {
     const normalized = normalizeStats(stats);
     localStorage.setItem('neon_party_stats', JSON.stringify(normalized));
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('picku_stats_updated', { detail: normalized }));
-    }
     const db = await openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction('stats', 'readwrite');
@@ -310,60 +301,4 @@ export async function deleteCustomSprite(id: string): Promise<void> {
       req.onerror = () => reject(req.error);
     });
   } catch (err) {}
-}
-
-export async function saveEconomyToDB(economy: any): Promise<void> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction('economy', 'readwrite');
-      const store = tx.objectStore('economy');
-      const req = store.put(economy, 'current_economy');
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch (err) {}
-}
-
-export async function getEconomyFromDB(): Promise<any | null> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction('economy', 'readonly');
-      const store = tx.objectStore('economy');
-      const req = store.get('current_economy');
-      req.onsuccess = () => resolve(req.result || null);
-      req.onerror = () => resolve(null);
-    });
-  } catch (err) {
-    return null;
-  }
-}
-
-export async function saveTrophiesToDB(trophies: any): Promise<void> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction('trophies', 'readwrite');
-      const store = tx.objectStore('trophies');
-      const req = store.put(trophies, 'current_trophies');
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
-  } catch (err) {}
-}
-
-export async function getTrophiesFromDB(): Promise<any | null> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction('trophies', 'readonly');
-      const store = tx.objectStore('trophies');
-      const req = store.get('current_trophies');
-      req.onsuccess = () => resolve(req.result || null);
-      req.onerror = () => resolve(null);
-    });
-  } catch (err) {
-    return null;
-  }
 }

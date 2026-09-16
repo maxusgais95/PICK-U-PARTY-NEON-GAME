@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, Check, Star, Clock, ArrowRight, Sparkles, Trophy, RotateCcw, Gift } from 'lucide-react';
+import { X, Check, Star, Clock, ArrowRight, Sparkles, Trophy, RotateCcw } from 'lucide-react';
 import {
   DailyQuest,
   claimQuestReward,
@@ -16,8 +16,7 @@ import {
 } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { ScreenView } from '../types';
-import chestSpriteImg from '../assets/images/Chest_Sprite.png';
-import { getAssetUrl } from '../lib/assetPreloader';
+import chestSpriteImg from '../assets/images/Chest Sprite.png';
 
 interface DailyQuestsModalProps {
   isOpen: boolean;
@@ -109,21 +108,13 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         {/* Top Header Bar */}
         <div className="relative px-5 pt-4 pb-3 border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 via-purple-950 to-black flex items-center justify-center shadow-[0_0_16px_rgba(6,182,212,0.4)] border border-cyan-400/40 shrink-0 p-1.5 overflow-hidden">
+            <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-950 to-purple-950 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] border border-cyan-400/50 overflow-hidden">
               <img
-                src={getAssetUrl(chestSpriteImg)}
-                alt="Daily Quests Rave Crate Chest"
+                src={chestSpriteImg}
+                alt="Rave Crate Chest"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.85)] pointer-events-none"
-                onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.display = 'none';
-                  const fb = e.currentTarget.parentElement?.querySelector('.header-chest-fallback');
-                  if (fb) (fb as HTMLElement).classList.remove('hidden');
-                }}
+                className="w-9 h-9 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]"
               />
-              <div className="header-chest-fallback hidden flex items-center justify-center w-full h-full text-amber-300">
-                <Gift className="w-6 h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-              </div>
             </div>
             <div>
               <h2 className="font-header text-xl sm:text-2xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-300 to-fuchsia-300 leading-none">
@@ -153,9 +144,14 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         {/* Milestone Chest Progress Banner */}
         <div className="p-4 bg-cyan-950/30 border-b border-cyan-500/20">
           <div className="flex items-center justify-between text-xs font-header mb-1.5">
-            <span className="text-cyan-200 tracking-wider uppercase flex items-center gap-1.5 font-bold">
-              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-              DAILY COMPLETION BONUS
+            <span className="text-cyan-200 tracking-wider uppercase flex items-center gap-1.5">
+              <img
+                src={chestSpriteImg}
+                alt="Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className="w-4 h-4 object-contain inline-block"
+              />
+              MILESTONE CHEST REWARD
             </span>
             <span className="text-cyan-300 font-bold">
               {completedCount} / {totalCount} Completed
@@ -173,24 +169,14 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
           {/* Chest Action or Info Row */}
           <div className="flex items-center justify-between mt-3 gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-                <img
-                  src={getAssetUrl(chestSpriteImg)}
-                  alt="Rave Crate Chest"
-                  referrerPolicy="no-referrer"
-                  className={`w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] shrink-0 transition-transform ${
-                    canClaimMilestone ? 'scale-115 animate-bounce' : ''
-                  }`}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                    const fallback = e.currentTarget.parentElement?.querySelector('.chest-fallback');
-                    if (fallback) (fallback as HTMLElement).classList.remove('hidden');
-                  }}
-                />
-                <div className="chest-fallback hidden text-amber-400">
-                  <Gift className="w-6 h-6 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                </div>
-              </div>
+              <img
+                src={chestSpriteImg}
+                alt="Rave Crate Chest"
+                referrerPolicy="no-referrer"
+                className={`w-7 h-7 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] shrink-0 transition-transform ${
+                  canClaimMilestone ? 'scale-110 animate-bounce' : ''
+                }`}
+              />
               <span className="text-[11px] text-gray-300 leading-tight truncate">
                 {isMilestoneClaimed
                   ? 'Today’s milestone reward claimed! Resets at midnight.'

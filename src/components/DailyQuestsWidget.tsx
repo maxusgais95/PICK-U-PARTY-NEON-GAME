@@ -4,11 +4,10 @@
  */
 
 import React from 'react';
-import { Sparkles, Target, CheckCircle2, Gift } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { DailyQuest } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
-import chestSpriteImg from '../assets/images/Chest_Sprite.png';
-import { getAssetUrl } from '../lib/assetPreloader';
+import chestSpriteImg from '../assets/images/Chest Sprite.png';
 
 interface DailyQuestsWidgetProps {
   quests: DailyQuest[];
@@ -56,72 +55,24 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
         </span>
       )}
 
-      {/* Top Row: Progress Count & Dynamic State Icon */}
+      {/* Top Row: Progress Count & Chest Icon */}
       <div className="relative z-10 flex items-center justify-between w-full mb-1">
         <span className="font-header font-bold text-xs sm:text-sm text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)] leading-none">
           {completed}/{total}
         </span>
 
         <div className="relative flex items-center justify-center">
-          {hasUnclaimedMilestone ? (
-            /* Animated Rave Crate ready to claim when all 5 completed */
-            <div className="relative w-6 h-6 flex items-center justify-center transform group-hover:scale-115 transition-all duration-300">
-              <img
-                src={getAssetUrl(chestSpriteImg)}
-                alt="Rave Crate Chest"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-bounce"
-                onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.display = 'none';
-                  const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
-                  if (fallback) (fallback as HTMLElement).classList.remove('hidden');
-                }}
-              />
-              <div className="widget-fallback hidden text-amber-300">
-                <Gift className="w-5 h-5 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-              </div>
-              <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
-            </div>
-          ) : milestoneChestClaimed ? (
-            /* All claimed for the day: chest icon with emerald checkmark */
-            <div className="relative w-6 h-6 flex items-center justify-center">
-              <img
-                src={getAssetUrl(chestSpriteImg)}
-                alt="Claimed Rave Crate Chest"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-contain opacity-75 filter grayscale-[30%] drop-shadow-[0_0_6px_rgba(52,211,153,0.6)]"
-                onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.display = 'none';
-                  const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
-                  if (fallback) (fallback as HTMLElement).classList.remove('hidden');
-                }}
-              />
-              <div className="widget-fallback hidden text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.9)] absolute -bottom-1 -right-1 bg-black rounded-full" />
-            </div>
-          ) : (
-            /* In progress: sleek neon chest icon */
-            <div className="relative w-6 h-6 flex items-center justify-center transform group-hover:scale-110 transition-all duration-300">
-              <img
-                src={getAssetUrl(chestSpriteImg)}
-                alt="Daily Quests Chest"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(6,182,212,0.8)] group-hover:drop-shadow-[0_0_10px_rgba(6,182,212,1)]"
-                onError={(e) => {
-                  (e.currentTarget as HTMLElement).style.display = 'none';
-                  const fallback = e.currentTarget.parentElement?.querySelector('.widget-fallback');
-                  if (fallback) (fallback as HTMLElement).classList.remove('hidden');
-                }}
-              />
-              <div className="widget-fallback hidden text-cyan-300">
-                <Gift className="w-5 h-5 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
-              </div>
-              {hasUnclaimedQuest && (
-                <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
-              )}
-            </div>
+          {/* Animated Neon Rave Crate Chest */}
+          <div className="relative w-7 h-7 -my-1 flex items-center justify-center transform group-hover:scale-115 group-hover:rotate-6 transition-all duration-300">
+            <img
+              src={chestSpriteImg}
+              alt="Rave Crate Chest"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+            />
+          </div>
+          {hasUnclaimed && (
+            <Sparkles className="w-2.5 h-2.5 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
           )}
         </div>
       </div>
