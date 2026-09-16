@@ -91,33 +91,56 @@ function normalizeStats(raw: Partial<AppStats> | null | undefined): AppStats {
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    if (!window.indexedDB) {
+    if (typeof window === 'undefined' || !window.indexedDB) {
       reject(new Error('IndexedDB not supported'));
       return;
     }
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains('settings')) {
-        db.createObjectStore('settings');
-      }
-      if (!db.objectStoreNames.contains('custom_sprites')) {
-        db.createObjectStore('custom_sprites', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('stats')) {
-        db.createObjectStore('stats');
-      }
-      if (!db.objectStoreNames.contains('economy')) {
-        db.createObjectStore('economy');
-      }
-      if (!db.objectStoreNames.contains('trophies')) {
-        db.createObjectStore('trophies');
-      }
-    };
+    // Safety timeout: Never block mobile startup if iOS IndexedDB hangs or is locked
+    const timeout = setTimeout(() => {
+      reject(new Error('IndexedDB connection timed out'));
+    }, 2000);
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    try {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings');
+        }
+        if (!db.objectStoreNames.contains('custom_sprites')) {
+          db.createObjectStore('custom_sprites', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('stats')) {
+          db.createObjectStore('stats');
+        }
+        if (!db.objectStoreNames.contains('economy')) {
+          db.createObjectStore('economy');
+        }
+        if (!db.objectStoreNames.contains('trophies')) {
+          db.createObjectStore('trophies');
+        }
+      };
+
+      request.onsuccess = () => {
+        clearTimeout(timeout);
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        clearTimeout(timeout);
+        reject(request.error || new Error('IndexedDB open error'));
+      };
+
+      request.onblocked = () => {
+        clearTimeout(timeout);
+        reject(new Error('IndexedDB blocked'));
+      };
+    } catch (e) {
+      clearTimeout(timeout);
+      reject(e);
+    }
   });
 }
 

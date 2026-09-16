@@ -334,16 +334,24 @@ export async function preloadAllAssets(
       }
 
       if (!blob) {
-        const response = await fetch(item.url);
-        if (response.ok) {
-          if (cache) {
-            try {
-              await cache.put(item.url, response.clone());
-            } catch {
-              // ignore cache put errors
+        const controller = new AbortController();
+        const fetchTimeout = setTimeout(() => controller.abort(), 1500);
+        try {
+          const response = await fetch(item.url, { signal: controller.signal });
+          clearTimeout(fetchTimeout);
+          if (response.ok) {
+            if (cache) {
+              try {
+                await cache.put(item.url, response.clone());
+              } catch {
+                // ignore cache put errors
+              }
             }
+            blob = await response.blob();
           }
-          blob = await response.blob();
+        } catch {
+          clearTimeout(fetchTimeout);
+          blob = null;
         }
       }
 
@@ -542,14 +550,22 @@ export async function preloadGameAssets(
         }
 
         if (!blob) {
-          const res = await fetch(item.url);
-          if (res.ok) {
-            if (cache) {
-              try {
-                await cache.put(item.url, res.clone());
-              } catch {}
+          const controller = new AbortController();
+          const fetchTimeout = setTimeout(() => controller.abort(), 1500);
+          try {
+            const res = await fetch(item.url, { signal: controller.signal });
+            clearTimeout(fetchTimeout);
+            if (res.ok) {
+              if (cache) {
+                try {
+                  await cache.put(item.url, res.clone());
+                } catch {}
+              }
+              blob = await res.blob();
             }
-            blob = await res.blob();
+          } catch {
+            clearTimeout(fetchTimeout);
+            blob = null;
           }
         }
 

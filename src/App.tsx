@@ -10,6 +10,7 @@ import {
   getSettings,
   saveSettings,
   getStats,
+  DEFAULT_STATS,
   getAllCustomSprites,
   saveCustomSprite,
   getEconomyFromDB,
@@ -71,11 +72,7 @@ export default function App() {
     hapticsEnabled: true,
   });
 
-  const [stats, setStats] = useState<AppStats>({
-    totalRouletteRounds: 0,
-    totalBottleSpins: 0,
-    lastPlayedAt: Date.now(),
-  });
+  const [stats, setStats] = useState<AppStats>(DEFAULT_STATS);
 
   const [customSprites, setCustomSprites] = useState<CustomBottleSprite[]>([]);
   const [currentTouches, setCurrentTouches] = useState<TouchPlayer[]>([]);
@@ -88,77 +85,81 @@ export default function App() {
   // Load from IndexedDB on startup
   useEffect(() => {
     async function loadDB() {
-      const loadedSettings = await getSettings();
-      const loadedStats = await getStats();
-      const loadedSprites = await getAllCustomSprites();
-
-      // Ensure valid bottle style and screen blend mode
-      const validSkins = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
-      if (
-        !validSkins.includes(loadedSettings.bottleStyle) &&
-        loadedSettings.bottleStyle !== 'custom'
-      ) {
-        loadedSettings.bottleStyle = 'btl_e_001';
-      }
-      loadedSettings.bottleBlendMode = 'screen';
-      loadedSettings.theme = 'cyber-neon';
-
-      setSettings(loadedSettings);
-      setStats(loadedStats);
-
-      // Restore or synchronize Economy from IndexedDB & LocalStorage
       try {
-        const dbEconomy = await getEconomyFromDB();
-        const currentEco = getEconomyState();
-        if (dbEconomy && (!localStorage.getItem('picku_party_economy_v1') || (dbEconomy.stars > currentEco.stars))) {
-          localStorage.setItem('picku_party_economy_v1', JSON.stringify(dbEconomy));
-          setEconomy(getEconomyState());
-        } else {
-          saveEconomyToDB(currentEco).catch(() => {});
-        }
-      } catch (err) {}
+        const loadedSettings = await getSettings();
+        const loadedStats = await getStats();
+        const loadedSprites = await getAllCustomSprites();
 
-      // Restore or synchronize Trophies from IndexedDB & LocalStorage
-      try {
-        const dbTrophies = await getTrophiesFromDB();
-        const rawClaims = localStorage.getItem('picku_party_trophy_claims_v1');
-        if (dbTrophies && !rawClaims) {
-          localStorage.setItem('picku_party_trophy_claims_v1', JSON.stringify(dbTrophies));
-        } else if (rawClaims) {
-          saveTrophiesToDB(JSON.parse(rawClaims)).catch(() => {});
+        // Ensure valid bottle style and screen blend mode
+        const validSkins = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
+        if (
+          !validSkins.includes(loadedSettings.bottleStyle) &&
+          loadedSettings.bottleStyle !== 'custom'
+        ) {
+          loadedSettings.bottleStyle = 'btl_e_001';
         }
-      } catch (err) {}
+        loadedSettings.bottleBlendMode = 'screen';
+        loadedSettings.theme = 'cyber-neon';
 
-      // Auto-upgrade any existing custom sprites
-      const upgradedSprites = await Promise.all(
-        loadedSprites.map(async (sprite) => {
-          if (!sprite.originalDataUrl) {
-            sprite.originalDataUrl = sprite.dataUrl;
+        setSettings(loadedSettings);
+        setStats(loadedStats);
+
+        // Restore or synchronize Economy from IndexedDB & LocalStorage
+        try {
+          const dbEconomy = await getEconomyFromDB();
+          const currentEco = getEconomyState();
+          if (dbEconomy && (!localStorage.getItem('picku_party_economy_v1') || (dbEconomy.stars > currentEco.stars))) {
+            localStorage.setItem('picku_party_economy_v1', JSON.stringify(dbEconomy));
+            setEconomy(getEconomyState());
+          } else {
+            saveEconomyToDB(currentEco).catch(() => {});
           }
-          if ((sprite as any).cleanEdgeVersion !== 2) {
-            try {
-              sprite.dataUrl = await processSpriteImage(
-                sprite.originalDataUrl,
-                sprite.blendMode || 'color-dodge',
-                sprite.rotationOffset || 0
-              );
-              (sprite as any).cleanEdgeVersion = 2;
-              await saveCustomSprite(sprite);
-            } catch (err) {
-              console.error('Error upgrading sprite:', err);
+        } catch (err) {}
+
+        // Restore or synchronize Trophies from IndexedDB & LocalStorage
+        try {
+          const dbTrophies = await getTrophiesFromDB();
+          const rawClaims = localStorage.getItem('picku_party_trophy_claims_v1');
+          if (dbTrophies && !rawClaims) {
+            localStorage.setItem('picku_party_trophy_claims_v1', JSON.stringify(dbTrophies));
+          } else if (rawClaims) {
+            saveTrophiesToDB(JSON.parse(rawClaims)).catch(() => {});
+          }
+        } catch (err) {}
+
+        // Auto-upgrade any existing custom sprites
+        const upgradedSprites = await Promise.all(
+          loadedSprites.map(async (sprite) => {
+            if (!sprite.originalDataUrl) {
+              sprite.originalDataUrl = sprite.dataUrl;
             }
-          }
-          return sprite;
-        })
-      );
-      setCustomSprites(upgradedSprites);
+            if ((sprite as any).cleanEdgeVersion !== 2) {
+              try {
+                sprite.dataUrl = await processSpriteImage(
+                  sprite.originalDataUrl,
+                  sprite.blendMode || 'color-dodge',
+                  sprite.rotationOffset || 0
+                );
+                (sprite as any).cleanEdgeVersion = 2;
+                await saveCustomSprite(sprite);
+              } catch (err) {
+                console.error('Error upgrading sprite:', err);
+              }
+            }
+            return sprite;
+          })
+        );
+        setCustomSprites(upgradedSprites);
 
-      SoundEngine.updateConfig(
-        loadedSettings.soundEnabled,
-        loadedSettings.soundVolume,
-        loadedSettings.hapticsEnabled
-      );
-      SoundEngine.preloadSounds();
+        SoundEngine.updateConfig(
+          loadedSettings.soundEnabled,
+          loadedSettings.soundVolume,
+          loadedSettings.hapticsEnabled
+        );
+        SoundEngine.preloadSounds();
+      } catch (err) {
+        console.warn('[App] Non-fatal loadDB error:', err);
+      }
     }
     loadDB();
   }, []);
@@ -389,8 +390,6 @@ export default function App() {
         theme={settings.theme}
         touches={currentTouches}
         showTeamLines={showTeamLines}
-        isBottleSpinning={isBottleSpinning}
-        bottleSpinSpeed={bottleSpinSpeed}
       />
 
       {/* Persistent Mobile Top Action Header */}
