@@ -6,18 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppSettings, AppStats, CustomBottleSprite, ScreenView, TouchPlayer, BottleBuiltinStyle, ThemeId } from './types';
 import { THEMES } from './lib/themes';
-import {
-  getSettings,
-  saveSettings,
-  getStats,
-  DEFAULT_STATS,
-  getAllCustomSprites,
-  saveCustomSprite,
-  getEconomyFromDB,
-  saveEconomyToDB,
-  getTrophiesFromDB,
-  saveTrophiesToDB,
-} from './lib/db';
+import { getSettings, saveSettings, getStats, getAllCustomSprites, saveCustomSprite } from './lib/db';
 import { SoundEngine, Haptics } from './lib/audio';
 import { processSpriteImage } from './lib/imageProcessing';
 import { BackgroundCanvas } from './components/BackgroundCanvas';
@@ -36,7 +25,7 @@ import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { KaboomGame } from './components/kaboom/KaboomGame';
-import { getEconomyState, EconomyState, STORE_CATALOGUE, equipItem } from './lib/economy';
+import { getEconomyState, EconomyState } from './lib/economy';
 import { StoreModal } from './components/StoreModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { AchievementsModal } from './components/AchievementsModal';
@@ -72,7 +61,11 @@ export default function App() {
     hapticsEnabled: true,
   });
 
-  const [stats, setStats] = useState<AppStats>(DEFAULT_STATS);
+  const [stats, setStats] = useState<AppStats>({
+    totalRouletteRounds: 0,
+    totalBottleSpins: 0,
+    lastPlayedAt: Date.now(),
+  });
 
   const [customSprites, setCustomSprites] = useState<CustomBottleSprite[]>([]);
   const [currentTouches, setCurrentTouches] = useState<TouchPlayer[]>([]);
@@ -85,81 +78,54 @@ export default function App() {
   // Load from IndexedDB on startup
   useEffect(() => {
     async function loadDB() {
-      try {
-        const loadedSettings = await getSettings();
-        const loadedStats = await getStats();
-        const loadedSprites = await getAllCustomSprites();
+      const loadedSettings = await getSettings();
+      const loadedStats = await getStats();
+      const loadedSprites = await getAllCustomSprites();
 
-        // Ensure valid bottle style and screen blend mode
-        const validSkins = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
-        if (
-          !validSkins.includes(loadedSettings.bottleStyle) &&
-          loadedSettings.bottleStyle !== 'custom'
-        ) {
-          loadedSettings.bottleStyle = 'btl_e_001';
-        }
-        loadedSettings.bottleBlendMode = 'screen';
-        loadedSettings.theme = 'cyber-neon';
-
-        setSettings(loadedSettings);
-        setStats(loadedStats);
-
-        // Restore or synchronize Economy from IndexedDB & LocalStorage
-        try {
-          const dbEconomy = await getEconomyFromDB();
-          const currentEco = getEconomyState();
-          if (dbEconomy && (!localStorage.getItem('picku_party_economy_v1') || (dbEconomy.stars > currentEco.stars))) {
-            localStorage.setItem('picku_party_economy_v1', JSON.stringify(dbEconomy));
-            setEconomy(getEconomyState());
-          } else {
-            saveEconomyToDB(currentEco).catch(() => {});
-          }
-        } catch (err) {}
-
-        // Restore or synchronize Trophies from IndexedDB & LocalStorage
-        try {
-          const dbTrophies = await getTrophiesFromDB();
-          const rawClaims = localStorage.getItem('picku_party_trophy_claims_v1');
-          if (dbTrophies && !rawClaims) {
-            localStorage.setItem('picku_party_trophy_claims_v1', JSON.stringify(dbTrophies));
-          } else if (rawClaims) {
-            saveTrophiesToDB(JSON.parse(rawClaims)).catch(() => {});
-          }
-        } catch (err) {}
-
-        // Auto-upgrade any existing custom sprites
-        const upgradedSprites = await Promise.all(
-          loadedSprites.map(async (sprite) => {
-            if (!sprite.originalDataUrl) {
-              sprite.originalDataUrl = sprite.dataUrl;
-            }
-            if ((sprite as any).cleanEdgeVersion !== 2) {
-              try {
-                sprite.dataUrl = await processSpriteImage(
-                  sprite.originalDataUrl,
-                  sprite.blendMode || 'color-dodge',
-                  sprite.rotationOffset || 0
-                );
-                (sprite as any).cleanEdgeVersion = 2;
-                await saveCustomSprite(sprite);
-              } catch (err) {
-                console.error('Error upgrading sprite:', err);
-              }
-            }
-            return sprite;
-          })
-        );
-        setCustomSprites(upgradedSprites);
-
-        SoundEngine.updateConfig(
-          loadedSettings.soundEnabled,
-          loadedSettings.soundVolume,
-          loadedSettings.hapticsEnabled
-        );
-        SoundEngine.preloadSounds();
-      } catch (err) {
-        console.warn('[App] Non-fatal loadDB error:', err);
+      // Ensure valid bottle style and screen blend mode
+      const validSkins = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
+      if (
+        !validSkins.includes(loadedSettings.bottleStyle) &&
+        loadedSettings.bottleStyle !== 'custom'
+      ) {
+        loadedSettings.bottleStyle = 'btl_e_001';
       }
+      loadedSettings.bottleBlendMode = 'screen';
+      loadedSettings.theme = 'cyber-neon';
+
+      setSettings(loadedSettings);
+      setStats(loadedStats);
+
+      // Auto-upgrade any existing custom sprites
+      const upgradedSprites = await Promise.all(
+        loadedSprites.map(async (sprite) => {
+          if (!sprite.originalDataUrl) {
+            sprite.originalDataUrl = sprite.dataUrl;
+          }
+          if ((sprite as any).cleanEdgeVersion !== 2) {
+            try {
+              sprite.dataUrl = await processSpriteImage(
+                sprite.originalDataUrl,
+                sprite.blendMode || 'color-dodge',
+                sprite.rotationOffset || 0
+              );
+              (sprite as any).cleanEdgeVersion = 2;
+              await saveCustomSprite(sprite);
+            } catch (err) {
+              console.error('Error upgrading sprite:', err);
+            }
+          }
+          return sprite;
+        })
+      );
+      setCustomSprites(upgradedSprites);
+
+      SoundEngine.updateConfig(
+        loadedSettings.soundEnabled,
+        loadedSettings.soundVolume,
+        loadedSettings.hapticsEnabled
+      );
+      SoundEngine.preloadSounds();
     }
     loadDB();
   }, []);
@@ -176,20 +142,6 @@ export default function App() {
     };
     window.addEventListener('picku_economy_updated', handleEconomyEvent);
     return () => window.removeEventListener('picku_economy_updated', handleEconomyEvent);
-  }, []);
-
-  // Sync stats reactively across games and modals
-  useEffect(() => {
-    const handleStatsEvent = (e: Event) => {
-      const customEvent = e as CustomEvent<AppStats>;
-      if (customEvent.detail) {
-        setStats(customEvent.detail);
-      } else {
-        getStats().then(setStats);
-      }
-    };
-    window.addEventListener('picku_stats_updated', handleStatsEvent);
-    return () => window.removeEventListener('picku_stats_updated', handleStatsEvent);
   }, []);
 
   const refreshSprites = useCallback(async () => {
@@ -235,38 +187,15 @@ export default function App() {
 
   const currentTheme = THEMES['cyber-neon'];
 
-  // Quick bottle sprite cycle for header action:
-  // Switches ONLY between bottles that are already purchased in the store (or custom uploaded bottles)
+  // Quick bottle sprite cycle for header action (only appears in bottle spinning game mode)
   const handleCycleBottleSprite = useCallback(() => {
-    // 1. Gather all store bottles that are unlocked/purchased in the user's economy
-    const purchasedStoreBottles = STORE_CATALOGUE.bottles.filter(
-      (b) => economy.unlockedItems.includes(b.id) || b.id === 'bottle_btl_001'
-    );
+    const presetIds: BottleBuiltinStyle[] = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
 
-    type SpriteOption = {
-      style: BottleBuiltinStyle | 'custom';
-      spriteId: string | null;
-      itemId?: string;
-      name: string;
-    };
-
-    const options: SpriteOption[] = purchasedStoreBottles.map((b) => ({
-      style: (b.builtInBottleStyle || 'btl_e_001') as BottleBuiltinStyle,
-      spriteId: null,
-      itemId: b.id,
-      name: b.name,
-    }));
-
-    // Include custom uploaded sprites if available
+    type SpriteOption = { style: BottleBuiltinStyle | 'custom'; spriteId: string | null };
+    const options: SpriteOption[] = presetIds.map((id) => ({ style: id, spriteId: null }));
     customSprites.forEach((s) => {
-      options.push({
-        style: 'custom',
-        spriteId: s.id,
-        name: s.name,
-      });
+      options.push({ style: 'custom', spriteId: s.id });
     });
-
-    if (options.length === 0) return;
 
     const currentIndex = options.findIndex((opt) => {
       if (opt.style === 'custom') {
@@ -282,18 +211,9 @@ export default function App() {
       bottleStyle: nextOpt.style,
       selectedCustomSpriteId: nextOpt.spriteId,
     });
-
-    // Also equip in economy so the store's equipped indicator reflects the active bottle
-    if (nextOpt.itemId) {
-      const res = equipItem('bottles', nextOpt.itemId);
-      if (res.success) {
-        setEconomy(res.updatedState);
-      }
-    }
-
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
-  }, [economy.unlockedItems, settings.bottleStyle, settings.selectedCustomSpriteId, customSprites, handleUpdateSettings]);
+  }, [settings.bottleStyle, settings.selectedCustomSpriteId, customSprites, handleUpdateSettings]);
 
   const handleNavigateToGame = useCallback((targetView: ScreenView) => {
     setCurrentTouches([]);
@@ -390,6 +310,8 @@ export default function App() {
         theme={settings.theme}
         touches={currentTouches}
         showTeamLines={showTeamLines}
+        isBottleSpinning={isBottleSpinning}
+        bottleSpinSpeed={bottleSpinSpeed}
       />
 
       {/* Persistent Mobile Top Action Header */}

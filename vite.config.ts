@@ -38,31 +38,31 @@ export default defineConfig(() => {
           scope: '/',
           icons: [
             {
-              src: '/icon-192.png',
+              src: 'icon-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/icon-512.png',
+              src: 'icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/icon-maskable-512.png',
+              src: 'icon-maskable-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
             },
             {
-              src: '/apple-touch-icon.png',
+              src: 'apple-touch-icon.png',
               sizes: '180x180',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/app-icon.jpeg',
+              src: 'app-icon.jpeg',
               sizes: '1024x1024',
               type: 'image/jpeg',
               purpose: 'any',
@@ -70,11 +70,9 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
-          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-          cleanupOutdatedCaches: true,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpeg,jpg,webp,mp3,wav,mp4,mov,woff,woff2}'],
+          maximumFileSizeToCacheInBytes: 35 * 1024 * 1024,
           navigateFallback: '/index.html',
-          navigateFallbackDenylist: [/^\/api/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

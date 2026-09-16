@@ -5,9 +5,6 @@
 
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
-import { saveEconomyToDB } from './db';
-import bombSpriteImg from '../assets/images/Bomb Detonated Sprite.png';
-import ballSpriteImg from '../assets/images/Ball Sprite.png';
 
 export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';
 
@@ -137,32 +134,105 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
     {
       id: 'bomb_classic_tnt',
       category: 'bombs',
-      name: 'Cyber Detonator Bomb',
-      subtitle: 'Kaboom High-Explosive Core',
-      description: 'The authentic in-game cyber bomb with animated detonation sparks, high-voltage core, and electric party fuse.',
+      name: 'Chibi TNT Explosive',
+      subtitle: 'Classic Boom Box',
+      description: 'The iconic chibi bomb character with a sizzling party fuse.',
       price: 0,
       rarity: 'Common',
-      badge: 'EQUIPPED',
-      accentGradient: 'from-rose-500 via-red-600 to-amber-500',
+      badge: 'DEFAULT',
+      accentGradient: 'from-red-500 to-orange-600',
       borderGlow: 'border-red-400/60 shadow-[0_0_15px_rgba(239,68,68,0.4)]',
       iconType: 'bomb',
-      image: bombSpriteImg,
+    },
+    {
+      id: 'bomb_plasma_core',
+      category: 'bombs',
+      name: 'Neon Plasma Core',
+      subtitle: 'High Voltage Reactor',
+      description: 'An unstable sci-fi plasma reactor that pulses to the party bass.',
+      price: 300,
+      rarity: 'Rare',
+      accentGradient: 'from-cyan-400 to-blue-600',
+      borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
+      iconType: 'bomb',
+    },
+    {
+      id: 'bomb_disco_mirror',
+      category: 'bombs',
+      name: 'Disco Mirror Sphere',
+      subtitle: 'Sparkling Party Bomb',
+      description: 'Reflects laser spotlights in every direction until the grand detonation.',
+      price: 550,
+      rarity: 'Epic',
+      badge: 'PARTY',
+      accentGradient: 'from-pink-400 via-purple-400 to-cyan-400',
+      borderGlow: 'border-pink-400/70 shadow-[0_0_18px_rgba(236,72,153,0.5)]',
+      iconType: 'bomb',
+    },
+    {
+      id: 'bomb_molten_magma',
+      category: 'bombs',
+      name: 'Molten Magma Core',
+      subtitle: 'Volcanic Blast',
+      description: 'Crackling volcanic rock oozing incandescent lava ready to erupt.',
+      price: 850,
+      rarity: 'Legendary',
+      badge: 'HOT',
+      accentGradient: 'from-amber-400 via-orange-500 to-red-600',
+      borderGlow: 'border-orange-500/80 shadow-[0_0_22px_rgba(249,115,22,0.6)]',
+      iconType: 'bomb',
     },
   ],
   balls: [
     {
       id: 'ball_cyan_orbs',
       category: 'balls',
-      name: 'Tactile Cyber Orb',
-      subtitle: 'Kaboom Grid Spheres',
-      description: 'The authentic tactile 3D party sphere with cyan neon ring contours and kinetic touch feedback.',
+      name: 'Cyan Pulse Spheres',
+      subtitle: 'Standard Grid Tiles',
+      description: 'Vibrant neon blue kinetic orbs with tactile impact feedback.',
       price: 0,
       rarity: 'Common',
-      badge: 'EQUIPPED',
-      accentGradient: 'from-cyan-400 via-sky-500 to-blue-600',
+      badge: 'DEFAULT',
+      accentGradient: 'from-cyan-400 to-teal-500',
       borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
       iconType: 'ball',
-      image: ballSpriteImg,
+    },
+    {
+      id: 'ball_golden_sparkle',
+      category: 'balls',
+      name: 'Golden Disco Orbs',
+      subtitle: 'VIP Gilded Spheres',
+      description: 'Polished brass and gold spheres with shimmering glitter particles.',
+      price: 300,
+      rarity: 'Rare',
+      accentGradient: 'from-amber-300 to-yellow-500',
+      borderGlow: 'border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
+      iconType: 'ball',
+    },
+    {
+      id: 'ball_hologram_crystal',
+      category: 'balls',
+      name: 'Prism Hologram Bubbles',
+      subtitle: 'Crystal Refraction',
+      description: 'Translucent diamond facets splitting nightclub lights into rainbow spectrums.',
+      price: 550,
+      rarity: 'Epic',
+      badge: 'NEW',
+      accentGradient: 'from-fuchsia-400 via-purple-400 to-indigo-500',
+      borderGlow: 'border-fuchsia-400/70 shadow-[0_0_18px_rgba(217,70,239,0.5)]',
+      iconType: 'ball',
+    },
+    {
+      id: 'ball_retro_pixel',
+      category: 'balls',
+      name: 'Retro 8-Bit Cubes',
+      subtitle: 'Arcade Nostalgia',
+      description: 'Isometric pixel blocks with authentic 90s arcade sound aesthetics.',
+      price: 800,
+      rarity: 'Legendary',
+      accentGradient: 'from-emerald-400 via-teal-400 to-cyan-500',
+      borderGlow: 'border-emerald-400/80 shadow-[0_0_20px_rgba(52,211,153,0.5)]',
+      iconType: 'ball',
     },
   ],
   accessories: [
@@ -437,7 +507,6 @@ export function saveEconomyState(state: EconomyState): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    saveEconomyToDB(state).catch(() => {});
     window.dispatchEvent(new CustomEvent('picku_economy_updated', { detail: state }));
   } catch (e) {}
 }

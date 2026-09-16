@@ -83,7 +83,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
   const [liveDetail, setLiveDetail] = useState<string>('');
   const [isReady, setIsReady] = useState<boolean>(false);
   const [isLaunching, setIsLaunching] = useState<boolean>(false);
-  const [canSkip, setCanSkip] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -96,27 +95,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
     // Smooth exit zoom transition
     window.setTimeout(() => {
       onComplete();
-    }, 450);
+    }, 600);
   }, [isLaunching, onComplete]);
-
-  // Allow immediate user skip after 1.2 seconds if needed
-  useEffect(() => {
-    const skipTimer = setTimeout(() => setCanSkip(true), 1200);
-    return () => clearTimeout(skipTimer);
-  }, []);
 
   useEffect(() => {
     let mounted = true;
-    let targetPct = 10;
-
-    // Hard safety timeout: Guarantee splash screen dismissal within 3.2s on mobile
-    const hardTimeout = setTimeout(() => {
-      if (mounted && !isLaunching) {
-        console.warn('[SplashScreen] Maximum splash timeout reached, entering game');
-        setIsReady(true);
-        handleLaunch();
-      }
-    }, 3200);
+    let targetPct = 5;
 
     // Smooth animation loop for the visual progress bar
     const progressInterval = setInterval(() => {
@@ -124,7 +108,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
 
       setProgress((prev) => {
         if (prev < targetPct) {
-          const next = Math.min(targetPct, prev + 2);
+          const next = Math.min(targetPct, prev + 1);
 
           // Update stage text based on current percentage
           for (const stage of LOADING_STAGES) {
@@ -137,61 +121,53 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
         }
         return prev;
       });
-    }, 20);
+    }, 28);
 
     // Sequential asynchronous preloader pipeline
     const runPipeline = async () => {
       try {
         // Step 1: Preload Core Media & Audio Assets (0 -> 35%)
-        targetPct = 25;
-        await Promise.race([
-          preloadAllAssets((pct, detail) => {
-            if (!mounted) return;
-            targetPct = Math.min(35, Math.max(targetPct, Math.round((pct / 100) * 35)));
-            if (detail) setLiveDetail(detail);
-          }),
-          new Promise((res) => setTimeout(res, 1800)),
-        ]);
+        targetPct = 15;
+        await preloadAllAssets((pct, detail) => {
+          if (!mounted) return;
+          targetPct = Math.min(35, Math.max(targetPct, Math.round((pct / 100) * 35)));
+          if (detail) setLiveDetail(detail);
+        });
 
         // Step 2: Preload Fonts via FontFaceSet API (35 -> 70%)
-        targetPct = 60;
-        await Promise.race([
-          preloadFonts((_, detail) => {
-            if (!mounted) return;
-            targetPct = 70;
-            if (detail) setLiveDetail(detail);
-          }),
-          new Promise((res) => setTimeout(res, 1000)),
-        ]);
+        targetPct = 50;
+        await preloadFonts((_, detail) => {
+          if (!mounted) return;
+          targetPct = 70;
+          if (detail) setLiveDetail(detail);
+        });
 
         // Step 3: Hardware GPU Pipeline & Physics Warming (70 -> 95%)
         targetPct = 85;
-        await new Promise((res) => setTimeout(res, 100));
+        await new Promise((res) => setTimeout(res, 200));
         targetPct = 95;
-        await new Promise((res) => setTimeout(res, 100));
+        await new Promise((res) => setTimeout(res, 200));
 
         // Step 4: Ready for launch! (100%)
         targetPct = 100;
-        await new Promise((res) => setTimeout(res, 150));
+        await new Promise((res) => setTimeout(res, 250));
 
         if (mounted) {
           setIsReady(true);
-          clearTimeout(hardTimeout);
           SoundEngine.playButtonClick();
 
-          // Immediately enter the game suite automatically
+          // Immediately enter the game suite automatically without requiring user tap
           setTimeout(() => {
             if (mounted && !isLaunching) {
               handleLaunch();
             }
-          }, 150);
+          }, 200);
         }
       } catch (err) {
         console.warn('[SplashScreen] Preloader pipeline fallback:', err);
         targetPct = 100;
         if (mounted) {
           setIsReady(true);
-          clearTimeout(hardTimeout);
           handleLaunch();
         }
       }
@@ -202,7 +178,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
     return () => {
       mounted = false;
       clearInterval(progressInterval);
-      clearTimeout(hardTimeout);
     };
   }, [handleLaunch, isLaunching]);
 
@@ -360,17 +335,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
           <p className="font-subbody text-[9px] sm:text-[10px] text-cyan-300 font-medium tracking-wide mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] truncate max-w-full">
             {liveDetail || currentStage.subdetail}
           </p>
-
-          {/* Quick enter button if cellular/WebKit has any delay */}
-          {canSkip && (
-            <button
-              type="button"
-              onClick={handleLaunch}
-              className="mt-2 px-3.5 py-0.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-[10px] sm:text-[11px] font-header font-bold text-cyan-200 uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)]"
-            >
-              Enter Game →
-            </button>
-          )}
         </div>
       </footer>
     </div>
