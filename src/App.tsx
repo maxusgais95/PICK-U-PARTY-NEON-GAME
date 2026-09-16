@@ -25,7 +25,7 @@ import { LandscapeBlocker } from './components/LandscapeBlocker';
 import { SplashScreen } from './components/SplashScreen';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { KaboomGame } from './components/kaboom/KaboomGame';
-import { getEconomyState, EconomyState } from './lib/economy';
+import { getEconomyState, EconomyState, STORE_CATALOGUE, equipItem } from './lib/economy';
 import { StoreModal } from './components/StoreModal';
 import { DailyQuestsModal } from './components/DailyQuestsModal';
 import { AchievementsModal } from './components/AchievementsModal';
@@ -187,14 +187,33 @@ export default function App() {
 
   const currentTheme = THEMES['cyber-neon'];
 
-  // Quick bottle sprite cycle for header action (only appears in bottle spinning game mode)
+  // Quick bottle sprite cycle for header action: ONLY switches between purchased bottles!
   const handleCycleBottleSprite = useCallback(() => {
-    const presetIds: BottleBuiltinStyle[] = ['btl_e_001', 'btl_e_002', 'btl_e_003', 'btl_e_004'];
+    // Only include unlocked/purchased bottles from STORE_CATALOGUE
+    const unlockedBottles = STORE_CATALOGUE.bottles.filter((b) =>
+      economy.unlockedItems.includes(b.id)
+    );
 
-    type SpriteOption = { style: BottleBuiltinStyle | 'custom'; spriteId: string | null };
-    const options: SpriteOption[] = presetIds.map((id) => ({ style: id, spriteId: null }));
+    type SpriteOption = {
+      style: BottleBuiltinStyle | 'custom';
+      spriteId: string | null;
+      storeItemId: string | null;
+    };
+
+    const options: SpriteOption[] = unlockedBottles.map((b) => ({
+      style: b.builtInBottleStyle || 'btl_e_001',
+      spriteId: null,
+      storeItemId: b.id,
+    }));
+
+    // Fallback: at least default bottle if none unlocked yet
+    if (options.length === 0) {
+      options.push({ style: 'btl_e_001', spriteId: null, storeItemId: 'bottle_btl_001' });
+    }
+
+    // Include custom user-uploaded sprites
     customSprites.forEach((s) => {
-      options.push({ style: 'custom', spriteId: s.id });
+      options.push({ style: 'custom', spriteId: s.id, storeItemId: null });
     });
 
     const currentIndex = options.findIndex((opt) => {
@@ -211,9 +230,42 @@ export default function App() {
       bottleStyle: nextOpt.style,
       selectedCustomSpriteId: nextOpt.spriteId,
     });
+
+    // Sync with economy equippedSkins so the store reflects the selected skin
+    if (nextOpt.storeItemId) {
+      const res = equipItem('bottles', nextOpt.storeItemId);
+      if (res.success) {
+        setEconomy(res.updatedState);
+      }
+    }
+
     SoundEngine.playButtonClick();
     Haptics.buttonClick();
-  }, [settings.bottleStyle, settings.selectedCustomSpriteId, customSprites, handleUpdateSettings]);
+  }, [economy.unlockedItems, customSprites, settings.bottleStyle, settings.selectedCustomSpriteId, handleUpdateSettings]);
+
+  // Quick ball skin cycle for header action in Kaboom mode: ONLY switches between purchased balls!
+  const handleCycleBallSkin = useCallback(() => {
+    const unlockedBalls = STORE_CATALOGUE.balls.filter((b) =>
+      economy.unlockedItems.includes(b.id)
+    );
+    if (unlockedBalls.length <= 1) {
+      SoundEngine.playButtonClick();
+      Haptics.buttonClick();
+      return;
+    }
+
+    const currentBallId = economy.equippedSkins?.balls || 'ball_cyan_orbs';
+    const currentIndex = unlockedBalls.findIndex((b) => b.id === currentBallId);
+    const nextIndex = (currentIndex + 1) % unlockedBalls.length;
+    const nextBall = unlockedBalls[nextIndex];
+
+    const res = equipItem('balls', nextBall.id);
+    if (res.success) {
+      setEconomy(res.updatedState);
+      SoundEngine.playButtonClick();
+      Haptics.touchSuccess();
+    }
+  }, [economy.unlockedItems, economy.equippedSkins?.balls]);
 
   const handleNavigateToGame = useCallback((targetView: ScreenView) => {
     setCurrentTouches([]);
@@ -232,13 +284,13 @@ export default function App() {
     setPreloadProgress(0);
     setPreloadStatus(`Initializing ${targetView.toUpperCase()} stage files...`);
 
-    const TOTAL_PRELOAD_MS = 2000;
+    const TOTAL_PRELOAD_MS = 1500;
     const startTime = Date.now();
 
     // Trigger asset preloading in parallel
     preloadGameAssets(gameId).catch(() => {});
 
-    // Smoothly animate progress bar over 2000ms (2s)
+    // Smoothly animate progress bar over 1500ms (1.5s)
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const pct = Math.min(100, Math.round((elapsed / TOTAL_PRELOAD_MS) * 100));
@@ -327,6 +379,7 @@ export default function App() {
         onToggleSound={handleToggleSound}
         onToggleHaptics={handleToggleHaptics}
         onToggleBottleSprite={handleCycleBottleSprite}
+        onToggleBallSkin={handleCycleBallSkin}
         onEconomyUpdated={setEconomy}
       />
 
@@ -374,6 +427,7 @@ export default function App() {
         {currentView === 'kaboom' && (
           <KaboomGame
             settings={settings}
+            economy={economy}
             onBackToMenu={() => setCurrentView('hub')}
             onStatsUpdated={(newStats) => setStats(newStats)}
             onEconomyUpdated={setEconomy}

@@ -195,6 +195,11 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
                   <div className="font-header text-3xl sm:text-4xl font-bold text-white tracking-normal drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
                     {card.dimText}
                   </div>
+
+                  {/* Star Earnings Indicator (Smaller board earns less stars) */}
+                  <div className="mt-1.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 border border-amber-400/50 text-[10px] sm:text-[11px] font-header font-bold text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.3)]">
+                    <span>+{card.dim === 2 ? 10 : card.dim === 3 ? 20 : card.dim === 4 ? 35 : card.dim === 5 ? 50 : 75}★</span>
+                  </div>
                 </div>
               </div>
             );

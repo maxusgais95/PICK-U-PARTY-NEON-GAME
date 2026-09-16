@@ -100,7 +100,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
 
   useEffect(() => {
     let mounted = true;
-    let targetPct = 5;
+    let targetPct = 10;
+    let pipelineComplete = false;
+    let hasLaunched = false;
 
     // Smooth animation loop for the visual progress bar
     const progressInterval = setInterval(() => {
@@ -117,59 +119,60 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
               break;
             }
           }
+
+          // When reaching 100% and pipeline is fully finished, transition into game
+          if (next >= 100 && pipelineComplete && !hasLaunched) {
+            hasLaunched = true;
+            setIsReady(true);
+            setLiveDetail('Ready! All assets buffered and primed.');
+            SoundEngine.playButtonClick();
+
+            // Allow the user to see the 100% full progress bar and primed status
+            setTimeout(() => {
+              if (mounted && !isLaunching) {
+                handleLaunch();
+              }
+            }, 500);
+          }
+
           return next;
         }
         return prev;
       });
-    }, 28);
+    }, 22);
 
     // Sequential asynchronous preloader pipeline
     const runPipeline = async () => {
       try {
-        // Step 1: Preload Core Media & Audio Assets (0 -> 35%)
-        targetPct = 15;
+        // Step 1: Preload Core Media & Audio Assets (0 -> 40%)
+        targetPct = 20;
         await preloadAllAssets((pct, detail) => {
           if (!mounted) return;
-          targetPct = Math.min(35, Math.max(targetPct, Math.round((pct / 100) * 35)));
+          targetPct = Math.min(45, Math.max(targetPct, Math.round((pct / 100) * 45)));
           if (detail) setLiveDetail(detail);
         });
 
-        // Step 2: Preload Fonts via FontFaceSet API (35 -> 70%)
-        targetPct = 50;
+        // Step 2: Preload Fonts via FontFaceSet API (45 -> 75%)
+        targetPct = 55;
         await preloadFonts((_, detail) => {
           if (!mounted) return;
-          targetPct = 70;
+          targetPct = 75;
           if (detail) setLiveDetail(detail);
         });
 
-        // Step 3: Hardware GPU Pipeline & Physics Warming (70 -> 95%)
+        // Step 3: Hardware GPU Pipeline & Physics Warming (75 -> 95%)
         targetPct = 85;
-        await new Promise((res) => setTimeout(res, 200));
+        await new Promise((res) => setTimeout(res, 180));
         targetPct = 95;
-        await new Promise((res) => setTimeout(res, 200));
+        await new Promise((res) => setTimeout(res, 180));
 
-        // Step 4: Ready for launch! (100%)
+        // Step 4: All assets buffered & preloaded! Target 100%
         targetPct = 100;
-        await new Promise((res) => setTimeout(res, 250));
-
-        if (mounted) {
-          setIsReady(true);
-          SoundEngine.playButtonClick();
-
-          // Immediately enter the game suite automatically without requiring user tap
-          setTimeout(() => {
-            if (mounted && !isLaunching) {
-              handleLaunch();
-            }
-          }, 200);
-        }
+        pipelineComplete = true;
       } catch (err) {
         console.warn('[SplashScreen] Preloader pipeline fallback:', err);
         targetPct = 100;
-        if (mounted) {
-          setIsReady(true);
-          handleLaunch();
-        }
+        pipelineComplete = true;
       }
     };
 

@@ -170,6 +170,7 @@ export interface KaboomTile {
   revealed: boolean;
   isDetonated?: boolean;
   isDefused?: boolean;
+  isAutoRevealed?: boolean;
   bonusItem?: KaboomBonusItem;
   bonusCommand?: KaboomCommand;
   revealedByPlayerIndex?: number;

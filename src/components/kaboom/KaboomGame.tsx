@@ -36,10 +36,18 @@ import { KaboomBall } from './KaboomBall';
 import { KaboomExplosionCanvas } from './KaboomExplosionCanvas';
 import { SoundEngine, Haptics } from '../../lib/audio';
 import { recordKaboomEvent } from '../../lib/db';
-import { addStars, EconomyState, recordStarEarringsCondition, recordDailyQuestProgress } from '../../lib/economy';
+import {
+  addStars,
+  EconomyState,
+  recordStarEarringsCondition,
+  recordDailyQuestProgress,
+  STORE_CATALOGUE,
+  getEconomyState,
+} from '../../lib/economy';
 
 interface KaboomGameProps {
   settings: AppSettings;
+  economy?: EconomyState;
   onBackToMenu?: () => void;
   onStatsUpdated?: (stats: AppStats) => void;
   onEconomyUpdated?: (economy: EconomyState) => void;
@@ -52,12 +60,69 @@ interface KaboomToast {
   message: string;
 }
 
+/**
+ * Calculate avoided bomb victory stars based on board size:
+ * "Star earnings condition: smaller board earn less star."
+ * 2x2 (Quick): 10 Stars
+ * 3x3 (Classic): 20 Stars
+ * 4x4 (Extreme): 35 Stars
+ * 5x5 (Chaos): 50 Stars
+ * 6x6 (Ultimate): 75 Stars
+ */
+export function getVictoryStarsForDimension(dim: number): number {
+  switch (dim) {
+    case 2:
+      return 10;
+    case 3:
+      return 20;
+    case 4:
+      return 35;
+    case 5:
+      return 50;
+    case 6:
+      return 75;
+    default:
+      return 35;
+  }
+}
+
+/**
+ * Calculate scaled bonus discovery stars based on board size:
+ * Smaller board earns proportionally fewer bonus stars
+ */
+export function getBonusStarsForDimension(baseStars: number, dim: number): number {
+  switch (dim) {
+    case 2:
+      return Math.max(5, Math.round(baseStars * 0.5));
+    case 3:
+      return Math.max(8, Math.round(baseStars * 0.75));
+    case 4:
+      return baseStars;
+    case 5:
+      return Math.round(baseStars * 1.25);
+    case 6:
+      return Math.round(baseStars * 1.5);
+    default:
+      return baseStars;
+  }
+}
+
 export const KaboomGame: React.FC<KaboomGameProps> = ({
   settings,
+  economy: propEconomy,
   onBackToMenu,
   onStatsUpdated,
   onEconomyUpdated,
 }) => {
+  const currentEconomy = propEconomy || getEconomyState();
+  const equippedBombId = currentEconomy?.equippedSkins?.bombs || 'bomb_classic_tnt';
+  const equippedBallId = currentEconomy?.equippedSkins?.balls || 'ball_cyan_orbs';
+
+  const equippedBombItem = STORE_CATALOGUE.bombs.find((b) => b.id === equippedBombId);
+  const equippedBallItem = STORE_CATALOGUE.balls.find((b) => b.id === equippedBallId);
+
+  const bombFilter = equippedBombItem?.cssFilter;
+  const ballFilter = equippedBallItem?.cssFilter;
   // Game view state: starts directly at 'selection'
   const [currentScreen, setCurrentScreen] = useState<'selection' | 'gameplay'>('selection');
   const [selectedDimension, setSelectedDimension] = useState<KaboomGridDimension>(4);
@@ -206,7 +271,12 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
 
           if (type === 'bonus') {
             const maxTier = getMaxBonusTierForDimension(dimension);
-            bonusItem = getRandomBonusItem(maxTier);
+            const baseBonus = getRandomBonusItem(maxTier);
+            const scaledStarReward = getBonusStarsForDimension(baseBonus.starReward, dimension);
+            bonusItem = {
+              ...baseBonus,
+              starReward: scaledStarReward,
+            };
             command = getRandomCommand(usedCommandIdsRef.current);
             usedCommandIdsRef.current.add(command.id);
           }
@@ -317,8 +387,9 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
         });
 
         // Star calculation:
-        // Bonus awards x stars, Avoided safe bomb awards y stars -> Total = x + y stars
-        const avoidedBombStars = Math.max(20, selectedDimensionRef.current * 10);
+        // "Star earnings condition: smaller board earn less star."
+        // 2x2: 10★, 3x3: 20★, 4x4: 35★, 5x5: 50★, 6x6: 75★
+        const avoidedBombStars = getVictoryStarsForDimension(selectedDimensionRef.current);
         const bonusStars = triggeringBonus ? triggeringBonus.starReward : 0;
         const totalStarsEarned = bonusStars + avoidedBombStars;
 
@@ -457,11 +528,11 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           if (onStatsUpdated) onStatsUpdated(updatedStats);
         });
 
-        // Reveal bomb and all tiles on the board
+        // Reveal bomb and all tiles on the board (marking tiles revealed as a result of bomb detonation)
         const detonatedTiles = currentTiles.map((t) =>
           t.id === liveTile.id
             ? { ...t, revealed: true, isDetonated: true }
-            : { ...t, revealed: true }
+            : { ...t, revealed: true, isAutoRevealed: !t.revealed }
         );
         tilesRef.current = detonatedTiles;
         setTiles(detonatedTiles);
@@ -831,6 +902,10 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
                 onTap={handleTileTap}
                 isGameOver={isGameOver}
                 rippleDelay={rippleDelay}
+                ballImage={equippedBallItem?.image}
+                ballFilter={ballFilter}
+                bombImage={equippedBombItem?.image}
+                bombFilter={bombFilter}
               />
             );
           })}

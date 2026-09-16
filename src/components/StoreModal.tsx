@@ -6,6 +6,8 @@
 import React, { useState } from 'react';
 import { X, Star, Check, ShoppingBag, Sparkles, AlertCircle, Lock } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
+import kaboomBombImg from '../assets/images/Bomb Detonated Sprite.png';
+import kaboomBallImg from '../assets/images/Ball Sprite.png';
 import {
   StoreCategory,
   StoreItem,
@@ -121,20 +123,26 @@ export const StoreModal: React.FC<StoreModalProps> = ({
         );
       case 'bomb':
         return (
-          <div className="relative flex items-center justify-center w-full h-full">
-            <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
-            <div className="relative text-4xl transform group-hover:scale-110 transition-transform duration-300">
-              💣
-            </div>
+          <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
+            <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-35 blur-lg`} />
+            <img
+              src={item.image || kaboomBombImg}
+              alt={item.name}
+              className="max-h-20 sm:max-h-24 w-auto object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+              style={item.cssFilter ? { filter: item.cssFilter } : undefined}
+            />
           </div>
         );
       case 'ball':
         return (
-          <div className="relative flex items-center justify-center w-full h-full">
-            <div className={`absolute w-16 h-16 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-30 blur-md`} />
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-white/90 to-cyan-300 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.7)] flex items-center justify-center transform group-hover:scale-105 transition-transform">
-              <Sparkles className="w-6 h-6 text-cyan-700" />
-            </div>
+          <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
+            <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-35 blur-lg`} />
+            <img
+              src={item.image || kaboomBallImg}
+              alt={item.name}
+              className="max-h-20 sm:max-h-24 w-auto object-contain rounded-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+              style={item.cssFilter ? { filter: item.cssFilter } : undefined}
+            />
           </div>
         );
       case 'accessory':
@@ -235,7 +243,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-gray-400">Earning condition:</span>
-              <span className="text-gray-400 italic">—</span>
+              <span className="text-amber-300 font-medium">Smaller board earns less star</span>
             </div>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-amber-300 font-header font-semibold">
@@ -325,14 +333,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Item Visual Display Pedestal (Prototype Frame) */}
+                  {/* Item Visual Display Pedestal */}
                   <div className="relative w-full h-24 sm:h-28 rounded-xl bg-black/40 border border-white/10 overflow-hidden flex flex-col items-center justify-center p-2 mb-2 group-hover:border-white/25 transition-all">
                     {renderItemVisual(item)}
-
-                    {/* Subtle Prototype Tag Overlay */}
-                    <div className="absolute bottom-1 right-1 text-[8px] font-mono text-gray-500 bg-black/60 px-1 rounded">
-                      Proto
-                    </div>
                   </div>
 
                   {/* Name & Flavor text */}

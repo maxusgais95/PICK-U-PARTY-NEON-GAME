@@ -16,6 +16,10 @@ interface KaboomBallProps {
   onTap: (tile: KaboomTile, event: React.MouseEvent | React.TouchEvent) => void;
   isGameOver: boolean;
   rippleDelay?: number;
+  ballImage?: string;
+  ballFilter?: string;
+  bombImage?: string;
+  bombFilter?: string;
 }
 
 const KaboomBallComponent: React.FC<KaboomBallProps> = ({
@@ -25,6 +29,10 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
   onTap,
   isGameOver,
   rippleDelay,
+  ballImage,
+  ballFilter,
+  bombImage,
+  bombFilter,
 }) => {
   // Simulated water ripple propagation class & delay
   const rippleClass = rippleDelay !== undefined ? 'animate-water-tile-ripple' : '';
@@ -84,9 +92,10 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
                   }}
                 />
                 <img
-                  src={kaboomBombImg}
+                  src={bombImage || kaboomBombImg}
                   alt="Defused Bomb"
                   className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_16px_rgba(16,185,129,0.95)]"
+                  style={bombFilter ? { filter: `${bombFilter} drop-shadow(0 0 16px rgba(16,185,129,0.95))` } : undefined}
                 />
               </div>
             </div>
@@ -124,13 +133,14 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
                 }}
               />
               <img
-                src={kaboomBombImg}
+                src={bombImage || kaboomBombImg}
                 alt="Cyber Bomb"
                 className={`relative z-10 w-full h-full object-contain ${
                   tile.isDetonated
                     ? 'filter drop-shadow-[0_0_24px_rgba(239,68,68,1)] brightness-115'
                     : 'filter drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]'
                 }`}
+                style={bombFilter ? { filter: bombFilter } : undefined}
               />
             </div>
           </div>
@@ -143,6 +153,36 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
       const bonus = tile.bonusItem;
       const starReward = bonus?.starReward || 15;
       const tierColor = bonus?.accentColor || '#00f0ff';
+      const isAutoRevealed = Boolean(tile.isAutoRevealed);
+
+      // Auto-revealed bonus after bomb detonation: DO NOT show +amount star and DO NOT glow
+      if (isAutoRevealed) {
+        return (
+          <div
+            id={`kaboom-tile-${tile.id}`}
+            className={`relative w-full aspect-square ${outerRadius} flex items-center justify-center border border-zinc-700/60 bg-[#12141a] select-none ${rippleClass}`}
+            style={rippleStyle}
+          >
+            {/* Inner Rounded Frame - subdued with no neon glow or bounce */}
+            <div
+              className={`absolute ${insetClass} ${innerRadius} border border-zinc-700/40 bg-zinc-950/70 flex items-center justify-center overflow-hidden`}
+            >
+              <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none rounded-t-[inherit]" />
+              <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden p-0.5">
+                {bonus ? (
+                  <img
+                    src={bonus.image}
+                    alt={bonus.name}
+                    className="relative z-10 w-[80%] h-[80%] object-contain select-none pointer-events-none opacity-60 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                  />
+                ) : (
+                  <Star className="relative z-10 w-1/2 h-1/2 fill-zinc-600 text-zinc-500 opacity-60" />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       return (
         <div
@@ -245,25 +285,20 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
                 <img
                   src={tile.bonusItem.image}
                   alt={tile.bonusItem.name}
-                  className="w-[94%] h-[94%] object-contain rounded-[inherit] opacity-85 scale-110"
+                  className="w-[82%] h-[82%] object-contain rounded-[inherit] opacity-60 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
                 />
               ) : (
-                <Star className="w-2/3 h-2/3 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                <Star className="w-1/2 h-1/2 text-zinc-500 opacity-60" />
               )}
-              <div className="absolute bottom-1 inset-x-0 mx-auto w-max px-2 py-0.5 rounded-full bg-black/90 border border-yellow-400/70 flex items-center gap-0.5 shadow-xs z-20">
-                <Star className="w-2 h-2 fill-yellow-400 text-yellow-400" />
-                <span className="font-header text-[8px] font-bold text-white leading-none">
-                  +{tile.bonusItem?.starReward || 15}
-                </span>
-              </div>
             </div>
           )}
           {tile.type === 'bomb' && (
             <div className="absolute -inset-2 sm:-inset-2.5 z-30 flex items-center justify-center opacity-90 select-none pointer-events-none overflow-visible">
               <img
-                src={kaboomBombImg}
+                src={bombImage || kaboomBombImg}
                 alt="Cyber Bomb"
                 className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(239,68,68,0.85)]"
+                style={bombFilter ? { filter: bombFilter } : undefined}
               />
             </div>
           )}
@@ -276,6 +311,18 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
   }
 
   // 3. UNREVEALED: TACTILE GRAY GRID TILE WITH 3D BALL SPRITE SITTING ON IT
+  // Ordered zig-zag breathing wave from top to bottom:
+  // Row 0 (top): left to right (col 0, 1, 2, ...)
+  // Row 1: right to left (col D-1, D-2, ..., 0)
+  // Row 2: left to right (col 0, 1, 2, ...)
+  // Row 3: right to left ...
+  const isEvenRow = tile.row % 2 === 0;
+  const zigZagCol = isEvenRow ? tile.col : dimension - 1 - tile.col;
+  const zigZagIndex = tile.row * dimension + zigZagCol;
+  const totalTiles = dimension * dimension;
+  const stepMs = Math.round(2400 / totalTiles);
+  const breathingDelay = `-${(totalTiles - zigZagIndex) * stepMs}ms`;
+
   return (
     <div
       id={`kaboom-tile-${tile.id}`}
@@ -317,7 +364,7 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
         />
       </div>
 
-      {/* 3D TACTILE CYBER BALL SPRITE WITH NEON HORIZONTAL STRIPES */}
+      {/* 3D TACTILE CYBER BALL SPRITE WITH NEON HORIZONTAL STRIPES & IDLE BREATHING */}
       <button
         type="button"
         onClick={handleClick}
@@ -325,20 +372,33 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
         aria-label={`Tap ball at row ${tile.row + 1}, column ${tile.col + 1}`}
         className="group relative z-10 w-[80%] h-[80%] rounded-full flex items-center justify-center cursor-pointer select-none transition-transform duration-100 transform active:scale-90 hover:scale-105 focus:outline-none"
       >
-        {/* Ambient Neon Back-glow */}
+        {/* Ambient Neon Back-glow with synchronized zig-zag breathing */}
         <div
-          className="absolute -inset-1 rounded-full pointer-events-none opacity-50 group-hover:opacity-90 transition-opacity"
+          className="absolute -inset-1 rounded-full pointer-events-none opacity-50 group-hover:opacity-90 transition-opacity animate-ball-glow-breathing"
           style={{
             background: 'radial-gradient(circle, rgba(0, 240, 255, 0.45) 25%, rgba(236, 72, 153, 0.25) 55%, transparent 75%)',
+            animationDelay: breathingDelay,
           }}
         />
 
-        {/* 3D Cyber Ball Sprite Image (RGBA PNG) */}
-        <img
-          src={kaboomBallImg}
-          alt="Cyber Ball"
-          className="relative z-10 w-full h-full object-contain rounded-full select-none pointer-events-none filter drop-shadow-[0_5px_12px_rgba(0,0,0,0.9)] group-hover:brightness-115 group-hover:scale-105 transition-all"
-        />
+        {/* 3D Cyber Ball Sprite Image (RGBA PNG) with Zig-Zag Breathing Animation */}
+        <div
+          className="relative z-10 w-full h-full flex items-center justify-center animate-ball-idle-breathing pointer-events-none"
+          style={{
+            animationDelay: breathingDelay,
+          }}
+        >
+          <img
+            src={ballImage || kaboomBallImg}
+            alt="Cyber Ball"
+            className="w-full h-full object-contain rounded-full select-none pointer-events-none group-hover:brightness-115 group-hover:scale-105 transition-all"
+            style={{
+              filter: ballFilter
+                ? `${ballFilter} drop-shadow(0 5px 12px rgba(0,0,0,0.9))`
+                : 'drop-shadow(0 5px 12px rgba(0,0,0,0.9))',
+            }}
+          />
+        </div>
 
         {/* Neon interactive hover rim halo */}
         <div className="absolute -inset-0.5 rounded-full border border-cyan-400/50 opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_10px_rgba(0,240,255,0.6)] pointer-events-none" />
@@ -353,6 +413,10 @@ export const KaboomBall = React.memo(KaboomBallComponent, (prevProps, nextProps)
     prevProps.dimension === nextProps.dimension &&
     prevProps.disabled === nextProps.disabled &&
     prevProps.isGameOver === nextProps.isGameOver &&
-    prevProps.rippleDelay === nextProps.rippleDelay
+    prevProps.rippleDelay === nextProps.rippleDelay &&
+    prevProps.ballImage === nextProps.ballImage &&
+    prevProps.ballFilter === nextProps.ballFilter &&
+    prevProps.bombImage === nextProps.bombImage &&
+    prevProps.bombFilter === nextProps.bombFilter
   );
 });

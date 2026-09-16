@@ -5,6 +5,8 @@
 
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
+import kaboomBombImg from '../assets/images/Bomb Detonated Sprite.png';
+import kaboomBallImg from '../assets/images/Ball Sprite.png';
 
 export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';
 
@@ -22,6 +24,7 @@ export interface StoreItem {
   iconType: 'bottle' | 'bomb' | 'ball' | 'accessory';
   builtInBottleStyle?: BottleBuiltinStyle;
   image?: string;
+  cssFilter?: string;
 }
 
 export interface StarEarringsProgress {
@@ -143,6 +146,7 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-red-500 to-orange-600',
       borderGlow: 'border-red-400/60 shadow-[0_0_15px_rgba(239,68,68,0.4)]',
       iconType: 'bomb',
+      image: kaboomBombImg,
     },
     {
       id: 'bomb_plasma_core',
@@ -155,6 +159,8 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-cyan-400 to-blue-600',
       borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
       iconType: 'bomb',
+      image: kaboomBombImg,
+      cssFilter: 'hue-rotate(185deg) saturate(1.8) brightness(1.2)',
     },
     {
       id: 'bomb_disco_mirror',
@@ -168,6 +174,8 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-pink-400 via-purple-400 to-cyan-400',
       borderGlow: 'border-pink-400/70 shadow-[0_0_18px_rgba(236,72,153,0.5)]',
       iconType: 'bomb',
+      image: kaboomBombImg,
+      cssFilter: 'hue-rotate(285deg) saturate(1.6) brightness(1.15)',
     },
     {
       id: 'bomb_molten_magma',
@@ -181,6 +189,8 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-amber-400 via-orange-500 to-red-600',
       borderGlow: 'border-orange-500/80 shadow-[0_0_22px_rgba(249,115,22,0.6)]',
       iconType: 'bomb',
+      image: kaboomBombImg,
+      cssFilter: 'hue-rotate(25deg) saturate(2.2) contrast(1.2) brightness(1.1)',
     },
   ],
   balls: [
@@ -196,6 +206,7 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-cyan-400 to-teal-500',
       borderGlow: 'border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]',
       iconType: 'ball',
+      image: kaboomBallImg,
     },
     {
       id: 'ball_golden_sparkle',
@@ -208,6 +219,8 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-amber-300 to-yellow-500',
       borderGlow: 'border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.4)]',
       iconType: 'ball',
+      image: kaboomBallImg,
+      cssFilter: 'hue-rotate(185deg) saturate(2.4) brightness(1.25)',
     },
     {
       id: 'ball_hologram_crystal',
@@ -221,18 +234,23 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       accentGradient: 'from-fuchsia-400 via-purple-400 to-indigo-500',
       borderGlow: 'border-fuchsia-400/70 shadow-[0_0_18px_rgba(217,70,239,0.5)]',
       iconType: 'ball',
+      image: kaboomBallImg,
+      cssFilter: 'hue-rotate(95deg) saturate(1.6) brightness(1.2)',
     },
     {
       id: 'ball_retro_pixel',
       category: 'balls',
       name: 'Retro 8-Bit Cubes',
       subtitle: 'Arcade Nostalgia',
-      description: 'Isometric pixel blocks with authentic 90s arcade sound aesthetics.',
+      description: 'Pixelated green arcade spheres that blink like vintage synth synthesizers.',
       price: 800,
       rarity: 'Legendary',
+      badge: 'RETRO',
       accentGradient: 'from-emerald-400 via-teal-400 to-cyan-500',
       borderGlow: 'border-emerald-400/80 shadow-[0_0_20px_rgba(52,211,153,0.5)]',
       iconType: 'ball',
+      image: kaboomBallImg,
+      cssFilter: 'hue-rotate(295deg) saturate(2) brightness(1.15)',
     },
   ],
   accessories: [

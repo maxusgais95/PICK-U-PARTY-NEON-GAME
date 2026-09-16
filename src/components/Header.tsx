@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Volume2, VolumeX, Settings, Home, Maximize, Minimize, Info, BookOpen } from 'lucide-react';
+import { Volume2, VolumeX, Settings, Home, Maximize, Minimize, Info, BookOpen, Disc } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import { CurrencyHud } from './CurrencyHud';
 import { AppSettings, ScreenView } from '../types';
@@ -24,6 +24,7 @@ interface HeaderProps {
   onToggleSound: () => void;
   onToggleHaptics: () => void;
   onToggleBottleSprite?: () => void;
+  onToggleBallSkin?: () => void;
   onEconomyUpdated?: (state: EconomyState) => void;
   onRefillStars?: (amount: number) => void;
 }
@@ -40,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSound,
   onToggleHaptics,
   onToggleBottleSprite,
+  onToggleBallSkin,
   onEconomyUpdated,
   onRefillStars,
 }) => {
@@ -194,6 +196,22 @@ export const Header: React.FC<HeaderProps> = ({
             className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-pink-400/50 shadow-[0_0_12px_rgba(236,72,153,0.3)] flex items-center justify-center text-pink-300 active:scale-95 transition-all"
           >
             <ChampagneBottleIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-pink-300 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
+          </button>
+        )}
+
+        {/* Ball Skin Quick Switcher in Kaboom Mode */}
+        {currentView === 'kaboom' && onToggleBallSkin && (
+          <button
+            onClick={() => {
+              SoundEngine.playButtonClick();
+              Haptics.buttonClick();
+              onToggleBallSkin();
+            }}
+            aria-label="Switch Ball Skin"
+            title="Switch Ball Skin"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-[14px] sm:rounded-[16px] bg-black/50 backdrop-blur-md border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.3)] flex items-center justify-center text-cyan-300 active:scale-95 transition-all cursor-pointer"
+          >
+            <Disc className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-cyan-300 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
           </button>
         )}
 

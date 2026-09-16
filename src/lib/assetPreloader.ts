@@ -33,6 +33,7 @@ import bonusHeadsetImg from '../assets/images/Headsets Sprite.png';
 import bonusCuteStarImg from '../assets/images/Star Sprite.png';
 import bonusCrystalRoseImg from '../assets/images/Crystal Rose Sprite.png';
 import bonusDiamondKeyImg from '../assets/images/Key Sprite.png';
+import chestSpriteImg from '../assets/images/Chest Sprite.png';
 import { preloadTransparentImages } from './bottleAlphaCache';
 import { AudioManager } from './audioManager';
 
@@ -279,6 +280,12 @@ const PRELOAD_QUEUE: PreloadItem[] = [
     type: 'image',
     description: 'Decoding Bonus Diamond Key Sprite...',
   },
+  {
+    name: 'Milestone Chest',
+    url: chestSpriteImg,
+    type: 'image',
+    description: 'Decoding Golden Milestone Chest Sprite...',
+  },
 ];
 
 /**
@@ -368,6 +375,13 @@ export async function preloadAllAssets(
   preloadedGameModes.add('roulette');
   preloadedGameModes.add('bottle');
   preloadedGameModes.add('kaboom');
+
+  // Preload synthesized and recorded audio buffers into memory
+  try {
+    await AudioManager.preloadSounds();
+  } catch (err) {
+    console.warn('[AssetPreloader] Audio buffer preload fallback:', err);
+  }
 
   isLoadedFlag = true;
   onProgress?.(100, 'All media buffered! Initializing Party Suite...');
