@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Star } from 'lucide-react';
+import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 import { SoundEngine } from '../lib/audio';
 
 export interface GlobalFlyingStarBatch {
@@ -174,9 +174,11 @@ const GlobalFlyingStarParticleItem: React.FC<{ particle: Particle }> = ({ partic
       }}
     >
       <div className="relative flex items-center justify-center animate-spin-hyper">
-        <Star
+        <img
+          src={currencyStarImg}
+          alt="Star"
           style={{ width: particle.size, height: particle.size }}
-          className="fill-amber-300 text-amber-100 drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
+          className="object-contain filter drop-shadow-[0_0_10px_rgba(251,191,36,1)]"
         />
         {/* Shimmering white core */}
         <div className="absolute w-2 h-2 rounded-full bg-white blur-[1px] animate-ping" />

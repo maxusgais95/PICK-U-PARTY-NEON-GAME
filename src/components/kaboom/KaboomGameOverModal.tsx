@@ -108,7 +108,7 @@ export const KaboomGameOverModal: React.FC<KaboomGameOverModalProps> = ({
               Haptics.buttonClick();
               onPlayAgain();
             }}
-            className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 text-white font-header font-bold text-base shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 text-white font-header font-bold text-base shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer animate-glow-pulse-restart"
           >
             <RotateCcw className="w-5 h-5 stroke-[2.5]" />
             <span>PLAY AGAIN (SAME SIZE)</span>

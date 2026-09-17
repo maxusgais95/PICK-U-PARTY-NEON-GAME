@@ -824,7 +824,13 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
             type="button"
             onClick={handleNextRound}
             title="Restart round"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-zinc-700/60 text-zinc-300 text-xs font-bold hover:border-zinc-500 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(0,0,0,0.6)]"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border text-xs font-bold active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(0,0,0,0.6)] ${
+              isGameOver
+                ? isVictory
+                  ? 'border-emerald-400 text-emerald-300 animate-glow-pulse-victory'
+                  : 'border-orange-500 text-orange-300 animate-glow-pulse-restart'
+                : 'border-zinc-700/60 text-zinc-300 hover:border-zinc-500'
+            }`}
           >
             <RotateCcw className="w-3.5 h-3.5 stroke-[2.2]" />
             <span>Restart</span>
@@ -953,8 +959,8 @@ export const KaboomGame: React.FC<KaboomGameProps> = ({
           className={`w-full py-3.5 px-6 rounded-2xl font-header tracking-wider text-base transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
             isGameOver
               ? isVictory
-                ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-teal-400 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:brightness-110 active:scale-95 animate-pulse'
-                : 'bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 text-slate-950 shadow-[0_0_25px_rgba(249,115,22,0.7)] hover:brightness-110 active:scale-95 animate-pulse'
+                ? 'bg-gradient-to-r from-emerald-500 via-amber-400 to-teal-400 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.7)] hover:brightness-110 active:scale-95 animate-glow-pulse-victory'
+                : 'bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 text-slate-950 shadow-[0_0_25px_rgba(249,115,22,0.7)] hover:brightness-110 active:scale-95 animate-glow-pulse-restart'
               : 'bg-white/5 border border-white/10 text-gray-400 opacity-60 cursor-not-allowed'
           }`}
         >

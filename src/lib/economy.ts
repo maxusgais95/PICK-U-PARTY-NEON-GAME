@@ -5,7 +5,7 @@
 
 import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
-import kaboomBombImg from '../assets/images/Bomb Detonated Sprite.png';
+import kaboomBombImg from '../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../assets/images/Ball Sprite.png';
 
 export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';

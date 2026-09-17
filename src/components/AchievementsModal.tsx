@@ -26,10 +26,12 @@ import {
   getTrophyClaimMap,
   claimTrophyReward,
   calculateTrophyProgress,
+  getTrophyImage,
 } from '../lib/trophies';
 import { AppStats } from '../types';
 import { EconomyState, addStars } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
+import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 
 interface AchievementsModalProps {
   isOpen: boolean;
@@ -334,7 +336,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 border border-white/5">
             <span className="text-[10px] text-gray-400 uppercase tracking-wider">Party Stars Balance</span>
             <span className="font-header font-bold text-base text-yellow-300 mt-0.5 flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-300" />
+              <img src={currencyStarImg} alt="Stars" className="w-4 h-4 object-contain" />
               {economy.stars.toLocaleString()}
             </span>
           </div>
@@ -480,7 +482,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                       </span>
 
                       {progress.unclaimedTiers.length > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-header font-black text-[9px] uppercase tracking-wide animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.9)] flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-header font-black text-[9px] uppercase tracking-wide animate-glow-pulse shadow-[0_0_12px_rgba(245,158,11,0.9)] flex items-center gap-1">
                           <Sparkles className="w-2.5 h-2.5" />
                           CLAIM REWARD
                         </span>
@@ -504,15 +506,47 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                         }`}
                       />
 
-                      {/* Trophy Icon with Hover Float */}
-                      <div className="relative z-10 transform group-hover:-translate-y-1.5 transition-transform duration-300">
-                        {isLocked ? (
-                          <div className="w-12 h-12 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
-                            <Lock className="w-6 h-6 text-gray-500" />
-                          </div>
-                        ) : (
-                          <div className="p-1">{getTrophyIcon(trophy.iconType, progress.currentTier, 'w-11 h-11')}</div>
-                        )}
+                      {/* Trophy Image / Icon with Hover Float */}
+                      <div className="relative z-10 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center min-h-[64px]">
+                        {(() => {
+                          const hasImages = !!trophy.images;
+                          if (hasImages) {
+                            if (isLocked) {
+                              return (
+                                <div className="relative w-16 h-16 flex items-center justify-center">
+                                  <img
+                                    src={trophy.tiers.bronze.image}
+                                    alt={`${trophy.title} - Locked`}
+                                    className="w-16 h-16 object-contain filter grayscale opacity-25 brightness-50 contrast-125"
+                                  />
+                                  <div className="absolute inset-0 m-auto w-7 h-7 rounded-full bg-neutral-950/90 border border-white/15 flex items-center justify-center shadow-lg">
+                                    <Lock className="w-3.5 h-3.5 text-gray-400" />
+                                  </div>
+                                </div>
+                              );
+                            }
+                            const trophyImg = getTrophyImage(trophy, progress.currentTier);
+                            return (
+                              <div className="w-16 h-16 flex items-center justify-center">
+                                <img
+                                  src={trophyImg}
+                                  alt={`${trophy.title} - ${progress.currentTier}`}
+                                  className="w-16 h-16 object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.8)] filter transition-transform duration-300 group-hover:scale-110"
+                                />
+                              </div>
+                            );
+                          }
+                          // The rest: leave blank for now
+                          return (
+                            <div className="w-16 h-16 flex items-center justify-center">
+                              {isLocked && (
+                                <div className="w-9 h-9 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
+                                  <Lock className="w-4 h-4 text-gray-500" />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       {/* Trophy Pedestal Base */}
@@ -598,7 +632,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                               }}
                               className={`p-1 rounded flex flex-col items-center justify-center transition-all ${
                                 canClaim
-                                  ? 'bg-amber-400 text-black font-bold animate-pulse hover:bg-yellow-300 cursor-pointer shadow-[0_0_8px_rgba(245,158,11,0.9)]'
+                                  ? 'bg-amber-400 text-black font-bold animate-glow-pulse hover:bg-yellow-300 cursor-pointer shadow-[0_0_8px_rgba(245,158,11,0.9)]'
                                   : isClaimed
                                   ? 'bg-white/10 text-gray-300'
                                   : isReached
@@ -609,7 +643,10 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                             >
                               <span className="capitalize">{tierKey.slice(0, 3)}</span>
                               {canClaim ? (
-                                <span className="text-[8px] font-black leading-none">+{tierCfg.starBonus}⭐</span>
+                                <span className="text-[8px] font-black leading-none flex items-center gap-0.5">
+                                  <span>+{tierCfg.starBonus}</span>
+                                  <img src={currencyStarImg} alt="Stars" className="w-2.5 h-2.5 object-contain inline" />
+                                </span>
                               ) : isClaimed ? (
                                 <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400 mt-0.5" />
                               ) : (
@@ -675,7 +712,46 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                           : 'bg-transparent'
                       }`}
                     />
-                    <div className="relative z-10">{getTrophyIcon(selectedTrophy.iconType, p.currentTier, 'w-14 h-14')}</div>
+                    <div className="relative z-10 flex items-center justify-center">
+                      {(() => {
+                        const hasImages = !!selectedTrophy.images;
+                        const isSelectedLocked = p.currentTier === 'locked';
+                        if (hasImages) {
+                          if (isSelectedLocked) {
+                            return (
+                              <div className="relative w-24 h-24 flex items-center justify-center">
+                                <img
+                                  src={selectedTrophy.tiers.bronze.image}
+                                  alt={`${selectedTrophy.title} - Locked`}
+                                  className="w-24 h-24 object-contain filter grayscale opacity-25 brightness-50 contrast-125"
+                                />
+                                <div className="absolute inset-0 m-auto w-10 h-10 rounded-full bg-neutral-950/90 border border-white/20 flex items-center justify-center shadow-xl">
+                                  <Lock className="w-5 h-5 text-gray-400" />
+                                </div>
+                              </div>
+                            );
+                          }
+                          const currentImg = getTrophyImage(selectedTrophy, p.currentTier);
+                          return (
+                            <img
+                              src={currentImg}
+                              alt={`${selectedTrophy.title} - ${p.currentTier}`}
+                              className="w-24 h-24 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] animate-pulse"
+                            />
+                          );
+                        }
+                        // The rest: leave blank for now
+                        return (
+                          <div className="w-24 h-24 flex items-center justify-center">
+                            {isSelectedLocked && (
+                              <div className="w-12 h-12 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
+                                <Lock className="w-6 h-6 text-gray-500" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                   <div className={`w-24 h-4 rounded-full ${pedestal.pedestal} mb-2`} />
 
@@ -710,21 +786,22 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                               : 'bg-black/30 border-white/5 opacity-60'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Award
-                              className={`w-4 h-4 ${
-                                tKey === 'platinum'
-                                  ? 'text-cyan-400'
-                                  : tKey === 'gold'
-                                  ? 'text-yellow-400'
-                                  : tKey === 'silver'
-                                  ? 'text-slate-300'
-                                  : 'text-amber-600'
-                              }`}
-                            />
+                          <div className="flex items-center gap-2.5">
+                            {tCfg.image ? (
+                              <img
+                                src={tCfg.image}
+                                alt={tCfg.badgeName}
+                                className={`w-8 h-8 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] ${
+                                  isReached ? '' : 'grayscale opacity-30'
+                                }`}
+                              />
+                            ) : (
+                              <div className="w-8 h-8 flex items-center justify-center" />
+                            )}
                             <div>
-                              <div className="font-header font-bold capitalize text-white">
-                                {tCfg.badgeName} ({tCfg.title})
+                              <div className="font-header font-bold capitalize text-white flex items-center gap-1.5">
+                                <span>{tCfg.badgeName}</span>
+                                <span className="text-gray-400 font-normal text-[11px]">({tCfg.title})</span>
                               </div>
                               <div className="text-[10px] text-gray-400">
                                 Goal: {tCfg.threshold} {selectedTrophy.metricLabel}
@@ -737,9 +814,10 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleClaim(selectedTrophy.id, tKey)}
-                                className="px-2.5 py-1 rounded-lg bg-amber-400 text-black font-header font-black text-xs hover:bg-yellow-300 transition-all cursor-pointer shadow-[0_0_8px_rgba(245,158,11,0.8)]"
+                                className="px-2.5 py-1 rounded-lg bg-amber-400 text-black font-header font-black text-xs hover:bg-yellow-300 transition-all cursor-pointer shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-glow-pulse flex items-center gap-1"
                               >
-                                Claim +{tCfg.starBonus}⭐
+                                <span>Claim +{tCfg.starBonus}</span>
+                                <img src={currencyStarImg} alt="Stars" className="w-3.5 h-3.5 object-contain inline" />
                               </button>
                             ) : isClaimed ? (
                               <span className="flex items-center gap-1 text-emerald-400 font-medium text-[11px]">

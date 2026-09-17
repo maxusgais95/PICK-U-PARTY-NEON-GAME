@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Gift, Star, Check, Sparkles, Calendar, Clock, RotateCcw } from 'lucide-react';
 import { SoundEngine, Haptics } from '../lib/audio';
+import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 import {
   EconomyState,
   claimDailyLoginReward,
@@ -119,7 +120,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
         <div className="px-5 py-2.5 bg-pink-950/30 border-b border-pink-500/10 flex items-center justify-between">
           <span className="text-xs text-pink-200/80 font-header tracking-wider">YOUR BALANCE</span>
           <div className="flex items-center gap-1.5 font-header font-bold text-sm text-amber-300">
-            <Star className="w-4 h-4 fill-amber-400" />
+            <img src={currencyStarImg} alt="Stars" className="w-4 h-4 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
             <span>{economy.stars.toLocaleString()} Stars</span>
           </div>
         </div>
@@ -190,20 +191,23 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
                         <Gift className="w-6 h-6 text-white" />
                       </div>
                     ) : (
-                      <Star
-                        className={`w-7 h-7 ${
+                      <img
+                        src={currencyStarImg}
+                        alt="Stars"
+                        className={`w-8 h-8 object-contain transition-all ${
                           isClaimed
-                            ? 'text-gray-500'
+                            ? 'grayscale opacity-30'
                             : isReady
-                            ? 'text-amber-300 fill-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)] animate-pulse'
-                            : 'text-amber-500/40'
+                            ? 'drop-shadow-[0_0_12px_rgba(245,158,11,0.95)]'
+                            : 'opacity-40 grayscale-[40%]'
                         }`}
                       />
                     )}
                   </div>
 
-                  <span className="font-header text-xs font-bold text-amber-300 mb-2">
-                    +{reward.stars} ⭐
+                  <span className="font-header text-xs font-bold text-amber-300 mb-2 flex items-center justify-center gap-1">
+                    <span>+{reward.stars}</span>
+                    <img src={currencyStarImg} alt="Stars" className="w-3.5 h-3.5 object-contain" />
                   </span>
 
                   {isClaimed ? (
@@ -214,7 +218,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleClaim(reward.day)}
-                      className="w-full py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 text-black font-header font-bold text-[11px] uppercase tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.6)] border border-yellow-200 active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer animate-pulse"
+                      className="w-full py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 text-black font-header font-bold text-[11px] uppercase tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.6)] border border-yellow-200 active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer animate-glow-pulse"
                     >
                       <Sparkles className="w-3 h-3" /> CLAIM
                     </button>

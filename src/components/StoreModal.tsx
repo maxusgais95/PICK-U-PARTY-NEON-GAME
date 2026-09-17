@@ -8,6 +8,7 @@ import { X, Star, Check, ShoppingBag, Sparkles, AlertCircle, Lock } from 'lucide
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
 import kaboomBombImg from '../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../assets/images/Ball Sprite.png';
+import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 import {
   StoreCategory,
   StoreItem,
@@ -123,12 +124,12 @@ export const StoreModal: React.FC<StoreModalProps> = ({
         );
       case 'bomb':
         return (
-          <div className="relative flex items-center justify-center w-full h-full p-2 overflow-hidden">
+          <div className="relative flex items-center justify-center w-full h-full p-2 overflow-visible">
             <div className={`absolute w-20 h-20 rounded-full bg-gradient-to-tr ${item.accentGradient} opacity-35 blur-lg`} />
             <img
               src={item.image || kaboomBombImg}
               alt={item.name}
-              className="max-h-20 sm:max-h-24 w-auto object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] transform group-hover:scale-110 transition-all duration-300 pointer-events-none"
+              className="max-h-20 sm:max-h-24 w-auto object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] transform scale-150 group-hover:scale-[1.65] transition-all duration-300 pointer-events-none"
               style={item.cssFilter ? { filter: item.cssFilter } : undefined}
             />
           </div>
@@ -213,7 +214,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({
           {/* Star Currency Balance In Header */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.4)]">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-300 animate-pulse" />
+              <img src={currencyStarImg} alt="Stars" className="w-4 h-4 object-contain drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]" />
               <span className="font-header font-bold text-xs sm:text-sm text-amber-200 tracking-wider">
                 {economy.stars.toLocaleString()}
               </span>
@@ -247,7 +248,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-amber-300 font-header font-semibold">
-            <Star className="w-3 h-3 fill-amber-400" />
+            <img src={currencyStarImg} alt="Stars" className="w-3.5 h-3.5 object-contain" />
             <span>Balance: {economy.stars.toLocaleString()}</span>
           </div>
         </div>
@@ -326,7 +327,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                         <span className="text-cyan-300 text-[10px]">FREE</span>
                       ) : (
                         <>
-                          <Star className="w-3 h-3 fill-amber-400" />
+                          <img src={currencyStarImg} alt="Stars" className="w-3.5 h-3.5 object-contain" />
                           <span>{item.price}</span>
                         </>
                       )}
@@ -417,9 +418,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handlePurchase(item)}
-                        className="w-full py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-black font-header font-bold text-xs tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.5)] border border-yellow-200 active:scale-95 transition-all flex items-center justify-center gap-1"
+                        className="w-full py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500 text-black font-header font-bold text-xs tracking-wider shadow-[0_0_12px_rgba(245,158,11,0.5)] border border-yellow-200 active:scale-95 transition-all flex items-center justify-center gap-1.5"
                       >
-                        <Star className="w-3 h-3 fill-black text-black" />
+                        <img src={currencyStarImg} alt="Stars" className="w-3.5 h-3.5 object-contain" />
                         <span>BUY {item.price}</span>
                       </button>
                     ) : (
@@ -430,7 +431,9 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                         title={`Requires ${item.price} Stars (Need ${item.price - economy.stars} more)`}
                       >
                         <Lock className="w-3 h-3 text-gray-500" />
-                        <span>LOCKED ({item.price} ⭐)</span>
+                        <span className="flex items-center gap-1">
+                          LOCKED ({item.price} <img src={currencyStarImg} alt="Stars" className="w-3 h-3 inline-block object-contain" />)
+                        </span>
                       </button>
                     )}
                   </div>

@@ -8,6 +8,7 @@ import { Check, Star, Bomb } from 'lucide-react';
 import { KaboomTile } from '../../types';
 import kaboomBombImg from '../../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../../assets/images/Ball Sprite.png';
+import currencyStarImg from '../../assets/images/Currency Star Sprite.png';
 
 interface KaboomBallProps {
   tile: KaboomTile;
@@ -84,7 +85,7 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
           >
             <div className={`absolute ${insetClass} ${innerRadius} border border-emerald-400/50 flex items-center justify-center bg-emerald-950/40 overflow-visible`}>
               {/* 3D DEFUSED BOMB SPRITE ABOVE TILE LAYER - UNCLIPPED & PULSING */}
-              <div className="absolute -inset-2.5 sm:-inset-3 z-30 flex items-center justify-center select-none pointer-events-none overflow-visible animate-pulse">
+              <div className="absolute -inset-2.5 sm:-inset-3 z-30 flex items-center justify-center select-none pointer-events-none overflow-visible">
                 <div
                   className="absolute inset-2 rounded-full pointer-events-none opacity-70"
                   style={{
@@ -94,7 +95,7 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
                 <img
                   src={bombImage || kaboomBombImg}
                   alt="Defused Bomb"
-                  className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_16px_rgba(16,185,129,0.95)]"
+                  className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_16px_rgba(16,185,129,0.95)] transform scale-150"
                   style={bombFilter ? { filter: `${bombFilter} drop-shadow(0 0 16px rgba(16,185,129,0.95))` } : undefined}
                 />
               </div>
@@ -135,7 +136,7 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
               <img
                 src={bombImage || kaboomBombImg}
                 alt="Cyber Bomb"
-                className={`relative z-10 w-full h-full object-contain ${
+                className={`relative z-10 w-full h-full object-contain transform scale-150 ${
                   tile.isDetonated
                     ? 'filter drop-shadow-[0_0_24px_rgba(239,68,68,1)] brightness-115'
                     : 'filter drop-shadow-[0_0_14px_rgba(239,68,68,0.85)]'
@@ -227,8 +228,10 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
                   }}
                 />
               ) : (
-                <Star
-                  className="relative z-10 w-2/3 h-2/3 fill-amber-300 text-amber-200 animate-sprite-flashy-glow"
+                <img
+                  src={currencyStarImg}
+                  alt="Bonus Star"
+                  className="relative z-10 w-2/3 h-2/3 object-contain animate-sprite-flashy-glow"
                   style={{
                     ['--sprite-tier-color' as any]: '#fbbf24',
                   }}
@@ -239,7 +242,7 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
             {/* Golden Yellow Glowing Pill Badge at Bottom */}
             <div className="absolute bottom-1 sm:bottom-1.5 inset-x-0 mx-auto z-20 flex justify-center pointer-events-none">
               <div className="px-2 sm:px-2.5 py-0.5 rounded-full bg-black/90 border border-yellow-400/90 flex items-center gap-1 shadow-[0_0_10px_rgba(255,234,0,0.85)] animate-gold-pill-pulse">
-                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-yellow-400 text-yellow-400" />
+                <img src={currencyStarImg} alt="Stars" className="w-2.5 h-2.5 sm:w-3 sm:h-3 object-contain" />
                 <span className="font-header font-black text-[10px] sm:text-xs text-white tracking-wider leading-none">
                   +{starReward}
                 </span>
@@ -297,7 +300,7 @@ const KaboomBallComponent: React.FC<KaboomBallProps> = ({
               <img
                 src={bombImage || kaboomBombImg}
                 alt="Cyber Bomb"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(239,68,68,0.85)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_10px_rgba(239,68,68,0.85)] transform scale-150"
                 style={bombFilter ? { filter: bombFilter } : undefined}
               />
             </div>

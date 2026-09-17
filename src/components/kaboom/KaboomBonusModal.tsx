@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { KaboomCommand, KaboomBonusItem } from '../../types';
 import { SoundEngine, Haptics } from '../../lib/audio';
+import currencyStarImg from '../../assets/images/Currency Star Sprite.png';
 
 interface KaboomBonusModalProps {
   command: KaboomCommand;
@@ -140,8 +141,8 @@ export const KaboomBonusModal: React.FC<KaboomBonusModalProps> = ({
             >
               RANK {bonusItem.rank} • {bonusItem.rankName}
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/60 text-amber-300 font-header font-black text-xs shadow-[0_0_12px_rgba(251,191,36,0.4)] animate-pulse">
-              <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+            <span className="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 border border-amber-300/60 text-amber-300 font-header font-black text-xs shadow-[0_0_12px_rgba(251,191,36,0.4)] animate-glow-pulse">
+              <img src={currencyStarImg} alt="Stars" className="w-3.5 h-3.5 object-contain" />
               +{bonusItem.starReward} STARS
             </span>
           </div>
@@ -184,10 +185,18 @@ export const KaboomBonusModal: React.FC<KaboomBonusModalProps> = ({
           id="kaboom-bonus-claim-button"
           type="button"
           onClick={handleClaim}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-header font-black text-base sm:text-lg shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-header font-black text-base sm:text-lg shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer animate-glow-pulse"
         >
-          <span>
-            {bonusItem ? `CLAIM +${bonusItem.starReward} STARS & CONTINUE` : 'CLAIM & CONTINUE'}
+          <span className="flex items-center gap-1.5">
+            {bonusItem ? (
+              <>
+                <span>CLAIM +{bonusItem.starReward}</span>
+                <img src={currencyStarImg} alt="Stars" className="w-5 h-5 object-contain" />
+                <span>STARS & CONTINUE</span>
+              </>
+            ) : (
+              'CLAIM & CONTINUE'
+            )}
           </span>
           <ArrowRight className="w-5 h-5 stroke-[2.5]" />
         </button>

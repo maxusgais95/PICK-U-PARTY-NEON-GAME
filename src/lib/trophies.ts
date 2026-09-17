@@ -3,6 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// Trophy 001 - Roulette Virtuoso
+import bronzeTrophy001 from '../assets/images/Bronze Trophy 001.png';
+import silverTrophy001 from '../assets/images/Silver Trophy 001.png';
+import goldTrophy001 from '../assets/images/Gold Trophy 001.png';
+import platinumTrophy001 from '../assets/images/Platinum Trophy 001.png';
+
+// Trophy 002 - Party Monarch
+import bronzeTrophy002 from '../assets/images/Bronze Trophy 002.png';
+import silverTrophy002 from '../assets/images/Silver Trophy 002.png';
+import goldTrophy002 from '../assets/images/Gold Trophy 002.png';
+import platinumTrophy002 from '../assets/images/Platinum Trophy 002.png';
+
+// Trophy 003 - Bomb Defender Grandmaster
+import bronzeTrophy003 from '../assets/images/Bronze Trophy 003.png';
+import silverTrophy003 from '../assets/images/Silver Trophy 003.png';
+import goldTrophy003 from '../assets/images/Gold Trophy 003.png';
+import platinumTrophy003 from '../assets/images/Platinum Trophy 003.png';
+
+// Trophy 004 - Vortex Dynamo
+import bronzeTrophy004 from '../assets/images/Bronze Trophy 004.png';
+import silverTrophy004 from '../assets/images/Silver Trophy 004.png';
+import goldTrophy004 from '../assets/images/Gold Trophy 004.png';
+import platinumTrophy004 from '../assets/images/Platinum Trophy 004.png';
+
 export type TrophyTier = 'locked' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
 export interface TrophyTierConfig {
@@ -16,6 +40,7 @@ export interface TrophyTierConfig {
   borderColor: string;
   glowColor: string;
   starBonus: number;
+  image?: string;
 }
 
 export interface AchievementTrophy {
@@ -26,6 +51,12 @@ export interface AchievementTrophy {
   description: string;
   metricLabel: string;
   iconType: 'trophy' | 'flame' | 'bomb' | 'sparkles' | 'crown' | 'target' | 'star';
+  images?: {
+    bronze?: string;
+    silver?: string;
+    gold?: string;
+    platinum?: string;
+  };
   tiers: {
     bronze: TrophyTierConfig;
     silver: TrophyTierConfig;
@@ -59,6 +90,12 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
     description: 'Survive and conquer dramatic finger roulette showdowns.',
     metricLabel: 'Rounds Won',
     iconType: 'target',
+    images: {
+      bronze: bronzeTrophy001,
+      silver: silverTrophy001,
+      gold: goldTrophy001,
+      platinum: platinumTrophy001,
+    },
     tiers: {
       bronze: {
         tier: 'bronze',
@@ -71,6 +108,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 50,
+        image: bronzeTrophy001,
       },
       silver: {
         tier: 'silver',
@@ -83,6 +121,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 150,
+        image: silverTrophy001,
       },
       gold: {
         tier: 'gold',
@@ -95,6 +134,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 400,
+        image: goldTrophy001,
       },
       platinum: {
         tier: 'platinum',
@@ -107,6 +147,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 1000,
+        image: platinumTrophy001,
       },
     },
   },
@@ -118,6 +159,12 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
     description: 'Spin high-velocity deciders and light up party circles.',
     metricLabel: 'Spins Completed',
     iconType: 'sparkles',
+    images: {
+      bronze: bronzeTrophy004,
+      silver: silverTrophy004,
+      gold: goldTrophy004,
+      platinum: platinumTrophy004,
+    },
     tiers: {
       bronze: {
         tier: 'bronze',
@@ -130,6 +177,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 50,
+        image: bronzeTrophy004,
       },
       silver: {
         tier: 'silver',
@@ -142,6 +190,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 150,
+        image: silverTrophy004,
       },
       gold: {
         tier: 'gold',
@@ -154,6 +203,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 400,
+        image: goldTrophy004,
       },
       platinum: {
         tier: 'platinum',
@@ -166,17 +216,24 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 1000,
+        image: platinumTrophy004,
       },
     },
   },
   {
     id: 'bomb_defuser',
-    title: 'Bomb Defuser Grandmaster',
+    title: 'Bomb Defender Grandmaster',
     category: 'kaboom',
     categoryLabel: 'Kaboom Party',
     description: 'Clear tactical party minefields without triggering bombs.',
     metricLabel: 'Safe Victories',
     iconType: 'bomb',
+    images: {
+      bronze: bronzeTrophy003,
+      silver: silverTrophy003,
+      gold: goldTrophy003,
+      platinum: platinumTrophy003,
+    },
     tiers: {
       bronze: {
         tier: 'bronze',
@@ -189,6 +246,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 60,
+        image: bronzeTrophy003,
       },
       silver: {
         tier: 'silver',
@@ -201,6 +259,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 180,
+        image: silverTrophy003,
       },
       gold: {
         tier: 'gold',
@@ -213,6 +272,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 500,
+        image: goldTrophy003,
       },
       platinum: {
         tier: 'platinum',
@@ -225,6 +285,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 1200,
+        image: platinumTrophy003,
       },
     },
   },
@@ -295,6 +356,12 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
     description: 'Total games hosted and celebrated with friends across all modes.',
     metricLabel: 'Total Games Played',
     iconType: 'crown',
+    images: {
+      bronze: bronzeTrophy002,
+      silver: silverTrophy002,
+      gold: goldTrophy002,
+      platinum: platinumTrophy002,
+    },
     tiers: {
       bronze: {
         tier: 'bronze',
@@ -307,6 +374,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 100,
+        image: bronzeTrophy002,
       },
       silver: {
         tier: 'silver',
@@ -319,6 +387,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 250,
+        image: silverTrophy002,
       },
       gold: {
         tier: 'gold',
@@ -331,6 +400,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 600,
+        image: goldTrophy002,
       },
       platinum: {
         tier: 'platinum',
@@ -343,6 +413,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 1500,
+        image: platinumTrophy002,
       },
     },
   },
@@ -557,4 +628,14 @@ export function calculateTrophyProgress(
     isMaxTier: currentTier === 'platinum',
     unclaimedTiers,
   };
+}
+
+export function getTrophyImage(
+  trophy: AchievementTrophy,
+  tier: TrophyTier
+): string | undefined {
+  if (tier === 'locked') {
+    return trophy.images?.bronze;
+  }
+  return trophy.images?.[tier];
 }

@@ -42,7 +42,9 @@ export const DailyQuestsWidget: React.FC<DailyQuestsWidgetProps> = ({
       id="daily-quests-widget-btn"
       onClick={handleClick}
       aria-label="Open Daily Quests"
-      className="group relative flex flex-col justify-center px-3 py-2 rounded-[18px] bg-black/50 backdrop-blur-md border border-cyan-400/40 shadow-[0_0_16px_rgba(6,182,212,0.3)] hover:border-cyan-300 active:scale-95 transition-all text-left w-[110px] sm:w-[124px] cursor-pointer pointer-events-auto select-none"
+      className={`group relative flex flex-col justify-center px-3 py-2 rounded-[18px] bg-black/50 backdrop-blur-md border border-cyan-400/40 shadow-[0_0_16px_rgba(6,182,212,0.3)] hover:border-cyan-300 active:scale-95 transition-all text-left w-[110px] sm:w-[124px] cursor-pointer pointer-events-auto select-none ${
+        hasUnclaimed ? 'animate-glow-pulse' : ''
+      }`}
     >
       {/* Subtle Cyan Ambient Glow */}
       <div className="absolute -inset-0.5 rounded-[18px] bg-cyan-400/10 blur-sm pointer-events-none group-hover:bg-cyan-400/20 transition-all" />

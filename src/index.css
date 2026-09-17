@@ -1845,4 +1845,63 @@
   box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.1), 0 6px 20px rgba(0, 0, 0, 0.75);
 }
 
+/* ==========================================================================
+   Pulsing Glow Keyframes (No Opacity Fade - Vibrant Aura Waves)
+   ========================================================================== */
+
+@keyframes glowPulseAmber {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 0 24px rgba(245, 158, 11, 0.25);
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(245, 158, 11, 0.95), 0 0 38px rgba(245, 158, 11, 0.55);
+    filter: brightness(1.1);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes glowPulseVictory {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.6), 0 0 28px rgba(16, 185, 129, 0.25);
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(16, 185, 129, 0.95), 0 0 46px rgba(16, 185, 129, 0.55);
+    filter: brightness(1.12);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes glowPulseRestart {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.65), 0 0 28px rgba(239, 68, 68, 0.3);
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(249, 115, 22, 0.95), 0 0 48px rgba(239, 68, 68, 0.6);
+    filter: brightness(1.12);
+    transform: scale(1.025);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glowPulseAmber 1.8s ease-in-out infinite;
+  will-change: box-shadow, transform, filter;
+}
+
+.animate-glow-pulse-victory {
+  animation: glowPulseVictory 1.8s ease-in-out infinite;
+  will-change: box-shadow, transform, filter;
+}
+
+.animate-glow-pulse-restart {
+  animation: glowPulseRestart 1.8s ease-in-out infinite;
+  will-change: box-shadow, transform, filter;
+}
+
+
 

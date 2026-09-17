@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Star } from 'lucide-react';
+import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { EconomyState } from '../lib/economy';
 
@@ -88,9 +88,11 @@ export const CurrencyHud: React.FC<CurrencyHudProps> = ({
 
         {/* 3D Radiant Star Icon */}
         <div className="relative flex items-center justify-center shrink-0">
-          <Star
-            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-400 stroke-amber-200 transition-transform ${
-              isBeeping ? 'scale-130 animate-spin-hyper' : 'animate-pulse'
+          <img
+            src={currencyStarImg}
+            alt="Party Star Currency"
+            className={`w-4 h-4 sm:w-4.5 sm:h-4.5 object-contain drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] transition-transform ${
+              isBeeping ? 'scale-135 animate-spin-hyper' : 'hover:scale-110'
             }`}
           />
         </div>

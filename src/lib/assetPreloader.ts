@@ -26,7 +26,7 @@ import extremeModeBg from '../assets/images/Extreme Mode Background.jpeg';
 import chaosModeBg from '../assets/images/Chaos Mode Background.jpeg';
 import ultimateModeBg from '../assets/images/Ultimate Mode Background.jpeg';
 import bombGameBg from '../assets/images/Bomb Game Background.jpeg';
-import kaboomBombImg from '../assets/images/Bomb Detonated Sprite.png';
+import kaboomBombImg from '../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../assets/images/Ball Sprite.png';
 import bonusMusicalNoteImg from '../assets/images/Music Note Sprite.png';
 import bonusHeadsetImg from '../assets/images/Headsets Sprite.png';
