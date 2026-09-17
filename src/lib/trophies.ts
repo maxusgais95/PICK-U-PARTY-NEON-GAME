@@ -309,6 +309,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 40,
+        image: bronzeTrophy003,
       },
       silver: {
         tier: 'silver',
@@ -321,6 +322,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 120,
+        image: silverTrophy003,
       },
       gold: {
         tier: 'gold',
@@ -333,6 +335,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 350,
+        image: goldTrophy003,
       },
       platinum: {
         tier: 'platinum',
@@ -345,6 +348,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 900,
+        image: platinumTrophy003,
       },
     },
   },
