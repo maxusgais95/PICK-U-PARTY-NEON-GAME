@@ -319,7 +319,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
         </div>
 
         {/* Gallery Showcase Stats Bar */}
-        <div className="grid grid-cols-3 gap-2 px-4 py-3 bg-black/60 border-b border-white/10 text-center text-xs">
+        <div className="grid grid-cols-2 gap-2 px-4 py-3 bg-black/60 border-b border-white/10 text-center text-xs">
           <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 border border-white/5">
             <span className="text-[10px] text-gray-400 uppercase tracking-wider">Unlocked</span>
             <span className="font-header font-bold text-base text-amber-300 mt-0.5">
@@ -331,13 +331,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
             <span className="font-header font-bold text-base text-cyan-300 mt-0.5 flex items-center gap-1">
               <Award className="w-3.5 h-3.5 text-cyan-400" />
               {platinumCount}
-            </span>
-          </div>
-          <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 border border-white/5">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider">Party Stars Balance</span>
-            <span className="font-header font-bold text-base text-yellow-300 mt-0.5 flex items-center gap-1">
-              <img src={currencyStarImg} alt="Stars" className="w-4 h-4 object-contain" />
-              {economy.stars.toLocaleString()}
             </span>
           </div>
         </div>
@@ -490,10 +483,10 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                     </div>
 
                     {/* 3D Pedestal and Trophy Icon with Tier Aura */}
-                    <div className="relative z-10 py-2 flex flex-col items-center justify-center">
+                    <div className="relative z-10 py-3 flex flex-col items-center justify-center">
                       {/* Distinct Glowing Aura Behind Trophy */}
                       <div
-                        className={`absolute w-20 h-20 rounded-full blur-xl pointer-events-none transition-opacity ${
+                        className={`absolute w-44 h-44 sm:w-48 sm:h-48 rounded-full blur-2xl pointer-events-none transition-opacity ${
                           isLocked
                             ? 'bg-transparent'
                             : progress.currentTier === 'platinum'
@@ -506,77 +499,59 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                         }`}
                       />
 
-                      {/* Trophy Image / Icon with Hover Float */}
-                      <div className="relative z-10 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center min-h-[64px]">
+                      {/* Trophy Image / Icon with Hover Float - 3x Size */}
+                      <div className="relative z-10 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center min-h-[176px] sm:min-h-[192px]">
                         {(() => {
                           const hasImages = !!trophy.images;
                           if (hasImages) {
                             if (isLocked) {
                               return (
-                                <div className="relative w-16 h-16 flex items-center justify-center">
+                                <div className="relative w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center">
                                   <img
                                     src={trophy.tiers.bronze.image}
                                     alt={`${trophy.title} - Locked`}
-                                    className="w-16 h-16 object-contain filter grayscale opacity-25 brightness-50 contrast-125"
+                                    className="w-44 h-44 sm:w-48 sm:h-48 object-contain filter grayscale opacity-25 brightness-50 contrast-125"
                                   />
-                                  <div className="absolute inset-0 m-auto w-7 h-7 rounded-full bg-neutral-950/90 border border-white/15 flex items-center justify-center shadow-lg">
-                                    <Lock className="w-3.5 h-3.5 text-gray-400" />
+                                  <div className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-neutral-950/90 border border-white/15 flex items-center justify-center shadow-lg">
+                                    <Lock className="w-6 h-6 text-gray-400" />
                                   </div>
                                 </div>
                               );
                             }
                             const trophyImg = getTrophyImage(trophy, progress.currentTier);
                             return (
-                              <div className="w-16 h-16 flex items-center justify-center">
+                              <div className="w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center">
                                 <img
                                   src={trophyImg}
                                   alt={`${trophy.title} - ${progress.currentTier}`}
-                                  className="w-16 h-16 object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.8)] filter transition-transform duration-300 group-hover:scale-110"
+                                  className="w-44 h-44 sm:w-48 sm:h-48 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] filter transition-transform duration-300 group-hover:scale-105"
                                 />
                               </div>
                             );
                           }
                           // The rest: leave blank for now
                           return (
-                            <div className="w-16 h-16 flex items-center justify-center">
+                            <div className="w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center">
                               {isLocked && (
-                                <div className="w-9 h-9 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
-                                  <Lock className="w-4 h-4 text-gray-500" />
+                                <div className="w-12 h-12 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
+                                  <Lock className="w-6 h-6 text-gray-500" />
                                 </div>
                               )}
                             </div>
                           );
                         })()}
                       </div>
-
-                      {/* Trophy Pedestal Base */}
-                      <div
-                        className={`w-18 h-3.5 mt-1.5 rounded-full ${pedestal.pedestal} flex items-center justify-center`}
-                      >
-                        <div className="w-12 h-0.5 rounded-full bg-white/50 blur-xs" />
-                      </div>
-
-                      {/* Active Tier Pill */}
-                      <div className="mt-2.5 text-center">
-                        <span
-                          className={`text-[10px] font-header font-black tracking-widest uppercase px-2 py-0.5 rounded-full ${pedestal.badgeBg} ${pedestal.badgeText}`}
-                        >
-                          {progress.currentTierConfig
-                            ? `${progress.currentTierConfig.badgeName} Tier`
-                            : 'Locked'}
-                        </span>
-                      </div>
                     </div>
 
-                    {/* Trophy Details */}
-                    <div className="relative z-10 mt-1">
-                      <h3 className="font-header font-bold text-sm text-white group-hover:text-amber-300 transition-colors flex items-center justify-between">
+                    {/* Trophy Details - Centered */}
+                    <div className="relative z-10 mt-2 text-center flex flex-col items-center">
+                      <h3 className="font-header font-bold text-base text-white group-hover:text-amber-300 transition-colors flex items-center justify-center gap-1.5 text-center">
                         <span>{trophy.title}</span>
                         {progress.currentTier === 'platinum' && (
-                          <span className="text-[10px] text-cyan-300 font-normal">MAX</span>
+                          <span className="text-[10px] text-cyan-300 font-normal px-1.5 py-0.5 rounded bg-cyan-950/60 border border-cyan-400/40">MAX</span>
                         )}
                       </h3>
-                      <p className="text-[11px] text-gray-300 line-clamp-1 mt-0.5">
+                      <p className="text-xs text-gray-300 text-center line-clamp-2 mt-1 max-w-sm">
                         {progress.currentTierConfig ? progress.currentTierConfig.title : trophy.description}
                       </p>
                     </div>
@@ -700,7 +675,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                 <div className="flex flex-col items-center text-center">
                   <div className="relative py-3">
                     <div
-                      className={`w-24 h-24 rounded-full blur-xl absolute inset-0 m-auto ${
+                      className={`w-48 h-48 sm:w-52 sm:h-52 rounded-full blur-2xl absolute inset-0 m-auto ${
                         p.currentTier === 'platinum'
                           ? 'bg-cyan-400/30'
                           : p.currentTier === 'gold'
@@ -719,14 +694,14 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                         if (hasImages) {
                           if (isSelectedLocked) {
                             return (
-                              <div className="relative w-24 h-24 flex items-center justify-center">
+                              <div className="relative w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
                                 <img
                                   src={selectedTrophy.tiers.bronze.image}
                                   alt={`${selectedTrophy.title} - Locked`}
-                                  className="w-24 h-24 object-contain filter grayscale opacity-25 brightness-50 contrast-125"
+                                  className="w-48 h-48 sm:w-52 sm:h-52 object-contain filter grayscale opacity-25 brightness-50 contrast-125"
                                 />
-                                <div className="absolute inset-0 m-auto w-10 h-10 rounded-full bg-neutral-950/90 border border-white/20 flex items-center justify-center shadow-xl">
-                                  <Lock className="w-5 h-5 text-gray-400" />
+                                <div className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-neutral-950/90 border border-white/20 flex items-center justify-center shadow-xl">
+                                  <Lock className="w-7 h-7 text-gray-400" />
                                 </div>
                               </div>
                             );
@@ -736,16 +711,16 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                             <img
                               src={currentImg}
                               alt={`${selectedTrophy.title} - ${p.currentTier}`}
-                              className="w-24 h-24 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] animate-pulse"
+                              className="w-48 h-48 sm:w-52 sm:h-52 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.85)] filter transition-transform duration-300 hover:scale-105"
                             />
                           );
                         }
                         // The rest: leave blank for now
                         return (
-                          <div className="w-24 h-24 flex items-center justify-center">
+                          <div className="w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
                             {isSelectedLocked && (
-                              <div className="w-12 h-12 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
-                                <Lock className="w-6 h-6 text-gray-500" />
+                              <div className="w-14 h-14 rounded-full bg-neutral-900/90 border border-white/10 flex items-center justify-center">
+                                <Lock className="w-7 h-7 text-gray-500" />
                               </div>
                             )}
                           </div>
@@ -753,12 +728,8 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                       })()}
                     </div>
                   </div>
-                  <div className={`w-24 h-4 rounded-full ${pedestal.pedestal} mb-2`} />
 
-                  <span className={`text-xs font-header font-black tracking-widest uppercase px-2.5 py-0.5 rounded-full ${pedestal.badgeBg} ${pedestal.badgeText}`}>
-                    {p.currentTierConfig ? `${p.currentTierConfig.badgeName} Tier` : 'Locked'}
-                  </span>
-                  <h3 className="font-header text-lg font-bold text-white mt-1.5">
+                  <h3 className="font-header text-xl font-bold text-white mt-2">
                     {selectedTrophy.title}
                   </h3>
                   <p className="text-xs text-gray-300 mt-1 max-w-[260px]">

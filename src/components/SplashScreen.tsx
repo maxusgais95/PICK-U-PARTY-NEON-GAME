@@ -281,8 +281,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete, onOpenVe
         </p>
       </div>
 
-      {/* ZONE 3: BOTTOM DOCKED CONTROL & PROGRESS (No bounding box rectangle frame) */}
-      <footer className="relative z-20 w-full max-w-md px-4 sm:px-6 pb-safe pb-5 sm:pb-7 flex flex-col items-center text-center pointer-events-auto">
+      {/* ZONE 3: ELEVATED CONTROL & PROGRESS (Moved up 20px toward logo and game description) */}
+      <footer className="relative z-20 w-full max-w-md px-4 sm:px-6 pb-safe pb-12 sm:pb-16 mb-4 sm:mb-8 -translate-y-[20px] flex flex-col items-center text-center pointer-events-auto">
         {/* Progress Stage Header: STAGE TITLE [XX%] */}
         <div className="w-60 sm:w-68 max-w-[82vw] flex items-center justify-between px-1 mb-1.5">
           <span className="font-header text-[11px] sm:text-xs tracking-wider text-white/95 uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] font-bold truncate mr-2">
