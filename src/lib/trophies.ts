@@ -404,7 +404,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
       },
       platinum: {
         tier: 'platinum',
-        threshold: 295,
+        threshold: 400,
         title: 'Mythic Party Overlord',
         badgeName: 'Platinum',
         colorName: 'Cyber Platinum',
