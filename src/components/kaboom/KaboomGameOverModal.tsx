@@ -6,7 +6,7 @@
 import React from 'react';
 import { Bomb, Flame, RotateCcw, Grid, Trophy, Sparkles, ShieldAlert } from 'lucide-react';
 import { SoundEngine, Haptics } from '../../lib/audio';
-import kaboomBombImg from '../../assets/images/kaboom_bomb_sprite.png';
+import kaboomBombImg from '../../assets/images/Bomb Sprite.png';
 
 interface KaboomGameOverModalProps {
   detonatorName: string;

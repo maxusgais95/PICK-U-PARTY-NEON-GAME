@@ -6,7 +6,7 @@
 import React from 'react';
 import { Check, Star, Bomb } from 'lucide-react';
 import { KaboomTile } from '../../types';
-import kaboomBombImg from '../../assets/images/Bomb Detonated Sprite.png';
+import kaboomBombImg from '../../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../../assets/images/Ball Sprite.png';
 
 interface KaboomBallProps {

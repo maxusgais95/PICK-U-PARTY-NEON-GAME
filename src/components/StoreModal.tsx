@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { X, Star, Check, ShoppingBag, Sparkles, AlertCircle, Lock } from 'lucide-react';
 import { ChampagneBottleIcon } from './ChampagneBottleIcon';
-import kaboomBombImg from '../assets/images/Bomb Detonated Sprite.png';
+import kaboomBombImg from '../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../assets/images/Ball Sprite.png';
 import {
   StoreCategory,
