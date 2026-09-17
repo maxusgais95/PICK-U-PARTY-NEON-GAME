@@ -27,6 +27,18 @@ import silverTrophy004 from '../assets/images/Silver Trophy 004.png';
 import goldTrophy004 from '../assets/images/Gold Trophy 004.png';
 import platinumTrophy004 from '../assets/images/Platinum Trophy 004.png';
 
+// Trophy 005 - Relic Archeologist
+import bronzeTrophy005 from '../assets/images/Bronze Trophy 005.png';
+import silverTrophy005 from '../assets/images/Silver Trophy 005.png';
+import goldTrophy005 from '../assets/images/Gold Trophy 005.png';
+import platinumTrophy005 from '../assets/images/Platinum Trophy 005.png';
+
+// Trophy 005 - Cyber Couture Icon
+import bronzeTrophy006 from '../assets/images/Bronze Trophy 006.png';
+import silverTrophy006 from '../assets/images/Silver Trophy 006.png';
+import goldTrophy006 from '../assets/images/Gold Trophy 006.png';
+import platinumTrophy006 from '../assets/images/Platinum Trophy 006.png';
+
 export type TrophyTier = 'locked' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
 export interface TrophyTierConfig {
@@ -297,6 +309,12 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
     description: 'Unearth secret party power-ups and musical treasures.',
     metricLabel: 'Relics Discovered',
     iconType: 'star',
+    images: {
+      bronze: bronzeTrophy005,
+      silver: silverTrophy005,
+      gold: goldTrophy005,
+      platinum: platinumTrophy005,
+    },
     tiers: {
       bronze: {
         tier: 'bronze',
@@ -309,6 +327,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 40,
+        image: bronzeTrophy005,
       },
       silver: {
         tier: 'silver',
@@ -321,6 +340,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 120,
+        image: silverTrophy005,
       },
       gold: {
         tier: 'gold',
@@ -333,6 +353,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 350,
+        image: goldTrophy005,
       },
       platinum: {
         tier: 'platinum',
@@ -345,6 +366,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 900,
+        image: platinumTrophy005,
       },
     },
   },
@@ -425,6 +447,12 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
     description: 'Unlock custom neon bottles, bombs, and exclusive skins.',
     metricLabel: 'Skins Unlocked',
     iconType: 'flame',
+    images: {
+      bronze: bronzeTrophy006,
+      silver: silverTrophy006,
+      gold: goldTrophy006,
+      platinum: platinumTrophy006,
+    },
     tiers: {
       bronze: {
         tier: 'bronze',
@@ -437,6 +465,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-amber-700/60',
         glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
         starBonus: 75,
+        image: bronzeTrophy006,
       },
       silver: {
         tier: 'silver',
@@ -449,6 +478,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-slate-400/60',
         glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
         starBonus: 200,
+        image: silverTrophy006,
       },
       gold: {
         tier: 'gold',
@@ -461,6 +491,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-yellow-400/80',
         glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
         starBonus: 500,
+        image: goldTrophy006,
       },
       platinum: {
         tier: 'platinum',
@@ -473,6 +504,7 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
         borderColor: 'border-cyan-300',
         glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
         starBonus: 1200,
+        image: platinumTrophy006,
       },
     },
   },
