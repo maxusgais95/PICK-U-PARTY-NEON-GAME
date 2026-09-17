@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, Gift, Star, Check, Sparkles, Calendar, Clock, RotateCcw } from 'lucide-react';
+import { X, Gift, Star, Check, Sparkles, Calendar, Clock } from 'lucide-react';
 import { SoundEngine, Haptics } from '../lib/audio';
 import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 import {
@@ -13,7 +13,6 @@ import {
   getDailyRewardStatus,
   getTimeUntilMidnight,
   DAILY_LOGIN_REWARDS,
-  resetDailyLoginRewardsForTesting,
 } from '../lib/economy';
 
 interface RewardsModalProps {
@@ -64,15 +63,6 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
       setToastMsg(res.message);
       setTimeout(() => setToastMsg(null), 3000);
     }
-  };
-
-  const handleDevResetRewards = () => {
-    SoundEngine.playButtonClick();
-    Haptics.buttonClick();
-    const updated = resetDailyLoginRewardsForTesting();
-    onEconomyUpdated(updated);
-    setToastMsg('7-Day Login calendar reset for testing.');
-    setTimeout(() => setToastMsg(null), 2500);
   };
 
   return (
@@ -234,17 +224,8 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-400">
+        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-center text-[11px] text-gray-400">
           <span>From Day 1 to Day 7, each reward can be claimed once.</span>
-          <button
-            type="button"
-            onClick={handleDevResetRewards}
-            title="Reset rewards for testing"
-            className="text-[10px] text-gray-500 hover:text-pink-300 flex items-center gap-1 transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-2.5 h-2.5" />
-            <span>Test Reset</span>
-          </button>
         </div>
       </div>
     </div>

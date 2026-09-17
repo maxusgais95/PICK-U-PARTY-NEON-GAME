@@ -4,12 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, Check, Star, Clock, ArrowRight, Sparkles, Trophy, RotateCcw } from 'lucide-react';
+import { X, Check, Star, Clock, ArrowRight, Sparkles, Trophy } from 'lucide-react';
 import {
   DailyQuest,
   claimQuestReward,
   claimMilestoneChest,
-  resetDailyQuestsForTesting,
   EconomyState,
   getTimeUntilMidnight,
   MILESTONE_CHEST_REWARD,
@@ -87,13 +86,6 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
     if (gameMode && onNavigateToGame) {
       onNavigateToGame(gameMode);
     }
-  };
-
-  const handleDevResetQuests = () => {
-    SoundEngine.playButtonClick();
-    Haptics.buttonClick();
-    const updated = resetDailyQuestsForTesting();
-    onEconomyUpdated(updated);
   };
 
   return (
@@ -331,17 +323,8 @@ export const DailyQuestsModal: React.FC<DailyQuestsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-between text-[11px] text-gray-400">
+        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-center text-[11px] text-gray-400">
           <span>Quests reset daily at 00:00 midnight local time.</span>
-          <button
-            type="button"
-            onClick={handleDevResetQuests}
-            title="Reset quests for testing"
-            className="text-[10px] text-gray-500 hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-2.5 h-2.5" />
-            <span>Test Reset</span>
-          </button>
         </div>
       </div>
     </div>

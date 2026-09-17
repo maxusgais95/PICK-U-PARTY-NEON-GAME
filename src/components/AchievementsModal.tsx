@@ -41,6 +41,56 @@ interface AchievementsModalProps {
   onEconomyUpdated?: (economy: EconomyState) => void;
 }
 
+/**
+ * Platinum Trophy Random Shine Stars
+ * Diamond four-point star glints that randomly sparkle and fade
+ */
+const PLATINUM_SPARKLES = [
+  { top: '16%', left: '22%', size: 16, delay: '0.1s', duration: '2.4s' },
+  { top: '22%', left: '72%', size: 20, delay: '0.9s', duration: '2.8s' },
+  { top: '38%', left: '14%', size: 14, delay: '1.6s', duration: '2.2s' },
+  { top: '48%', left: '80%', size: 18, delay: '0.4s', duration: '2.6s' },
+  { top: '65%', left: '26%', size: 15, delay: '1.2s', duration: '2.5s' },
+  { top: '72%', left: '70%', size: 22, delay: '1.8s', duration: '3.0s' },
+  { top: '28%', left: '46%', size: 17, delay: '0.7s', duration: '2.1s' },
+  { top: '56%', left: '52%', size: 13, delay: '1.4s', duration: '2.7s' },
+];
+
+const PlatinumShineStars: React.FC = () => (
+  <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+    {PLATINUM_SPARKLES.map((sparkle, idx) => (
+      <svg
+        key={idx}
+        viewBox="0 0 24 24"
+        className="absolute animate-sparkle-shine filter drop-shadow-[0_0_8px_rgba(207,250,254,0.95)]"
+        style={{
+          top: sparkle.top,
+          left: sparkle.left,
+          width: `${sparkle.size}px`,
+          height: `${sparkle.size}px`,
+          ['--sparkle-delay' as any]: sparkle.delay,
+          ['--sparkle-duration' as any]: sparkle.duration,
+        }}
+      >
+        {/* 4-point faceted diamond glint star */}
+        <path
+          d="M12 0 C12 7 17 12 24 12 C17 12 12 17 12 24 C12 17 7 12 0 12 C7 12 12 7 12 0 Z"
+          fill="url(#sparkleGradient)"
+        />
+        {/* Shimmering white central core */}
+        <circle cx="12" cy="12" r="2.5" fill="#ffffff" />
+        <defs>
+          <linearGradient id="sparkleGradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="45%" stopColor="#a5f3fc" />
+            <stop offset="100%" stopColor="#38bdf8" />
+          </linearGradient>
+        </defs>
+      </svg>
+    ))}
+  </div>
+);
+
 const CATEGORY_TABS: Array<{
   id: string;
   label: string;
@@ -450,10 +500,11 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {filteredTrophies.map((trophy) => {
+              {filteredTrophies.map((trophy, index) => {
                 const progress = calculateTrophyProgress(trophy, statsContext, claimMap);
                 const pedestal = getTierPedestalStyle(progress.currentTier);
                 const isLocked = progress.currentTier === 'locked';
+                const isPlatinum = progress.currentTier === 'platinum';
 
                 return (
                   <div
@@ -463,7 +514,10 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                       Haptics.buttonClick();
                       setSelectedTrophy(trophy);
                     }}
-                    className={`group relative rounded-2xl ${pedestal.glowCardClass} ${pedestal.cardBg} p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden`}
+                    style={{
+                      animationDelay: `${Math.min(index * 45, 400)}ms`,
+                    }}
+                    className={`group relative rounded-2xl ${pedestal.glowCardClass} ${pedestal.cardBg} p-3.5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden animate-trophy-entrance`}
                   >
                     {/* Radial Ambient Beam */}
                     <div className={`absolute inset-0 pointer-events-none ${pedestal.radialOverlay}`} />
@@ -489,7 +543,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                         className={`absolute w-44 h-44 sm:w-48 sm:h-48 rounded-full blur-2xl pointer-events-none transition-opacity ${
                           isLocked
                             ? 'bg-transparent'
-                            : progress.currentTier === 'platinum'
+                            : isPlatinum
                             ? 'bg-cyan-400/35 animate-pulse'
                             : progress.currentTier === 'gold'
                             ? 'bg-yellow-400/35 animate-pulse'
@@ -501,6 +555,9 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
 
                       {/* Trophy Image / Icon with Hover Float - 3x Size */}
                       <div className="relative z-10 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center min-h-[176px] sm:min-h-[192px]">
+                        {/* Shimmering random star shines on Platinum trophies */}
+                        {isPlatinum && <PlatinumShineStars />}
+
                         {(() => {
                           const hasImages = !!trophy.images;
                           if (hasImages) {
@@ -688,6 +745,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                       }`}
                     />
                     <div className="relative z-10 flex items-center justify-center">
+                      {p.currentTier === 'platinum' && <PlatinumShineStars />}
                       {(() => {
                         const hasImages = !!selectedTrophy.images;
                         const isSelectedLocked = p.currentTier === 'locked';
