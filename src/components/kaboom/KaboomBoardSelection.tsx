@@ -127,20 +127,20 @@ export const KaboomBoardSelection: React.FC<KaboomBoardSelectionProps> = ({
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#070312]/50 to-[#070312]" />
       </div>
 
-      {/* Main Content Container: Clean, vertical flow with generous spacing */}
-      <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-auto flex flex-col justify-between min-h-full px-4 pt-[max(6.5rem,calc(env(safe-area-inset-top)+5rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
-        {/* Header: SELECT BOARD & Subtitle */}
-        <div className="text-center mb-4 sm:mb-5">
+      {/* Main Content Container: Grouped so header sits slightly above board panels */}
+      <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-auto flex flex-col justify-center min-h-full px-4 pt-[max(5.5rem,calc(env(safe-area-inset-top)+4rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))]">
+        {/* Header: SELECT BOARD & Subtitle directly above board panels */}
+        <div className="text-center mb-3 sm:mb-4">
           <h1 className="font-header text-3xl sm:text-4xl font-bold tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-red-400 drop-shadow-[0_2px_12px_rgba(249,115,22,0.6)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] leading-tight py-1">
             SELECT BOARD
           </h1>
-          <p className="font-body text-xs sm:text-sm font-medium text-white/90 mt-1 tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+          <p className="font-body text-xs sm:text-sm font-medium text-white/90 mt-0.5 tracking-wide drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
             Pick your grid size and take turns tapping balls!
           </p>
         </div>
 
         {/* Board Cards Grid: Consistent Card Height across all options */}
-        <div className="grid grid-cols-2 gap-3.5 sm:gap-4 my-auto">
+        <div className="grid grid-cols-2 gap-3.5 sm:gap-4">
           {CARDS.map((card) => {
             const isWide = card.isWide;
 

@@ -64,8 +64,6 @@ export const BottleSpin: React.FC<BottleSpinProps> = ({
         onSpinStateChangeRef.current(false, 0);
       }
       SoundEngine.playBottleSettle();
-      recordGameEvent('bottle');
-      recordStarEarringsCondition('bottleSpin');
       addStars(10);
 
       // Trigger landing shockwave
@@ -338,6 +336,8 @@ export const BottleSpin: React.FC<BottleSpinProps> = ({
         onSpinStateChangeRef.current(true, flickVelocity);
       }
       SoundEngine.playBottleFlick(flickVelocity);
+      recordGameEvent('bottle');
+      recordStarEarringsCondition('bottleSpin');
     }
   };
 
@@ -370,6 +370,8 @@ export const BottleSpin: React.FC<BottleSpinProps> = ({
         onSpinStateChangeRef.current(true, flickVel);
       }
       SoundEngine.playBottleFlick(flickVel);
+      recordGameEvent('bottle');
+      recordStarEarringsCondition('bottleSpin');
     }
   };
 

@@ -166,7 +166,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pt-[max(2.25rem,calc(env(safe-area-inset-top)+1.25rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/85 backdrop-blur-xl animate-fadeIn">
-      <div className="glass-panel relative w-full max-w-md max-h-full flex flex-col overflow-hidden shadow-2xl"
+      <div className="glass-panel relative w-full max-w-md h-[min(88vh,700px)] flex flex-col overflow-hidden shadow-2xl rounded-[26px]"
         style={{
           boxShadow: '0 24px 60px -10px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 42, 133, 0.25)',
         }}
@@ -414,15 +414,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="flex items-center justify-between w-full min-w-0">
                     <span className="text-[11px] font-bold text-gray-200 flex items-center gap-1.5 truncate">
                       <Sparkles className="w-3.5 h-3.5 text-pink-400 shrink-0" />
-                      <span className="truncate">Upload Blend Mode (Black BG)</span>
+                      <span className="truncate">Select blending mode:</span>
                     </span>
                     <span className="text-[10px] font-semibold text-cyan-300 capitalize shrink-0 ml-1">
                       {uploadBlendMode.replace('-', ' ')}
                     </span>
                   </div>
-                  <p className="text-[10px] text-gray-400 leading-tight">
-                    Select mode for new uploads (Screen drops black backgrounds automatically):
-                  </p>
                   <div className="grid grid-cols-3 gap-1.5 pt-1 w-full min-w-0">
                     {[
                       { id: 'normal' as BottleBlendMode, label: 'Normal', desc: 'Solid original opacity' },
@@ -647,35 +644,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </span>
                 </div>
 
-                {/* Winrate Banner */}
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-red-950/40 via-amber-950/30 to-emerald-950/40 border border-amber-500/30 mb-2.5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                        Round Survival Winrate
-                      </div>
-                      <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-300">
-                        {(stats.kaboom?.winrate || 0).toFixed(1)}%
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        Rounds Survived
-                      </div>
-                      <div className="text-sm font-extrabold text-emerald-300">
-                        {stats.kaboom?.victories || 0} / {stats.kaboom?.totalRounds || stats.totalKaboomRounds || 0}
-                      </div>
-                    </div>
-                  </div>
-                  {/* Visual Progress Bar */}
-                  <div className="w-full h-2 rounded-full bg-black/60 overflow-hidden mt-2 border border-white/10">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all duration-500"
-                      style={{ width: `${Math.min(100, Math.max(0, stats.kaboom?.winrate || 0))}%` }}
-                    />
-                  </div>
-                </div>
-
                 {/* Detailed 3-Stat Grid */}
                 <div className="grid grid-cols-3 gap-2">
                   {/* Victories */}
@@ -720,10 +688,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300">
-                💾 Saved offline in local browser storage.
               </div>
 
               <button

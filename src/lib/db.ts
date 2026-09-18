@@ -201,6 +201,9 @@ export async function saveStats(stats: AppStats): Promise<void> {
   try {
     const normalized = normalizeStats(stats);
     localStorage.setItem('neon_party_stats', JSON.stringify(normalized));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('picku_stats_updated', { detail: normalized }));
+    }
     const db = await openDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction('stats', 'readwrite');

@@ -87,7 +87,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
               </h2>
               <div className="flex items-center gap-1.5 text-[11px] text-pink-200/70 mt-1 font-body">
                 <Calendar className="w-3 h-3 text-pink-400" />
-                <span>7-Day Login Streak (Claim Once Each)</span>
+                <span>7-Day Daily Login</span>
               </div>
             </div>
           </div>
@@ -169,9 +169,7 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
                       {reward.label}
                     </span>
                     {isClaimed && (
-                      <span className="text-[9px] font-header font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
-                        CLAIMED
-                      </span>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
                     )}
                   </div>
 
@@ -221,11 +219,6 @@ export const RewardsModal: React.FC<RewardsModalProps> = ({
               );
             })}
           </div>
-        </div>
-
-        {/* Modal Footer */}
-        <div className="p-3 bg-black/70 border-t border-white/10 flex items-center justify-center text-[11px] text-gray-400">
-          <span>From Day 1 to Day 7, each reward can be claimed once.</span>
         </div>
       </div>
     </div>

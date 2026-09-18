@@ -154,6 +154,20 @@ export default function App() {
     setStats(loadedStats);
   }, []);
 
+  // Sync stats whenever any game event is recorded or stats change in real time
+  useEffect(() => {
+    const handleStatsEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<AppStats>;
+      if (customEvent.detail) {
+        setStats(customEvent.detail);
+      } else {
+        refreshStats();
+      }
+    };
+    window.addEventListener('picku_stats_updated', handleStatsEvent);
+    return () => window.removeEventListener('picku_stats_updated', handleStatsEvent);
+  }, [refreshStats]);
+
   const handleUpdateSettings = useCallback((newSettings: Partial<AppSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };

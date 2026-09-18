@@ -170,4 +170,8 @@ export class Haptics {
   public static touchSuccess() {
     this.vibrate([20, 25, 40, 25, 70]);
   }
+
+  public static reward() {
+    this.vibrate([20, 25, 40, 25, 70]);
+  }
 }
