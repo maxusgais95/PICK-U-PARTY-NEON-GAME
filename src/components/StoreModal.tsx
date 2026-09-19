@@ -16,6 +16,8 @@ import {
   EconomyState,
   purchaseItem,
   equipItem,
+  DAY7_BUNDLE_BOMB_ID,
+  DAY7_BUNDLE_BALL_ID,
 } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { AppSettings, BottleBuiltinStyle } from '../types';
@@ -268,6 +270,10 @@ export const StoreModal: React.FC<StoreModalProps> = ({
               const isUnlocked = economy.unlockedItems.includes(item.id);
               const isEquipped = equippedId === item.id;
               const canAfford = economy.stars >= item.price;
+              const isDay7Exclusive =
+                item.id === DAY7_BUNDLE_BOMB_ID ||
+                item.id === DAY7_BUNDLE_BALL_ID ||
+                item.badge === 'DAY 7 EXCLUSIVE';
 
               return (
                 <div
@@ -303,9 +309,13 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                       {item.rarity}
                     </span>
 
-                    {/* Price in Stars */}
+                    {/* Price in Stars or Day 7 Exclusive Tag */}
                     <div className="flex items-center gap-1 font-header font-bold text-xs text-amber-300">
-                      {item.price === 0 ? (
+                      {isDay7Exclusive && !isUnlocked ? (
+                        <span className="text-amber-300 text-[10px] font-header font-bold flex items-center gap-1">
+                          <Lock className="w-3 h-3 text-amber-400" /> DAY 7 REWARD
+                        </span>
+                      ) : item.price === 0 ? (
                         <span className="text-cyan-300 text-[10px]">FREE</span>
                       ) : (
                         <>
@@ -385,6 +395,16 @@ export const StoreModal: React.FC<StoreModalProps> = ({
                         className="w-full py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-purple-400/50 text-purple-200 font-header font-bold text-xs tracking-wider active:scale-95 transition-all"
                       >
                         EQUIP
+                      </button>
+                    ) : isDay7Exclusive ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full py-1.5 px-1 rounded-full bg-amber-500/10 border border-amber-400/40 text-amber-300 font-header font-bold text-[10px] tracking-wider cursor-not-allowed flex items-center justify-center gap-1 shadow-sm"
+                        title="Claim Day 7 Daily Login Reward to unlock!"
+                      >
+                        <Lock className="w-3 h-3 text-amber-400 shrink-0" />
+                        <span>DAY 7 LOGIN ONLY</span>
                       </button>
                     ) : item.id === 'accessory_star_earrings' ? (
                       <button

@@ -465,7 +465,7 @@ export default function App() {
         onOpenStore={() => setIsStoreOpen(true)}
       />
 
-      {/* Version Notes Modal (Changelog History & v1.4.01 Updates) */}
+      {/* Version Notes Modal (Changelog History & v1.4.02 Updates) */}
       <VersionNotesModal
         isOpen={isVersionNotesOpen}
         onClose={() => setIsVersionNotesOpen(false)}

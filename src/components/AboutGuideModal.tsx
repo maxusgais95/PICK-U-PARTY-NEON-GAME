@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { EconomyState } from '../lib/economy';
+import appIconImg from '../assets/images/PICKU_PARTY_APP_ICON.webp';
 
 export interface AboutGuideModalProps {
   isOpen: boolean;
@@ -69,7 +70,14 @@ export const AboutGuideModal: React.FC<AboutGuideModalProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <img
-              src="/apple-touch-icon.png"
+              src={appIconImg}
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.fallback) {
+                  target.dataset.fallback = 'true';
+                  target.src = `${import.meta.env.BASE_URL || './'}apple-touch-icon.png`;
+                }
+              }}
               alt="PICK'U PARTY Icon"
               className="w-8 h-8 rounded-xl object-cover border border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
             />

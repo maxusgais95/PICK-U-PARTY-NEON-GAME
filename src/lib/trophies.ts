@@ -33,11 +33,35 @@ import silverTrophy005 from '../assets/images/Silver Trophy 005.png';
 import goldTrophy005 from '../assets/images/Gold Trophy 005.png';
 import platinumTrophy005 from '../assets/images/Platinum Trophy 005.png';
 
-// Trophy 005 - Cyber Couture Icon
+// Trophy 006 - Cyber Couture Icon
 import bronzeTrophy006 from '../assets/images/Bronze Trophy 006.png';
 import silverTrophy006 from '../assets/images/Silver Trophy 006.png';
 import goldTrophy006 from '../assets/images/Gold Trophy 006.png';
 import platinumTrophy006 from '../assets/images/Platinum Trophy 006.png';
+
+// Trophy 007 - Eternal Devotee (Total Logins)
+import bronzeTrophy007 from '../assets/images/Bronze Trophy 007.png';
+import silverTrophy007 from '../assets/images/Silver Trophy 007.png';
+import goldTrophy007 from '../assets/images/Gold Trophy 007.png';
+import platinumTrophy007 from '../assets/images/Platinum Trophy 007.png';
+
+// Trophy 008 - The Midas Touch (Star Wealth)
+import bronzeTrophy008 from '../assets/images/Bronze Trophy 008.png';
+import silverTrophy008 from '../assets/images/Silver Trophy 008.png';
+import goldTrophy008 from '../assets/images/Gold Trophy 008.png';
+import platinumTrophy008 from '../assets/images/Platinum Trophy 008.png';
+
+// Trophy 009 - Vault Sovereign (Milestone Chests)
+import bronzeTrophy009 from '../assets/images/Bronze Trophy 009.png';
+import silverTrophy009 from '../assets/images/Silver Trophy 009.png';
+import goldTrophy009 from '../assets/images/Gold Trophy 009.png';
+import platinumTrophy009 from '../assets/images/Platinum Trophy 009.png';
+
+// Trophy 010 - Quest Virtuoso (Daily Quests)
+import bronzeTrophy010 from '../assets/images/Bronze Trophy 010.png';
+import silverTrophy010 from '../assets/images/Silver Trophy 010.png';
+import goldTrophy010 from '../assets/images/Gold Trophy 010.png';
+import platinumTrophy010 from '../assets/images/Platinum Trophy 010.png';
 
 export type TrophyTier = 'locked' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
@@ -508,6 +532,282 @@ export const TROPHY_DEFINITIONS: AchievementTrophy[] = [
       },
     },
   },
+  {
+    id: 'total_logins',
+    title: 'Eternal Devotee',
+    category: 'party',
+    categoryLabel: 'Party Loyalty',
+    description: 'Check in across daily party sessions and build an unshakeable presence.',
+    metricLabel: 'Days Logged In',
+    iconType: 'crown',
+    images: {
+      bronze: bronzeTrophy007,
+      silver: silverTrophy007,
+      gold: goldTrophy007,
+      platinum: platinumTrophy007,
+    },
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 2,
+        title: 'Party Attendee',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 50,
+        image: bronzeTrophy007,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 5,
+        title: 'Nightclub Regular',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 150,
+        image: silverTrophy007,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 14,
+        title: 'VIP Resident',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 400,
+        image: goldTrophy007,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 30,
+        title: 'Eternal Devotee',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1200,
+        image: platinumTrophy007,
+      },
+    },
+  },
+  {
+    id: 'midas_touch',
+    title: 'The Midas Touch',
+    category: 'collector',
+    categoryLabel: 'Star Wealth',
+    description: 'Amass astronomical Star fortunes across games, bonuses, and party quests.',
+    metricLabel: 'Lifetime Stars',
+    iconType: 'star',
+    images: {
+      bronze: bronzeTrophy008,
+      silver: silverTrophy008,
+      gold: goldTrophy008,
+      platinum: platinumTrophy008,
+    },
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 500,
+        title: 'Gold Seeker',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 50,
+        image: bronzeTrophy008,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 2500,
+        title: 'Starlight Merchant',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 150,
+        image: silverTrophy008,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 10000,
+        title: 'Cosmic Tycoon',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 400,
+        image: goldTrophy008,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 30000,
+        title: 'Midas Supreme',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1200,
+        image: platinumTrophy008,
+      },
+    },
+  },
+  {
+    id: 'milestone_chests',
+    title: 'Vault Sovereign',
+    category: 'party',
+    categoryLabel: 'Milestone Chests',
+    description: 'Complete all 5 daily quests to unlock and crack open legendary Milestone Vault Chests.',
+    metricLabel: 'Chests Opened',
+    iconType: 'sparkles',
+    images: {
+      bronze: bronzeTrophy009,
+      silver: silverTrophy009,
+      gold: goldTrophy009,
+      platinum: platinumTrophy009,
+    },
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 1,
+        title: 'Key Turner',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 50,
+        image: bronzeTrophy009,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 5,
+        title: 'Treasure Raider',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 150,
+        image: silverTrophy009,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 15,
+        title: 'Vault Breaker',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 400,
+        image: goldTrophy009,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 35,
+        title: 'Vault Sovereign',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1200,
+        image: platinumTrophy009,
+      },
+    },
+  },
+  {
+    id: 'quest_master',
+    title: 'Quest Virtuoso',
+    category: 'party',
+    categoryLabel: 'Quest Vanguard',
+    description: 'Fulfil high-voltage party contracts and complete daily quests.',
+    metricLabel: 'Quests Completed',
+    iconType: 'target',
+    images: {
+      bronze: bronzeTrophy010,
+      silver: silverTrophy010,
+      gold: goldTrophy010,
+      platinum: platinumTrophy010,
+    },
+    tiers: {
+      bronze: {
+        tier: 'bronze',
+        threshold: 5,
+        title: 'Contract Scout',
+        badgeName: 'Bronze',
+        colorName: 'Amber Bronze',
+        textColor: 'text-amber-400',
+        gradient: 'from-[#613612] via-[#8c4f1c] to-[#b36b2d]',
+        borderColor: 'border-amber-700/60',
+        glowColor: 'shadow-[0_0_15px_rgba(180,83,9,0.4)]',
+        starBonus: 50,
+        image: bronzeTrophy010,
+      },
+      silver: {
+        tier: 'silver',
+        threshold: 20,
+        title: 'Tactical Operative',
+        badgeName: 'Silver',
+        colorName: 'Sterling Silver',
+        textColor: 'text-slate-200',
+        gradient: 'from-[#334155] via-[#64748b] to-[#94a3b8]',
+        borderColor: 'border-slate-400/60',
+        glowColor: 'shadow-[0_0_20px_rgba(148,163,184,0.5)]',
+        starBonus: 150,
+        image: silverTrophy010,
+      },
+      gold: {
+        tier: 'gold',
+        threshold: 50,
+        title: 'Quest Vanguard',
+        badgeName: 'Gold',
+        colorName: 'Radiant Gold',
+        textColor: 'text-yellow-300',
+        gradient: 'from-[#854d0e] via-[#ca8a04] to-[#fde047]',
+        borderColor: 'border-yellow-400/80',
+        glowColor: 'shadow-[0_0_25px_rgba(234,179,8,0.6)]',
+        starBonus: 400,
+        image: goldTrophy010,
+      },
+      platinum: {
+        tier: 'platinum',
+        threshold: 100,
+        title: 'Apex Virtuoso',
+        badgeName: 'Platinum',
+        colorName: 'Cyber Platinum',
+        textColor: 'text-cyan-300',
+        gradient: 'from-[#083344] via-[#0891b2] to-[#67e8f9]',
+        borderColor: 'border-cyan-300',
+        glowColor: 'shadow-[0_0_30px_rgba(6,182,212,0.8)]',
+        starBonus: 1200,
+        image: platinumTrophy010,
+      },
+    },
+  },
 ];
 
 const TROPHY_CLAIM_STORAGE_KEY = 'picku_party_trophy_claims_v1';
@@ -570,6 +870,10 @@ export function calculateTrophyProgress(
     kaboomVictories: number;
     kaboomBonusCollected: number;
     unlockedItemCount: number;
+    totalLogins?: number;
+    lifetimeStars?: number;
+    milestoneChestsOpened?: number;
+    questsCompleted?: number;
   },
   claims: Record<string, TrophyTier[]>
 ): TrophyProgress {
@@ -596,6 +900,18 @@ export function calculateTrophyProgress(
       break;
     case 'collector_wardrobe':
       currentValue = stats.unlockedItemCount;
+      break;
+    case 'total_logins':
+      currentValue = stats.totalLogins || 0;
+      break;
+    case 'midas_touch':
+      currentValue = stats.lifetimeStars || 0;
+      break;
+    case 'milestone_chests':
+      currentValue = stats.milestoneChestsOpened || 0;
+      break;
+    case 'quest_master':
+      currentValue = stats.questsCompleted || 0;
       break;
     default:
       currentValue = 0;

@@ -7,6 +7,10 @@ import { BottleBuiltinStyle } from '../types';
 import { BOTTLE_SKINS } from './bottleSkins';
 import kaboomBombImg from '../assets/images/Bomb Sprite.png';
 import kaboomBallImg from '../assets/images/Ball Sprite.png';
+import day7BundleChestImg from '../assets/images/day7_bundle_chest.jpg';
+
+export const DAY7_BUNDLE_BOMB_ID = 'bomb_day7_vault_core';
+export const DAY7_BUNDLE_BALL_ID = 'ball_day7_nebula_orb';
 
 export type StoreCategory = 'bottles' | 'bombs' | 'balls' | 'accessories';
 
@@ -63,10 +67,14 @@ export interface EconomyState {
   starEarrings: StarEarringsProgress;
   dailyQuests: DailyQuest[];
   milestoneChestClaimed: boolean;
+  milestoneChestsOpened?: number;
   lastDailyResetDate: string; // 'YYYY-MM-DD'
   lastDailyReset: number; // Unix timestamp
   dailyLoginRewards: DailyLoginRewards;
   claimedLoginDay?: number; // Kept for backwards compatibility
+  totalLoginsCount?: number;
+  lifetimeStarsEarned?: number;
+  questsCompletedCount?: number;
 }
 
 const STORAGE_KEY = 'picku_party_economy_v1';
@@ -251,6 +259,21 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       image: kaboomBombImg,
       cssFilter: 'hue-rotate(315deg) saturate(2.5) contrast(1.2) brightness(1.2)',
     },
+    {
+      id: DAY7_BUNDLE_BOMB_ID,
+      category: 'bombs',
+      name: 'Vault Dynamo Bomb',
+      subtitle: 'Day 7 Grand Exclusive',
+      description: 'Gilded nuclear vault core forged with starlight reactor conduits. Claimed exclusively from the Day 7 Login Reward Bundle.',
+      price: 0,
+      rarity: 'Legendary',
+      badge: 'DAY 7 EXCLUSIVE',
+      accentGradient: 'from-amber-400 via-yellow-400 to-amber-600',
+      borderGlow: 'border-amber-400/90 shadow-[0_0_24px_rgba(245,158,11,0.7)]',
+      iconType: 'bomb',
+      image: kaboomBombImg,
+      cssFilter: 'hue-rotate(195deg) saturate(3) contrast(1.3) brightness(1.35)',
+    },
   ],
   balls: [
     {
@@ -370,6 +393,21 @@ export const STORE_CATALOGUE: Record<StoreCategory, StoreItem[]> = {
       image: kaboomBallImg,
       cssFilter: 'hue-rotate(230deg) saturate(2.2) contrast(1.25) brightness(1.1)',
     },
+    {
+      id: DAY7_BUNDLE_BALL_ID,
+      category: 'balls',
+      name: 'Celestial Nebula Orbs',
+      subtitle: 'Day 7 Grand Exclusive',
+      description: 'Luminous cosmic orbs infused with golden nebula stardust. Claimed exclusively from the Day 7 Login Reward Bundle.',
+      price: 0,
+      rarity: 'Legendary',
+      badge: 'DAY 7 EXCLUSIVE',
+      accentGradient: 'from-amber-300 via-pink-400 to-cyan-300',
+      borderGlow: 'border-yellow-300/90 shadow-[0_0_24px_rgba(253,224,71,0.7)]',
+      iconType: 'ball',
+      image: kaboomBallImg,
+      cssFilter: 'hue-rotate(170deg) saturate(2.8) brightness(1.4)',
+    },
   ],
   accessories: [
     {
@@ -475,6 +513,9 @@ export interface DailyLoginRewardTier {
   stars: number;
   label: string;
   isGrand?: boolean;
+  bundleName?: string;
+  bundleImage?: string;
+  bundleItems?: string[];
 }
 
 export const DAILY_LOGIN_REWARDS: DailyLoginRewardTier[] = [
@@ -484,7 +525,15 @@ export const DAILY_LOGIN_REWARDS: DailyLoginRewardTier[] = [
   { day: 4, stars: 250, label: 'Day 4' },
   { day: 5, stars: 300, label: 'Day 5' },
   { day: 6, stars: 400, label: 'Day 6' },
-  { day: 7, stars: 750, label: 'Grand Day 7', isGrand: true },
+  {
+    day: 7,
+    stars: 1000,
+    label: 'Grand Day 7',
+    isGrand: true,
+    bundleName: 'Day 7 Grand Vault Bundle',
+    bundleImage: day7BundleChestImg,
+    bundleItems: [DAY7_BUNDLE_BOMB_ID, DAY7_BUNDLE_BALL_ID],
+  },
 ];
 
 const DEFAULT_STATE: EconomyState = {
@@ -515,6 +564,10 @@ const DEFAULT_STATE: EconomyState = {
     lastClaimDate: '',
   },
   claimedLoginDay: 1,
+  milestoneChestsOpened: 0,
+  totalLoginsCount: 1,
+  lifetimeStarsEarned: 100,
+  questsCompletedCount: 0,
 };
 
 export function getEconomyState(): EconomyState {
@@ -626,6 +679,10 @@ export function getEconomyState(): EconomyState {
       lastDailyReset: isNewDay ? Date.now() : (parsed.lastDailyReset || Date.now()),
       dailyLoginRewards,
       claimedLoginDay: claimedDays.length,
+      milestoneChestsOpened: typeof parsed.milestoneChestsOpened === 'number' ? parsed.milestoneChestsOpened : (milestoneChestClaimed ? 1 : 0),
+      totalLoginsCount: typeof parsed.totalLoginsCount === 'number' ? parsed.totalLoginsCount : Math.max(1, claimedDays.length),
+      lifetimeStarsEarned: typeof parsed.lifetimeStarsEarned === 'number' ? Math.max(parsed.lifetimeStarsEarned, typeof parsed.stars === 'number' ? parsed.stars : 0) : (typeof parsed.stars === 'number' ? parsed.stars : DEFAULT_STATE.stars),
+      questsCompletedCount: typeof parsed.questsCompletedCount === 'number' ? parsed.questsCompletedCount : 0,
     };
 
     if (isNewDay) {
@@ -741,7 +798,9 @@ export function claimMilestoneChest(): {
   const updatedState: EconomyState = {
     ...state,
     stars: state.stars + MILESTONE_CHEST_REWARD,
+    lifetimeStarsEarned: (state.lifetimeStarsEarned || state.stars) + MILESTONE_CHEST_REWARD,
     milestoneChestClaimed: true,
+    milestoneChestsOpened: (state.milestoneChestsOpened || 0) + 1,
   };
 
   saveEconomyState(updatedState);
@@ -873,9 +932,25 @@ export function claimDailyLoginReward(day: number): {
     lastClaimDate: today,
   };
 
+  // Day 7 Grand Bundle: unlock exclusive skins
+  let newUnlockedItems = [...state.unlockedItems];
+  let bundleClaimedMessage = '';
+  if (day === 7) {
+    if (!newUnlockedItems.includes(DAY7_BUNDLE_BOMB_ID)) {
+      newUnlockedItems.push(DAY7_BUNDLE_BOMB_ID);
+    }
+    if (!newUnlockedItems.includes(DAY7_BUNDLE_BALL_ID)) {
+      newUnlockedItems.push(DAY7_BUNDLE_BALL_ID);
+    }
+    bundleClaimedMessage = ' Day 7 Grand Bundle Unlocked: Vault Dynamo Bomb & Celestial Nebula Orbs!';
+  }
+
   const updatedState: EconomyState = {
     ...state,
     stars: state.stars + starAmount,
+    lifetimeStarsEarned: (state.lifetimeStarsEarned || state.stars) + starAmount,
+    totalLoginsCount: (state.totalLoginsCount || 0) + 1,
+    unlockedItems: newUnlockedItems,
     dailyLoginRewards: updatedLoginRewards,
     claimedLoginDay: updatedClaimedDays.length,
   };
@@ -885,7 +960,7 @@ export function claimDailyLoginReward(day: number): {
     success: true,
     starsAdded: starAmount,
     updatedState,
-    message: `Day ${day} reward claimed! +${starAmount} Stars!`,
+    message: `Day ${day} reward claimed! +${starAmount} Stars!${bundleClaimedMessage}`,
   };
 }
 
@@ -930,6 +1005,14 @@ export function purchaseItem(itemId: string): { success: boolean; message: strin
         updatedState: state,
       };
     }
+  }
+
+  if (itemId === DAY7_BUNDLE_BOMB_ID || itemId === DAY7_BUNDLE_BALL_ID || foundItem.badge === 'DAY 7 EXCLUSIVE') {
+    return {
+      success: false,
+      message: 'Exclusive Item: Only unlocked via Day 7 Daily Login Reward bundle!',
+      updatedState: state,
+    };
   }
 
   if (state.stars < foundItem.price) {
