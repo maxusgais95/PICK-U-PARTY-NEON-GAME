@@ -34,10 +34,10 @@ import { EconomyState, addStars, getEconomyState } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import currencyStarImg from '../assets/images/Currency Star Sprite.png';
 import diamondStarSparklePng from '../assets/images/diamond_star_sparkle.png';
-import bronzeBlendBg from '../assets/images/bronze_blend_bg_1789804404667.jpg';
-import silverBlendBg from '../assets/images/silver_blend_bg_1789804417635.jpg';
-import goldBlendBg from '../assets/images/gold_blend_bg_1789804431889.jpg';
-import platBlendBg from '../assets/images/plat_blend_bg_1789804443610.jpg';
+import bronzeBlendBg from '../assets/images/Trophy BG Bronze 01.jpeg';
+import silverBlendBg from '../assets/images/Trophy BG Silver 01.jpeg';
+import goldBlendBg from '../assets/images/Trophy BG Gold 01.jpeg';
+import platBlendBg from '../assets/images/Trophy BG Platinum 01.jpeg';
 
 const TIER_BLEND_BACKGROUNDS: Record<TrophyTier, string | null> = {
   bronze: bronzeBlendBg,
