@@ -548,11 +548,11 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                       alt=""
                       className="absolute inset-0 w-full h-full object-cover rounded-2xl pointer-events-none select-none transition-all duration-500"
                       style={{
-                        mixBlendMode: 'screen',
+                        mixBlendMode: 'normal',
                         opacity: progress.currentTier === 'platinum' ? 0.38 : 0.3,
-                        filter: 'contrast(1.1) brightness(0.75)',
-                        maskImage: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 80%)',
-                        WebkitMaskImage: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 80%)',
+                        filter: 'contrast(1.1) brightness(1)',
+                        maskImage: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)',
+                        WebkitMaskImage: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 80%)',
                       }}
                     />
                   )}
