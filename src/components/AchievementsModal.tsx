@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Trophy,
   Award,
@@ -55,93 +55,50 @@ interface AchievementsModalProps {
   onEconomyUpdated?: (economy: EconomyState) => void;
 }
 
-function hashSparkleString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
 /**
-  * Generates sparkling star glints located at random positions tightly concentrated
-  * around the center (50%, 50%) using a triangular bell distribution.
-  * This guarantees that the glints illuminate directly over the trophy cup, emblem, and rim.
-  */
-function generateCenterWeightedSparkles(
-  count: number,
-  sizeRange: [number, number],
-  minDuration: number,
-  maxDuration: number,
-  seedBase: number
-) {
-  let seed = seedBase;
-  const nextRand = () => {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
+ * Trophy Dynamic Shine Star Sparkles
+ * Generates sparkling faceted star glints corresponding directly to the trophy's tier color!
+ */
+// Platinum full shine: 8 multifaceted brilliant diamond facet glints across the trophy
+const PLATINUM_DIAMOND_SPARKLES = [
+  { top: '16%', left: '26%', size: 28, delay: '0.1s', duration: '2.4s' },
+  { top: '22%', left: '72%', size: 32, delay: '0.8s', duration: '2.8s' },
+  { top: '38%', left: '16%', size: 24, delay: '1.5s', duration: '2.2s' },
+  { top: '46%', left: '80%', size: 30, delay: '0.4s', duration: '2.6s' },
+  { top: '62%', left: '28%', size: 26, delay: '1.1s', duration: '2.5s' },
+  { top: '68%', left: '68%', size: 34, delay: '1.9s', duration: '3.0s' },
+  { top: '28%', left: '50%', size: 30, delay: '0.6s', duration: '2.3s' },
+  { top: '54%', left: '52%', size: 24, delay: '1.3s', duration: '2.7s' },
+];
 
-  return Array.from({ length: count }, (_, i) => {
-    // Triangular distribution: sum of two uniform random numbers centered around 0
-    // Produces a bell-curve peak right at 0, concentrating ~80% of coordinates near the center
-    const rX = ((nextRand() + nextRand()) / 2 - 0.5) * 2; // -1 to +1, heavily clustered at 0
-    const rY = ((nextRand() + nextRand()) / 2 - 0.5) * 2; // -1 to +1, heavily clustered at 0
-
-    // Trophy silhouette is centered at 50%, 50%
-    // Horizontal spread: ~34% to ~66% (dense between 43% and 57%)
-    // Vertical spread: ~32% to ~68% (dense between 41% and 59%)
-    const left = Math.round(50 + rX * 16);
-    const top = Math.round(50 + rY * 18);
-
-    const size = Math.round(
-      sizeRange[0] + nextRand() * (sizeRange[1] - sizeRange[0])
-    );
-    const delay = `${(i * 0.28 + nextRand() * 0.35).toFixed(2)}s`;
-    const duration = `${(minDuration + nextRand() * (maxDuration - minDuration)).toFixed(1)}s`;
-
-    return { top: `${top}%`, left: `${left}%`, size, delay, duration };
-  });
-}
+// Gold little shine: 3 delicate, subtle diamond glints
+const GOLD_DIAMOND_SPARKLES = [
+  { top: '22%', left: '32%', size: 18, delay: '0.2s', duration: '3.2s' },
+  { top: '36%', left: '70%', size: 20, delay: '1.4s', duration: '3.6s' },
+  { top: '64%', left: '44%', size: 17, delay: '2.2s', duration: '3.0s' },
+];
 
 /**
  * Realistic Diamond Shine using 4-point diamond star sprite with screen blending mode
- * Renders ONLY for gold and platinum tiers:
- * - Gold: subtle, delicate diamond glints focused on the trophy sprite
- * - Platinum: multifaceted, smaller delicate diamond glitter clustered around the center
+ * Renders ONLY for gold and platinum tiers!
+ * - Gold: subtle, delicate diamond glints ("Gold little")
+ * - Platinum: brilliant multifaceted optical flares with diffraction spikes ("Platinum full shine")
  */
-interface DiamondShineSparklesProps {
-  tier: TrophyTier;
-  isReached?: boolean;
-  scale?: number;
-  trophyId?: string;
-}
-
-const DiamondShineSparkles: React.FC<DiamondShineSparklesProps> = ({
+const DiamondShineSparkles: React.FC<{ tier: TrophyTier; isReached?: boolean; scale?: number }> = ({
   tier,
   isReached = true,
-  scale = 1.0,
-  trophyId = 'default-trophy',
+  scale = 1.5,
 }) => {
   if (!isReached || (tier !== 'gold' && tier !== 'platinum')) return null;
 
   const isPlatinum = tier === 'platinum';
-
-  // Seeded memoized sparkle positions ensuring unique yet stable random placement on each trophy
-  const sparkles = useMemo(() => {
-    const seed = hashSparkleString(`${trophyId}-${tier}`);
-    if (isPlatinum) {
-      // Platinum full shine: 10 delicate micro-glitters (size 9px - 14px), much smaller and concentrated near center
-      return generateCenterWeightedSparkles(10, [9, 14], 2.0, 3.2, seed);
-    } else {
-      // Gold subtle shine: 4 small diamond glints (size 10px - 14px), concentrated near center
-      return generateCenterWeightedSparkles(4, [10, 14], 2.6, 3.8, seed);
-    }
-  }, [trophyId, tier, isPlatinum]);
+  const sparkles = isPlatinum ? PLATINUM_DIAMOND_SPARKLES : GOLD_DIAMOND_SPARKLES;
+  // Platinum glitter slightly smaller (0.8x) per user request
+  const effectiveScale = isPlatinum ? scale * 0.8 : scale;
 
   const dropFilter = isPlatinum
-    ? 'drop-shadow(0 0 3px rgba(103,232,249,0.95)) drop-shadow(0 0 7px rgba(6,182,212,0.8))'
-    : 'drop-shadow(0 0 3px rgba(254,240,138,0.95)) drop-shadow(0 0 7px rgba(234,179,8,0.8))';
+    ? 'drop-shadow(0 0 5px rgba(103,232,249,0.95)) drop-shadow(0 0 11px rgba(6,182,212,0.85))'
+    : 'drop-shadow(0 0 6px rgba(254,240,138,0.95)) drop-shadow(0 0 12px rgba(234,179,8,0.85))';
 
   return (
     <div className="absolute inset-0 pointer-events-none z-30 overflow-visible">
@@ -159,8 +116,8 @@ const DiamondShineSparkles: React.FC<DiamondShineSparklesProps> = ({
             alt=""
             className="pointer-events-none animate-diamond-shine select-none"
             style={{
-              width: `${Math.round(sparkle.size * scale)}px`,
-              height: `${Math.round(sparkle.size * scale)}px`,
+              width: `${Math.round(sparkle.size * effectiveScale)}px`,
+              height: `${Math.round(sparkle.size * effectiveScale)}px`,
               filter: dropFilter,
               ['--shine-delay' as any]: sparkle.delay,
               ['--shine-duration' as any]: sparkle.duration,
@@ -632,11 +589,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                     {/* Attached Trophy Layer (Elevated on top of everything, enlarged 1.5x) */}
                     <div className="relative z-30 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center w-48 h-48 sm:w-52 sm:h-52">
                       {/* Shimmering diamond shines on gold and platinum trophies */}
-                      <DiamondShineSparkles
-                        trophyId={trophy.id}
-                        tier={progress.currentTier}
-                        isReached={!isLocked}
-                      />
+                      <DiamondShineSparkles tier={progress.currentTier} isReached={!isLocked} scale={1.5} />
 
                         {(() => {
                           const hasImages = !!trophy.images;
@@ -863,11 +816,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                   {/* Attached Trophy Layer (1.5x enlarged, elevated on top) */}
                   <div className="relative z-30 flex items-center justify-center w-44 h-44 sm:w-52 sm:h-52">
                     {/* Diamond Shine Sparkles */}
-                    <DiamondShineSparkles
-                      trophyId={`${selectedTrophy.id}-${currentInspectedTier}`}
-                      tier={currentInspectedTier}
-                      isReached={isCurrentReached}
-                    />
+                    <DiamondShineSparkles tier={currentInspectedTier} isReached={isCurrentReached} scale={1.5} />
 
                     <img
                       src={currentImg}

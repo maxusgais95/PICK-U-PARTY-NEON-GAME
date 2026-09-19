@@ -2005,21 +2005,21 @@
     transform: scale(0) rotate(-15deg);
   }
   15% {
-    opacity: 0.3;
-    transform: scale(0.45) rotate(15deg);
+    opacity: 0.25;
+    transform: scale(0.5) rotate(15deg);
   }
   42% {
     opacity: 1;
-    transform: scale(1.05) rotate(45deg);
-    filter: brightness(1.4) drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
+    transform: scale(1.25) rotate(45deg);
+    filter: brightness(1.5) drop-shadow(0 0 10px rgba(255, 255, 255, 0.95));
   }
   68% {
-    opacity: 0.75;
-    transform: scale(0.75) rotate(75deg);
+    opacity: 0.8;
+    transform: scale(0.9) rotate(75deg);
   }
   86% {
     opacity: 0.15;
-    transform: scale(0.25) rotate(90deg);
+    transform: scale(0.35) rotate(90deg);
   }
 }
 
