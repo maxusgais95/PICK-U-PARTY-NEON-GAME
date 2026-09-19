@@ -166,13 +166,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pt-[max(2.25rem,calc(env(safe-area-inset-top)+1.25rem))] pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1rem))] px-3 sm:px-4 bg-black/85 backdrop-blur-xl animate-fadeIn">
-      <div className="glass-panel relative w-full max-w-md h-[min(88vh,700px)] flex flex-col overflow-hidden shadow-2xl rounded-[26px]"
+      <div className="glass-panel relative w-full max-w-md h-[min(68vh,520px)] flex flex-col overflow-hidden shadow-2xl rounded-[26px]"
         style={{
           boxShadow: '0 24px 60px -10px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 42, 133, 0.25)',
         }}
       >
         {/* Modal Header without Close 'X' Button (Done button in footer only) */}
-        <div className="flex items-center justify-center px-5 pt-5 pb-3 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-center px-5 pt-3.5 pb-2.5 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-pink-400 drop-shadow-[0_0_8px_#ff2a85]" />
             <h2 className="font-header text-base font-bold uppercase tracking-widest text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
@@ -182,7 +182,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Navigation (Rules, Bottle, Stats) */}
-        <div className="grid grid-cols-3 gap-1.5 p-1.5 mx-3 sm:mx-4 mt-3 bg-white/5 rounded-2xl border border-white/10 shrink-0">
+        <div className="grid grid-cols-3 gap-1.5 p-1.5 mx-3 sm:mx-4 mt-2.5 mb-1 bg-white/5 rounded-2xl border border-white/10 shrink-0">
           <button
             onClick={() => {
               SoundEngine.playButtonClick();

@@ -664,8 +664,12 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                             </span>
                           )}
                         </span>
-                        <span className="font-header font-bold text-amber-300">
-                          {progress.currentValue} / {progress.nextTierConfig ? progress.nextTierConfig.threshold : progress.currentValue}
+                        <span className={`font-header font-bold ${isPlatinum || !progress.nextTierConfig ? 'text-emerald-400' : 'text-amber-300'}`}>
+                          {isPlatinum || !progress.nextTierConfig ? (
+                            'Complete'
+                          ) : (
+                            `${progress.currentValue} / ${progress.nextTierConfig.threshold}`
+                          )}
                         </span>
                       </div>
 
