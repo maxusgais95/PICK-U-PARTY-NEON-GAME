@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Trophy,
   Award,
@@ -55,48 +55,93 @@ interface AchievementsModalProps {
   onEconomyUpdated?: (economy: EconomyState) => void;
 }
 
-/**
- * Trophy Dynamic Shine Star Sparkles
- * Generates sparkling faceted star glints corresponding directly to the trophy's tier color!
- */
-// Platinum full shine: 8 multifaceted brilliant diamond facet glints across the trophy
-const PLATINUM_DIAMOND_SPARKLES = [
-  { top: '16%', left: '26%', size: 28, delay: '0.1s', duration: '2.4s' },
-  { top: '22%', left: '72%', size: 32, delay: '0.8s', duration: '2.8s' },
-  { top: '38%', left: '16%', size: 24, delay: '1.5s', duration: '2.2s' },
-  { top: '46%', left: '80%', size: 30, delay: '0.4s', duration: '2.6s' },
-  { top: '62%', left: '28%', size: 26, delay: '1.1s', duration: '2.5s' },
-  { top: '68%', left: '68%', size: 34, delay: '1.9s', duration: '3.0s' },
-  { top: '28%', left: '50%', size: 30, delay: '0.6s', duration: '2.3s' },
-  { top: '54%', left: '52%', size: 24, delay: '1.3s', duration: '2.7s' },
-];
+function hashSparkleString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
 
-// Gold little shine: 3 delicate, subtle diamond glints
-const GOLD_DIAMOND_SPARKLES = [
-  { top: '22%', left: '32%', size: 18, delay: '0.2s', duration: '3.2s' },
-  { top: '36%', left: '70%', size: 20, delay: '1.4s', duration: '3.6s' },
-  { top: '64%', left: '44%', size: 17, delay: '2.2s', duration: '3.0s' },
-];
+/**
+  * Generates sparkling star glints located at random positions tightly concentrated
+  * around the center (50%, 50%) using a triangular bell distribution.
+  * This guarantees that the glints illuminate directly over the trophy cup, emblem, and rim.
+  */
+function generateCenterWeightedSparkles(
+  count: number,
+  sizeRange: [number, number],
+  minDuration: number,
+  maxDuration: number,
+  seedBase: number
+) {
+  let seed = seedBase;
+  const nextRand = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+
+  return Array.from({ length: count }, (_, i) => {
+    // Triangular distribution: sum of two uniform random numbers centered around 0
+    // Produces a bell-curve peak right at 0, concentrating ~80% of coordinates near the center
+    const rX = ((nextRand() + nextRand()) / 2 - 0.5) * 2; // -1 to +1, heavily clustered at 0
+    const rY = ((nextRand() + nextRand()) / 2 - 0.5) * 2; // -1 to +1, heavily clustered at 0
+
+    // Trophy silhouette is centered at 50%, 50%
+    // Horizontal spread: ~34% to ~66% (dense between 43% and 57%)
+    // Vertical spread: ~32% to ~68% (dense between 41% and 59%)
+    const left = Math.round(50 + rX * 16);
+    const top = Math.round(50 + rY * 18);
+
+    const size = Math.round(
+      sizeRange[0] + nextRand() * (sizeRange[1] - sizeRange[0])
+    );
+    const delay = `${(i * 0.28 + nextRand() * 0.35).toFixed(2)}s`;
+    const duration = `${(minDuration + nextRand() * (maxDuration - minDuration)).toFixed(1)}s`;
+
+    return { top: `${top}%`, left: `${left}%`, size, delay, duration };
+  });
+}
 
 /**
  * Realistic Diamond Shine using 4-point diamond star sprite with screen blending mode
- * Renders ONLY for gold and platinum tiers!
- * - Gold: subtle, delicate diamond glints ("Gold little")
- * - Platinum: brilliant multifaceted optical flares with diffraction spikes ("Platinum full shine")
+ * Renders ONLY for gold and platinum tiers:
+ * - Gold: subtle, delicate diamond glints focused on the trophy sprite
+ * - Platinum: multifaceted, smaller delicate diamond glitter clustered around the center
  */
-const DiamondShineSparkles: React.FC<{ tier: TrophyTier; isReached?: boolean; scale?: number }> = ({
+interface DiamondShineSparklesProps {
+  tier: TrophyTier;
+  isReached?: boolean;
+  scale?: number;
+  trophyId?: string;
+}
+
+const DiamondShineSparkles: React.FC<DiamondShineSparklesProps> = ({
   tier,
   isReached = true,
-  scale = 1.5,
+  scale = 1.0,
+  trophyId = 'default-trophy',
 }) => {
   if (!isReached || (tier !== 'gold' && tier !== 'platinum')) return null;
 
   const isPlatinum = tier === 'platinum';
-  const sparkles = isPlatinum ? PLATINUM_DIAMOND_SPARKLES : GOLD_DIAMOND_SPARKLES;
+
+  // Seeded memoized sparkle positions ensuring unique yet stable random placement on each trophy
+  const sparkles = useMemo(() => {
+    const seed = hashSparkleString(`${trophyId}-${tier}`);
+    if (isPlatinum) {
+      // Platinum full shine: 10 delicate micro-glitters (size 9px - 14px), much smaller and concentrated near center
+      return generateCenterWeightedSparkles(10, [9, 14], 2.0, 3.2, seed);
+    } else {
+      // Gold subtle shine: 4 small diamond glints (size 10px - 14px), concentrated near center
+      return generateCenterWeightedSparkles(4, [10, 14], 2.6, 3.8, seed);
+    }
+  }, [trophyId, tier, isPlatinum]);
 
   const dropFilter = isPlatinum
-    ? 'drop-shadow(0 0 6px rgba(103,232,249,0.95)) drop-shadow(0 0 14px rgba(6,182,212,0.85))'
-    : 'drop-shadow(0 0 6px rgba(254,240,138,0.95)) drop-shadow(0 0 12px rgba(234,179,8,0.85))';
+    ? 'drop-shadow(0 0 3px rgba(103,232,249,0.95)) drop-shadow(0 0 7px rgba(6,182,212,0.8))'
+    : 'drop-shadow(0 0 3px rgba(254,240,138,0.95)) drop-shadow(0 0 7px rgba(234,179,8,0.8))';
 
   return (
     <div className="absolute inset-0 pointer-events-none z-30 overflow-visible">
@@ -137,10 +182,10 @@ const TIER_GLOW_STYLES: Record<TrophyTier, string> = {
 };
 
 const TIER_AURA_BACKGROUNDS: Record<TrophyTier, string> = {
-  bronze: 'bg-gradient-to-tr from-amber-600/35 via-amber-500/25 to-yellow-600/20 blur-2xl animate-pulse',
-  silver: 'bg-gradient-to-tr from-slate-300/30 via-slate-100/20 to-sky-300/20 blur-2xl animate-pulse',
-  gold: 'bg-gradient-to-tr from-yellow-400/40 via-amber-400/30 to-yellow-200/25 blur-2xl animate-pulse',
-  platinum: 'bg-gradient-to-tr from-cyan-400/40 via-sky-400/30 to-teal-300/25 blur-2xl animate-pulse',
+  bronze: 'bg-gradient-to-tr from-amber-600/40 via-amber-500/30 to-yellow-600/20 blur-3xl animate-pulse',
+  silver: 'bg-gradient-to-tr from-slate-200/45 via-slate-100/30 to-sky-200/25 blur-3xl animate-pulse',
+  gold: 'bg-gradient-to-tr from-yellow-400/50 via-amber-400/35 to-yellow-200/30 blur-3xl animate-pulse',
+  platinum: 'bg-gradient-to-tr from-cyan-400/50 via-sky-400/35 to-teal-300/30 blur-3xl animate-pulse',
   locked: 'bg-transparent',
 };
 
@@ -209,28 +254,6 @@ const TIER_DETAILS_MAP: Record<
   },
 };
 
-const CATEGORY_TABS: Array<{
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}> = [
-  { id: 'all', label: 'All Modes', icon: Trophy },
-  { id: 'roulette', label: 'Roulette', icon: Target },
-  { id: 'bottle', label: 'Spin Bottle', icon: Sparkles },
-  { id: 'kaboom', label: 'Kaboom', icon: Bomb },
-  { id: 'party', label: 'Party Host', icon: Crown },
-  { id: 'collector', label: 'Collections', icon: Flame },
-];
-
-const TIER_FILTERS: Array<{ id: string; label: string; dotColor?: string }> = [
-  { id: 'all', label: 'All Tiers' },
-  { id: 'claimable', label: 'Rewards Ready' },
-  { id: 'platinum', label: 'Platinum', dotColor: 'bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.8)]' },
-  { id: 'gold', label: 'Gold', dotColor: 'bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.8)]' },
-  { id: 'silver', label: 'Silver', dotColor: 'bg-slate-300 shadow-[0_0_6px_rgba(203,213,225,0.8)]' },
-  { id: 'bronze', label: 'Bronze', dotColor: 'bg-amber-600 shadow-[0_0_6px_rgba(180,83,9,0.8)]' },
-];
-
 export const AchievementsModal: React.FC<AchievementsModalProps> = ({
   isOpen,
   onClose,
@@ -238,8 +261,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
   economy,
   onEconomyUpdated,
 }) => {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [activeTierFilter, setActiveTierFilter] = useState<string>('all');
   const [claimMap, setClaimMap] = useState<Record<string, TrophyTier[]>>(() =>
     getTrophyClaimMap()
   );
@@ -354,40 +375,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
     0
   );
 
-  // Category counts and unclaim flags
-  const categoryMeta = CATEGORY_TABS.map((cat) => {
-    const list =
-      cat.id === 'all'
-        ? TROPHY_DEFINITIONS
-        : TROPHY_DEFINITIONS.filter((t) => t.category === cat.id);
-    const hasUnclaimed = list.some((t) => {
-      const p = progressMap.get(t.id);
-      return p ? p.unclaimedTiers.length > 0 : false;
-    });
-    return {
-      id: cat.id,
-      count: list.length,
-      hasUnclaimed,
-    };
-  });
-
-  const filteredTrophies = TROPHY_DEFINITIONS.filter((t) => {
-    const matchCategory = activeCategory === 'all' || t.category === activeCategory;
-    if (!matchCategory) return false;
-
-    const p = progressMap.get(t.id);
-    if (!p) return true;
-
-    if (activeTierFilter === 'claimable') {
-      return p.unclaimedTiers.length > 0;
-    }
-    if (activeTierFilter === 'platinum') return p.currentTier === 'platinum';
-    if (activeTierFilter === 'gold') return p.currentTier === 'gold';
-    if (activeTierFilter === 'silver') return p.currentTier === 'silver';
-    if (activeTierFilter === 'bronze') return p.currentTier === 'bronze';
-
-    return true;
-  });
+  const allTrophies = TROPHY_DEFINITIONS;
 
   const handleClaim = (trophyId: string, tier: TrophyTier, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -574,191 +562,81 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
           </button>
         </div>
 
-        {/* Primary Category Tabs - Non-scrollable horizontal wrap */}
-        <div className="relative bg-black/60 border-b border-white/10 shrink-0">
-          <div className="flex flex-wrap items-center gap-1.5 px-3 py-2 w-full overflow-x-hidden">
-            {categoryMeta.map((cat) => {
-              const tabDef = CATEGORY_TABS.find((t) => t.id === cat.id)!;
-              const Icon = tabDef.icon;
-              const isActive = activeCategory === cat.id;
+        {/* Trophy Gallery Grid - Clean, filterless, zero glow clipping */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden pt-5 pb-8 px-4 sm:px-6 space-y-4 scrollable-panel w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 w-full py-1">
+            {allTrophies.map((trophy, index) => {
+              const progress = calculateTrophyProgress(trophy, statsContext, claimMap);
+              const pedestal = getTierPedestalStyle(progress.currentTier);
+              const isLocked = progress.currentTier === 'locked';
+              const isPlatinum = progress.currentTier === 'platinum';
 
               return (
-                <button
-                  key={cat.id}
-                  type="button"
+                <div
+                  key={trophy.id}
                   onClick={() => {
                     SoundEngine.playButtonClick();
                     Haptics.buttonClick();
-                    setActiveCategory(cat.id);
+                    setSelectedTrophy(trophy);
                   }}
-                  className={`relative flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-xs font-header font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
-                    isActive
-                      ? 'bg-gradient-to-r from-amber-500/30 via-yellow-500/25 to-amber-500/20 text-yellow-300 border border-amber-400/80 shadow-[0_0_14px_rgba(245,158,11,0.45)]'
-                      : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5'
-                  }`}
+                  style={{
+                    animationDelay: `${Math.min(index * 45, 400)}ms`,
+                  }}
+                  className={`group relative rounded-2xl ${pedestal.glowCardClass} p-4 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden border border-white/10 animate-trophy-entrance`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-yellow-300' : 'text-gray-400'}`} />
-                  <span>{tabDef.label}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                      isActive ? 'bg-amber-400/30 text-amber-200' : 'bg-white/5 text-gray-500'
-                    }`}
-                  >
-                    {cat.count}
-                  </span>
-
-                  {cat.hasUnclaimed && (
-                    <span className="flex h-2 w-2 relative">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-                    </span>
+                  {/* Tier-Specific Blend Background Texture: Fills entire container, rectangular, soft radial gradient falloff to avoid circular crop */}
+                  {TIER_BLEND_BACKGROUNDS[progress.currentTier] && !isLocked && (
+                    <img
+                      src={TIER_BLEND_BACKGROUNDS[progress.currentTier]!}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover rounded-2xl pointer-events-none select-none transition-all duration-500"
+                      style={{
+                        mixBlendMode: 'screen',
+                        opacity: progress.currentTier === 'platinum' ? 0.38 : 0.3,
+                        filter: 'contrast(1.1) brightness(0.75)',
+                        maskImage: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 80%)',
+                        WebkitMaskImage: 'radial-gradient(circle at 50% 45%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 80%)',
+                      }}
+                    />
                   )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Secondary Tier / Status Filter Bar - Non-scrollable horizontal wrap */}
-        <div className="flex flex-wrap items-center gap-1.5 px-3 py-1.5 bg-black/40 border-b border-white/5 text-[11px] shrink-0 w-full overflow-x-hidden">
-          {TIER_FILTERS.map((tierFilter) => {
-            const isActive = activeTierFilter === tierFilter.id;
-            let filterCount = 0;
+                  {/* Card Inner Background Darkening / Tint Shell */}
+                  <div className={`absolute inset-0 rounded-2xl ${pedestal.cardBg} pointer-events-none opacity-80`} />
 
-            if (tierFilter.id === 'all') {
-              filterCount = filteredTrophies.length;
-            } else if (tierFilter.id === 'claimable') {
-              filterCount = totalUnclaimedTiersCount;
-            } else if (tierFilter.id === 'platinum') {
-              filterCount = platinumCount;
-            } else if (tierFilter.id === 'gold') {
-              filterCount = goldCount;
-            } else if (tierFilter.id === 'silver') {
-              filterCount = silverCount;
-            } else if (tierFilter.id === 'bronze') {
-              filterCount = bronzeCount;
-            }
+                  {/* Radial Ambient Beam */}
+                  <div className={`absolute inset-0 rounded-2xl pointer-events-none ${pedestal.radialOverlay}`} />
 
-            return (
-              <button
-                key={tierFilter.id}
-                type="button"
-                onClick={() => {
-                  SoundEngine.playButtonClick();
-                  Haptics.buttonClick();
-                  setActiveTierFilter(tierFilter.id);
-                }}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-header font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-amber-400 text-black font-bold shadow-[0_0_10px_rgba(245,158,11,0.6)]'
-                    : 'bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5'
-                }`}
-              >
-                {tierFilter.dotColor && (
-                  <span className={`w-2 h-2 rounded-full ${tierFilter.dotColor}`} />
-                )}
-                {tierFilter.id === 'claimable' && totalUnclaimedTiersCount > 0 && (
-                  <Sparkles className={`w-3 h-3 ${isActive ? 'text-black' : 'text-amber-400 animate-spin'}`} />
-                )}
-                <span>{tierFilter.label}</span>
-                <span className={`text-[10px] opacity-75`}>({filterCount})</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Trophy Gallery Grid - Guaranteed zero horizontal scroll */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-3.5 scrollable-panel w-full">
-          {filteredTrophies.length === 0 ? (
-            <div className="py-12 flex flex-col items-center justify-center text-center">
-              <Trophy className="w-12 h-12 text-gray-600 mb-2" />
-              <p className="font-header font-bold text-gray-300">No trophies match this filter</p>
-              <p className="text-xs text-gray-500 mt-1 max-w-xs">
-                Try switching the mode or tier filter to explore other available trophies.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveCategory('all');
-                  setActiveTierFilter('all');
-                }}
-                className="mt-3 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-amber-300 font-header font-bold border border-white/10 cursor-pointer"
-              >
-                Reset Filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-              {filteredTrophies.map((trophy, index) => {
-                const progress = calculateTrophyProgress(trophy, statsContext, claimMap);
-                const pedestal = getTierPedestalStyle(progress.currentTier);
-                const isLocked = progress.currentTier === 'locked';
-                const isPlatinum = progress.currentTier === 'platinum';
-
-                return (
-                  <div
-                    key={trophy.id}
-                    onClick={() => {
-                      SoundEngine.playButtonClick();
-                      Haptics.buttonClick();
-                      setSelectedTrophy(trophy);
-                    }}
-                    style={{
-                      animationDelay: `${Math.min(index * 45, 400)}ms`,
-                    }}
-                    className={`group relative rounded-2xl ${pedestal.glowCardClass} p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] cursor-pointer overflow-hidden border border-white/10 animate-trophy-entrance`}
-                  >
-                    {/* Tier-Specific Blend Background Texture: Fills entire container, rectangular (not circle), slight dim */}
-                    {TIER_BLEND_BACKGROUNDS[progress.currentTier] && !isLocked && (
-                      <img
-                        src={TIER_BLEND_BACKGROUNDS[progress.currentTier]!}
-                        alt=""
-                        className="absolute inset-0 w-full h-full object-cover rounded-2xl pointer-events-none select-none transition-all duration-500"
-                        style={{
-                          mixBlendMode: 'screen',
-                          opacity: progress.currentTier === 'platinum' ? 0.42 : 0.35,
-                          filter: 'contrast(1.15) brightness(0.78)',
-                        }}
-                      />
-                    )}
-
-                    {/* Card Inner Background Darkening / Tint Shell */}
-                    <div className={`absolute inset-0 rounded-2xl ${pedestal.cardBg} pointer-events-none opacity-80`} />
-
-                    {/* Radial Ambient Beam */}
-                    <div className={`absolute inset-0 rounded-2xl pointer-events-none ${pedestal.radialOverlay}`} />
-
-                    {/* Category Pill & Unclaimed Reward Badge */}
-                    <div className="relative z-10 flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-header font-bold text-gray-300 tracking-wider uppercase px-2 py-0.5 rounded-md bg-black/60 border border-white/10">
-                        {trophy.categoryLabel}
+                  {/* Unclaimed Reward Badge (Category text in black box completely removed) */}
+                  {progress.unclaimedTiers.length > 0 && (
+                    <div className="relative z-10 flex items-center justify-end mb-1">
+                      <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-header font-black text-[9px] uppercase tracking-wide animate-glow-pulse shadow-[0_0_12px_rgba(245,158,11,0.9)] flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        CLAIM REWARD
                       </span>
-
-                      {progress.unclaimedTiers.length > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-black font-header font-black text-[9px] uppercase tracking-wide animate-glow-pulse shadow-[0_0_12px_rgba(245,158,11,0.9)] flex items-center gap-1">
-                          <Sparkles className="w-2.5 h-2.5" />
-                          CLAIM REWARD
-                        </span>
-                      )}
                     </div>
+                  )}
 
-                    {/* Dedicated Placeholder for Trophy Attachment */}
-                    <div className="relative z-20 w-full h-52 sm:h-56 my-1 flex items-center justify-center">
-                      {/* Distinct Glowing Aura Behind Trophy */}
-                      <div
-                        className={`absolute w-36 h-36 sm:w-44 sm:h-44 rounded-full pointer-events-none transition-all duration-300 ${
-                          isLocked
-                            ? 'bg-transparent'
-                            : `${TIER_AURA_BACKGROUNDS[progress.currentTier]} ${
-                                progress.currentTier === 'platinum' ? 'animate-platinum-aura-surge' : ''
-                              }`
-                        }`}
+                  {/* Dedicated Placeholder for Trophy Attachment - Ample headroom and soft diffuse ambient glow */}
+                  <div className="relative z-20 w-full h-56 sm:h-60 my-1 flex items-center justify-center">
+                    {/* Distinct Glowing Aura Behind Trophy - Wide blur-3xl to eliminate hard circular clipping */}
+                    <div
+                      className={`absolute w-52 h-52 sm:w-60 sm:h-60 rounded-full blur-3xl pointer-events-none transition-all duration-500 ${
+                        isLocked
+                          ? 'bg-transparent'
+                          : `${TIER_AURA_BACKGROUNDS[progress.currentTier]} ${
+                              progress.currentTier === 'platinum' ? 'animate-platinum-aura-surge' : ''
+                            }`
+                      }`}
+                    />
+
+                    {/* Attached Trophy Layer (Elevated on top of everything, enlarged 1.5x) */}
+                    <div className="relative z-30 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center w-48 h-48 sm:w-52 sm:h-52">
+                      {/* Shimmering diamond shines on gold and platinum trophies */}
+                      <DiamondShineSparkles
+                        trophyId={trophy.id}
+                        tier={progress.currentTier}
+                        isReached={!isLocked}
                       />
-
-                      {/* Attached Trophy Layer (Elevated on top of everything, enlarged 1.5x) */}
-                      <div className="relative z-30 transform group-hover:-translate-y-1.5 transition-transform duration-300 flex items-center justify-center w-48 h-48 sm:w-52 sm:h-52">
-                        {/* Shimmering diamond shines on gold and platinum trophies */}
-                        <DiamondShineSparkles tier={progress.currentTier} isReached={!isLocked} scale={1.5} />
 
                         {(() => {
                           const hasImages = !!trophy.images;
@@ -899,7 +777,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                 );
               })}
             </div>
-          )}
         </div>
       </div>
 
@@ -941,14 +818,9 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
 
               {/* Top Bar (Header) - Compact */}
               <div className="relative z-10 shrink-0 pr-8">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-header font-bold text-gray-300 tracking-wider uppercase px-2 py-0.5 rounded-md bg-black/60 border border-white/10">
-                    {selectedTrophy.categoryLabel}
-                  </span>
-                  <h3 className="font-header text-lg sm:text-xl font-bold text-white tracking-wide truncate">
-                    {selectedTrophy.title}
-                  </h3>
-                </div>
+                <h3 className="font-header text-lg sm:text-xl font-bold text-white tracking-wide truncate">
+                  {selectedTrophy.title}
+                </h3>
                 <p className="text-[11px] text-gray-300 line-clamp-1 mt-0.5 font-body">
                   {selectedTrophy.description}
                 </p>
@@ -964,8 +836,10 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                     className="absolute inset-0 w-full h-full object-cover rounded-2xl pointer-events-none select-none transition-all duration-500"
                     style={{
                       mixBlendMode: 'screen',
-                      opacity: currentInspectedTier === 'platinum' ? 0.45 : 0.38,
-                      filter: 'contrast(1.15) brightness(0.8)',
+                      opacity: currentInspectedTier === 'platinum' ? 0.4 : 0.32,
+                      filter: 'contrast(1.1) brightness(0.78)',
+                      maskImage: 'radial-gradient(circle at 50% 50%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 85%)',
+                      WebkitMaskImage: 'radial-gradient(circle at 50% 50%, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 85%)',
                     }}
                   />
                 )}
@@ -977,7 +851,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                 <div className="relative z-20 w-full h-48 sm:h-56 flex items-center justify-center">
                   {/* Glowing Aura Behind Trophy */}
                   <div
-                    className={`absolute w-36 h-36 sm:w-44 sm:h-44 rounded-full pointer-events-none transition-all duration-300 ${
+                    className={`absolute w-52 h-52 sm:w-60 sm:h-60 rounded-full blur-3xl pointer-events-none transition-all duration-500 ${
                       isCurrentReached
                         ? `${TIER_AURA_BACKGROUNDS[currentInspectedTier]} ${
                             currentInspectedTier === 'platinum' ? 'animate-platinum-aura-surge' : ''
@@ -989,7 +863,11 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                   {/* Attached Trophy Layer (1.5x enlarged, elevated on top) */}
                   <div className="relative z-30 flex items-center justify-center w-44 h-44 sm:w-52 sm:h-52">
                     {/* Diamond Shine Sparkles */}
-                    <DiamondShineSparkles tier={currentInspectedTier} isReached={isCurrentReached} scale={1.5} />
+                    <DiamondShineSparkles
+                      trophyId={`${selectedTrophy.id}-${currentInspectedTier}`}
+                      tier={currentInspectedTier}
+                      isReached={isCurrentReached}
+                    />
 
                     <img
                       src={currentImg}
