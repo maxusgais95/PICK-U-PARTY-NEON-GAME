@@ -2004,17 +2004,18 @@
     opacity: 0;
     transform: scale(0) rotate(-15deg);
   }
-  16% {
-    opacity: 0.35;
-    transform: scale(0.6) rotate(15deg);
+  15% {
+    opacity: 0.25;
+    transform: scale(0.5) rotate(15deg);
   }
   42% {
     opacity: 1;
-    transform: scale(1.15) rotate(45deg);
+    transform: scale(1.25) rotate(45deg);
+    filter: brightness(1.5) drop-shadow(0 0 10px rgba(255, 255, 255, 0.95));
   }
   68% {
-    opacity: 0.75;
-    transform: scale(0.85) rotate(75deg);
+    opacity: 0.8;
+    transform: scale(0.9) rotate(75deg);
   }
   86% {
     opacity: 0.15;
@@ -2025,44 +2026,9 @@
 .animate-diamond-shine {
   animation: diamondFlareShine var(--shine-duration, 2.5s) ease-in-out infinite;
   animation-delay: var(--shine-delay, 0s);
-  will-change: transform, opacity;
+  mix-blend-mode: screen;
+  will-change: transform, opacity, filter;
 }
-
-/* ==========================================================================
-   Metallic Card Diagonal Shimmer Scan-Line
-   Subtle light sweep moving diagonally across trophy cards to enhance
-   the metallic / reflective feel of Bronze, Silver, Gold, and Platinum tiers.
-   ========================================================================== */
-
-@keyframes metallicCardScanline {
-  0% {
-    transform: translateX(-180%) rotate(25deg);
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.85;
-  }
-  44% {
-    transform: translateX(200%) rotate(25deg);
-    opacity: 0.85;
-  }
-  47%, 100% {
-    transform: translateX(200%) rotate(25deg);
-    opacity: 0;
-  }
-}
-
-.animate-card-shimmer {
-  position: absolute;
-  top: -80%;
-  bottom: -80%;
-  left: -50%;
-  width: 65%;
-  pointer-events: none;
-  animation: metallicCardScanline 5.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  will-change: transform, opacity;
-}
-
 
 
 

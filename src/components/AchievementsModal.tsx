@@ -33,6 +33,7 @@ import { getStats } from '../lib/db';
 import { EconomyState, addStars, getEconomyState } from '../lib/economy';
 import { SoundEngine, Haptics } from '../lib/audio';
 import currencyStarImg from '../assets/images/Currency Star Sprite.png';
+import diamondStarSparklePng from '../assets/images/diamond_star_sparkle.png';
 import bronzeBlendBg from '../assets/images/bronze_blend_bg_1789804404667.jpg';
 import silverBlendBg from '../assets/images/silver_blend_bg_1789804417635.jpg';
 import goldBlendBg from '../assets/images/gold_blend_bg_1789804431889.jpg';
@@ -46,15 +47,6 @@ const TIER_BLEND_BACKGROUNDS: Record<TrophyTier, string | null> = {
   locked: null,
 };
 
-// Subtle metallic reflective diagonal scan-line shimmer gradients per tier
-const TIER_SHIMMER_STYLES: Record<TrophyTier, string> = {
-  bronze: 'bg-gradient-to-r from-transparent via-amber-400/20 via-orange-300/30 to-transparent',
-  silver: 'bg-gradient-to-r from-transparent via-slate-200/25 via-white/35 to-transparent',
-  gold: 'bg-gradient-to-r from-transparent via-yellow-300/30 via-amber-100/40 to-transparent',
-  platinum: 'bg-gradient-to-r from-transparent via-cyan-300/35 via-white/45 to-transparent',
-  locked: 'bg-gradient-to-r from-transparent via-white/10 to-transparent',
-};
-
 interface AchievementsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -62,79 +54,6 @@ interface AchievementsModalProps {
   economy: EconomyState;
   onEconomyUpdated?: (economy: EconomyState) => void;
 }
-
-/**
- * Pure Transparent Vector Diamond Star Flare
- * Completely eliminates any black backgrounds / bounding boxes across all devices!
- * Renders an authentic 4-point concave diamond facet star with anamorphic diffraction beams,
- * radiant core halo, and pure white hot-spot.
- */
-const DiamondStarFlare: React.FC<{
-  tier: TrophyTier;
-  size: number;
-  delay: string;
-  duration: string;
-}> = ({ tier, size, delay, duration }) => {
-  const isPlatinum = tier === 'platinum';
-  const glowColor = isPlatinum ? 'rgba(34, 211, 238, 0.95)' : 'rgba(250, 204, 21, 0.95)';
-  const midColor = isPlatinum ? '#a5f3fc' : '#fef08a';
-  const edgeColor = isPlatinum ? '#06b6d4' : '#f59e0b';
-  const gradId = `star-flare-${isPlatinum ? 'plat' : 'gold'}-${size}-${delay.replace(/[^0-9]/g, '')}`;
-
-  return (
-    <div
-      className="pointer-events-none select-none animate-diamond-shine flex items-center justify-center overflow-visible"
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        ['--shine-delay' as any]: delay,
-        ['--shine-duration' as any]: duration,
-        filter: `drop-shadow(0 0 ${Math.max(2, Math.round(size * 0.16))}px ${glowColor})`,
-      }}
-    >
-      <svg
-        viewBox="0 0 100 100"
-        className="w-full h-full overflow-visible pointer-events-none"
-      >
-        <defs>
-          <radialGradient id={gradId} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-            <stop offset="35%" stopColor={midColor} stopOpacity="0.85" />
-            <stop offset="70%" stopColor={edgeColor} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={edgeColor} stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        {/* Outer radiant soft glow aura */}
-        <circle cx="50" cy="50" r="42" fill={`url(#${gradId})`} opacity="0.65" />
-
-        {/* Horizontal anamorphic diffraction beam */}
-        <ellipse cx="50" cy="50" rx="49" ry="2.2" fill={isPlatinum ? '#cffafe' : '#fef9c3'} opacity="0.9" />
-
-        {/* Vertical anamorphic diffraction beam */}
-        <ellipse cx="50" cy="50" rx="2.2" ry="49" fill={isPlatinum ? '#cffafe' : '#fef9c3'} opacity="0.9" />
-
-        {/* Diagonal 45-degree sub-rays (faceted depth) */}
-        <g transform="rotate(45 50 50)">
-          <path
-            d="M 50 20 Q 50 50 20 50 Q 50 50 50 80 Q 50 50 80 50 Q 50 50 50 20 Z"
-            fill={midColor}
-            opacity="0.65"
-          />
-        </g>
-
-        {/* Primary 4-point concave diamond facet star */}
-        <path
-          d="M 50 2 Q 50 50 2 50 Q 50 50 50 98 Q 50 50 98 50 Q 50 50 50 2 Z"
-          fill="#ffffff"
-        />
-
-        {/* Sparkling bright white diamond core pin-point */}
-        <circle cx="50" cy="50" r="3.5" fill="#ffffff" />
-      </svg>
-    </div>
-  );
-};
 
 /**
  * Trophy Dynamic Shine Star Sparkles
@@ -160,7 +79,7 @@ const GOLD_DIAMOND_SPARKLES = [
 ];
 
 /**
- * Realistic Diamond Shine with 100% transparent vector star flare
+ * Realistic Diamond Shine using 4-point diamond star sprite with screen blending mode
  * Renders ONLY for gold and platinum tiers!
  * - Gold: subtle, delicate diamond glints ("Gold little")
  * - Platinum: brilliant multifaceted optical flares with diffraction spikes ("Platinum full shine")
@@ -175,6 +94,10 @@ const DiamondShineSparkles: React.FC<{ tier: TrophyTier; isReached?: boolean; sc
   const isPlatinum = tier === 'platinum';
   const sparkles = isPlatinum ? PLATINUM_DIAMOND_SPARKLES : GOLD_DIAMOND_SPARKLES;
 
+  const dropFilter = isPlatinum
+    ? 'drop-shadow(0 0 6px rgba(103,232,249,0.95)) drop-shadow(0 0 14px rgba(6,182,212,0.85))'
+    : 'drop-shadow(0 0 6px rgba(254,240,138,0.95)) drop-shadow(0 0 12px rgba(234,179,8,0.85))';
+
   return (
     <div className="absolute inset-0 pointer-events-none z-30 overflow-visible">
       {sparkles.map((sparkle, idx) => (
@@ -186,11 +109,17 @@ const DiamondShineSparkles: React.FC<{ tier: TrophyTier; isReached?: boolean; sc
             left: sparkle.left,
           }}
         >
-          <DiamondStarFlare
-            tier={tier}
-            size={Math.round(sparkle.size * scale)}
-            delay={sparkle.delay}
-            duration={sparkle.duration}
+          <img
+            src={diamondStarSparklePng}
+            alt=""
+            className="pointer-events-none animate-diamond-shine select-none"
+            style={{
+              width: `${Math.round(sparkle.size * scale)}px`,
+              height: `${Math.round(sparkle.size * scale)}px`,
+              filter: dropFilter,
+              ['--shine-delay' as any]: sparkle.delay,
+              ['--shine-duration' as any]: sparkle.duration,
+            }}
           />
         </div>
       ))}
@@ -799,14 +728,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                     {/* Radial Ambient Beam */}
                     <div className={`absolute inset-0 rounded-2xl pointer-events-none ${pedestal.radialOverlay}`} />
 
-                    {/* Subtle Metallic Reflective Scan-Line Shimmer */}
-                    <div
-                      className={`animate-card-shimmer ${TIER_SHIMMER_STYLES[progress.currentTier]} z-10 pointer-events-none`}
-                      style={{
-                        animationDelay: `${(index % 4) * 1.3}s`,
-                      }}
-                    />
-
                     {/* Category Pill & Unclaimed Reward Badge */}
                     <div className="relative z-10 flex items-center justify-between mb-2">
                       <span className="text-[10px] font-header font-bold text-gray-300 tracking-wider uppercase px-2 py-0.5 rounded-md bg-black/60 border border-white/10">
@@ -1051,14 +972,6 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
 
                 {/* Darkening tint shell */}
                 <div className="absolute inset-0 rounded-2xl bg-black/30 pointer-events-none" />
-
-                {/* Subtle Metallic Reflective Scan-Line Shimmer on Stage */}
-                <div
-                  className={`animate-card-shimmer ${TIER_SHIMMER_STYLES[currentInspectedTier]} z-10 pointer-events-none`}
-                  style={{
-                    animationDelay: '0.3s',
-                  }}
-                />
 
                 {/* Stage Inner Container */}
                 <div className="relative z-20 w-full h-48 sm:h-56 flex items-center justify-center">
