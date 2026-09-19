@@ -63,8 +63,8 @@ interface AchievementsModalProps {
 const PLATINUM_DIAMOND_SPARKLES = [
   { top: '16%', left: '26%', size: 28, delay: '0.1s', duration: '2.4s' },
   { top: '22%', left: '72%', size: 32, delay: '0.8s', duration: '2.8s' },
-  //{ top: '38%', left: '16%', size: 24, delay: '1.5s', duration: '2.2s' },
-  //{ top: '46%', left: '80%', size: 30, delay: '0.4s', duration: '2.6s' },
+  { top: '38%', left: '16%', size: 24, delay: '1.5s', duration: '2.2s' },
+  { top: '46%', left: '80%', size: 30, delay: '0.4s', duration: '2.6s' },
   { top: '62%', left: '28%', size: 26, delay: '1.1s', duration: '2.5s' },
   { top: '68%', left: '68%', size: 34, delay: '1.9s', duration: '3.0s' },
   { top: '28%', left: '50%', size: 30, delay: '0.6s', duration: '2.3s' },
