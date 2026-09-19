@@ -558,7 +558,7 @@ export const AchievementsModal: React.FC<AchievementsModalProps> = ({
                   )}
 
                   {/* Card Inner Background Darkening / Tint Shell */}
-                  <div className={`absolute inset-0 rounded-2xl ${pedestal.cardBg} pointer-events-none opacity-80`} />
+                  <div className={`absolute inset-0 rounded-2xl ${pedestal.cardBg} pointer-events-none opacity-20`} />
 
                   {/* Radial Ambient Beam */}
                   <div className={`absolute inset-0 rounded-2xl pointer-events-none ${pedestal.radialOverlay}`} />
