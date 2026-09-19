@@ -62,6 +62,7 @@ import bronzeTrophy010 from '../assets/images/Bronze Trophy 010.png';
 import silverTrophy010 from '../assets/images/Silver Trophy 010.png';
 import goldTrophy010 from '../assets/images/Gold Trophy 010.png';
 import platinumTrophy010 from '../assets/images/Platinum Trophy 010.png';
+import { EconomyState, getEconomyState } from './economy';
 
 export type TrophyTier = 'locked' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
@@ -986,4 +987,132 @@ export function getTrophyImage(
     return trophy.images?.bronze;
   }
   return trophy.images?.[tier];
+}
+
+export function hasUnclaimedTrophies(
+  stats?: {
+    totalRouletteRounds?: number;
+    totalBottleSpins?: number;
+    totalKaboomRounds?: number;
+    kaboom?: {
+      victories?: number;
+      bonusCollected?: number;
+    };
+    unlockedItemCount?: number;
+    totalLogins?: number;
+    lifetimeStars?: number;
+    milestoneChestsOpened?: number;
+    questsCompleted?: number;
+  } | null,
+  economy?: EconomyState | null,
+  claims?: Record<string, TrophyTier[]>
+): boolean {
+  try {
+    const claimMap = claims || getTrophyClaimMap();
+    const currentEconomy =
+      economy || (typeof window !== 'undefined' ? getEconomyState() : undefined);
+
+    const statsContext = {
+      totalRouletteRounds: stats?.totalRouletteRounds || 0,
+      totalBottleSpins: stats?.totalBottleSpins || 0,
+      totalKaboomRounds: stats?.totalKaboomRounds || 0,
+      kaboomVictories: stats?.kaboom?.victories || 0,
+      kaboomBonusCollected: stats?.kaboom?.bonusCollected || 0,
+      unlockedItemCount:
+        currentEconomy?.unlockedItems?.length || stats?.unlockedItemCount || 1,
+      totalLogins: Math.max(
+        1,
+        stats?.totalLogins ||
+          currentEconomy?.totalLoginsCount ||
+          currentEconomy?.dailyLoginRewards?.claimedDays?.length ||
+          1
+      ),
+      lifetimeStars: Math.max(
+        stats?.lifetimeStars || 0,
+        currentEconomy?.stars || 0,
+        currentEconomy?.lifetimeStarsEarned || 0
+      ),
+      milestoneChestsOpened:
+        stats?.milestoneChestsOpened ||
+        currentEconomy?.milestoneChestsOpened ||
+        (currentEconomy?.milestoneChestClaimed ? 1 : 0),
+      questsCompleted:
+        stats?.questsCompleted ||
+        currentEconomy?.questsCompletedCount ||
+        (currentEconomy?.dailyQuests?.filter(
+          (q) => q.currentCount >= q.targetCount
+        ).length || 0),
+    };
+
+    return TROPHY_DEFINITIONS.some((trophy) => {
+      const progress = calculateTrophyProgress(trophy, statsContext, claimMap);
+      return progress.unclaimedTiers.length > 0;
+    });
+  } catch (err) {
+    return false;
+  }
+}
+
+export function getUnclaimedTrophiesCount(
+  stats?: {
+    totalRouletteRounds?: number;
+    totalBottleSpins?: number;
+    totalKaboomRounds?: number;
+    kaboom?: {
+      victories?: number;
+      bonusCollected?: number;
+    };
+    unlockedItemCount?: number;
+    totalLogins?: number;
+    lifetimeStars?: number;
+    milestoneChestsOpened?: number;
+    questsCompleted?: number;
+  } | null,
+  economy?: EconomyState | null,
+  claims?: Record<string, TrophyTier[]>
+): number {
+  try {
+    const claimMap = claims || getTrophyClaimMap();
+    const currentEconomy =
+      economy || (typeof window !== 'undefined' ? getEconomyState() : undefined);
+
+    const statsContext = {
+      totalRouletteRounds: stats?.totalRouletteRounds || 0,
+      totalBottleSpins: stats?.totalBottleSpins || 0,
+      totalKaboomRounds: stats?.totalKaboomRounds || 0,
+      kaboomVictories: stats?.kaboom?.victories || 0,
+      kaboomBonusCollected: stats?.kaboom?.bonusCollected || 0,
+      unlockedItemCount:
+        currentEconomy?.unlockedItems?.length || stats?.unlockedItemCount || 1,
+      totalLogins: Math.max(
+        1,
+        stats?.totalLogins ||
+          currentEconomy?.totalLoginsCount ||
+          currentEconomy?.dailyLoginRewards?.claimedDays?.length ||
+          1
+      ),
+      lifetimeStars: Math.max(
+        stats?.lifetimeStars || 0,
+        currentEconomy?.stars || 0,
+        currentEconomy?.lifetimeStarsEarned || 0
+      ),
+      milestoneChestsOpened:
+        stats?.milestoneChestsOpened ||
+        currentEconomy?.milestoneChestsOpened ||
+        (currentEconomy?.milestoneChestClaimed ? 1 : 0),
+      questsCompleted:
+        stats?.questsCompleted ||
+        currentEconomy?.questsCompletedCount ||
+        (currentEconomy?.dailyQuests?.filter(
+          (q) => q.currentCount >= q.targetCount
+        ).length || 0),
+    };
+
+    return TROPHY_DEFINITIONS.reduce((acc, trophy) => {
+      const progress = calculateTrophyProgress(trophy, statsContext, claimMap);
+      return acc + progress.unclaimedTiers.length;
+    }, 0);
+  } catch (err) {
+    return 0;
+  }
 }

@@ -9,7 +9,7 @@ import chibiFingersImg from '../assets/images/Chibi Fingers Game.webp';
 import chibiBottleImg from '../assets/images/Chibi Spinning Bottle.webp';
 import chibiBombImg from '../assets/images/Chibi Bomb Game.webp';
 import { getAssetUrl } from '../lib/assetPreloader';
-import { AppSettings } from '../types';
+import { AppSettings, AppStats } from '../types';
 import { SoundEngine, Haptics } from '../lib/audio';
 import { LeftSidebarStack } from './LeftSidebarStack';
 import { DailyQuestsWidget } from './DailyQuestsWidget';
@@ -18,6 +18,7 @@ import { EconomyState, getDailyRewardStatus } from '../lib/economy';
 interface LandingHubProps {
   settings: AppSettings;
   economy?: EconomyState;
+  stats?: AppStats;
   onSelectRoulette: () => void;
   onSelectBottle: () => void;
   onSelectKaboom?: () => void;
@@ -47,6 +48,7 @@ interface GameCard {
 
 export const LandingHub: React.FC<LandingHubProps> = ({
   economy,
+  stats,
   onSelectRoulette,
   onSelectBottle,
   onSelectKaboom,
@@ -230,6 +232,8 @@ export const LandingHub: React.FC<LandingHubProps> = ({
           onOpenAchievements={onOpenAchievements || (() => {})}
           onOpenRewards={onOpenRewards || (() => {})}
           hasDailyRewardReady={economy ? getDailyRewardStatus(economy).canClaimToday : false}
+          economy={economy}
+          stats={stats}
         />
       </div>
 

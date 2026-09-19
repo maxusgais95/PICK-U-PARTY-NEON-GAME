@@ -403,6 +403,7 @@ export default function App() {
           <LandingHub
             settings={settings}
             economy={economy}
+            stats={stats || undefined}
             onSelectRoulette={() => handleNavigateToGame('roulette')}
             onSelectBottle={() => handleNavigateToGame('bottle')}
             onSelectKaboom={() => handleNavigateToGame('kaboom')}
@@ -504,7 +505,10 @@ export default function App() {
       {/* Achievements / Trophy Gallery Modal */}
       <AchievementsModal
         isOpen={isAchievementsOpen}
-        onClose={() => setIsAchievementsOpen(false)}
+        onClose={() => {
+          setIsAchievementsOpen(false);
+          window.dispatchEvent(new CustomEvent('picku_trophy_claimed'));
+        }}
         stats={stats}
         economy={economy}
         onEconomyUpdated={setEconomy}
